@@ -3,10 +3,16 @@ from Bio import SeqIO
 import torch as t
 import os
 import urllib
+from math import log10
+import time
 
 def dump_json(obj, path):
     with open(path, mode='w') as file:
         json.dump(obj, file)
+
+def read_json_file(path):
+    with open(path) as file:
+        return json.loads(file.read())
 
 def read_fasta(path):
     return SeqIO.parse(path, "fasta")
@@ -39,30 +45,24 @@ def timer(msg = 'Timing:'):
     print(msg, time.time() - time_start)
     timer_start()
 
-"""The ProgressDisplay class shows a better-looking loader for time-consuming processes, such as training or evaluating a neural network."""
+def log_transform(x):
+    return log10(1 + x)
 
-class ProgressDisplay():
+def log_transform_back(x):
+    return (10 ** x) - 1
 
-    def __init__(self, steps, label):
-        self.steps = steps
-        self.counter = 0
-        self.label = label
-        self.progressbar = display(self.__html(), display_id=True)
+def normalize(x, mean, std, epsilon = 0):
+    if x is None:
+        return None
+    return (x - mean) / (std + epsilon)
 
-    def __html(self):
-        return HTML(f'{self.label} {self.counter * 100 / self.steps:.2f} %')
+def unnormalize(x, mean, std):
+    if x is None:
+        return None
+    return (x * std) + mean
 
-    def step(self):
-        self.counter += 1
-        self.progressbar.update(self.__html())
+def to_numpy(tensor: t.Tensor):
+    return tensor.detach().cpu().numpy()
 
-    def reset(self):
-        self.counter = 0
-        self.progressbar.update(HTML(''))
-
-# To use:
-# progress_display = ProgressDisplay(100, 'training')
-# for ii in range(100):
-#     time.sleep(0.02)
-#     progress_display.step()
-# progress_display.reset()
+def to_torch(x, type = t.float64, device = 'cpu', grad = False):
+    return t.tensor(x, dtype = type, device = device, requires_grad = grad)

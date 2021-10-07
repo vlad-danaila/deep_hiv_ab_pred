@@ -31,6 +31,7 @@ dependencies:
   - tk=8.6.11=h2bbff1b_0
   - torchaudio=0.9.1=py39
   - torchvision=0.10.1=py39_cu102
+  - tqdm=4.62.2=pyhd3eb1b0_1
   - typing_extensions=3.10.0.2=pyh06a4308_0
   - tzdata=2021a=h5d7bf9c_0
   - vc=14.2=h21ff451_1
