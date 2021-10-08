@@ -1,9 +1,7 @@
 import os
 import collections
 from util.tools import read_fasta, dump_json
-
-SEQ_FOLDER = r'C:\DOC\Workspace\bNAb-ReP\alignments'
-OUT_FILE = r'Rawi_data.json'
+from constants import RAWI_DATA, SEQ_FOLDER
 
 if __name__ == '__main__':
 
@@ -14,4 +12,4 @@ if __name__ == '__main__':
         for seq_record in read_fasta(os.path.join(SEQ_FOLDER, fasta_file)):
             data[antibody_name].append(seq_record.id)
 
-    dump_json(data, OUT_FILE)
+    dump_json(data, RAWI_DATA)

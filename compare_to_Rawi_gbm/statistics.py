@@ -1,7 +1,5 @@
 from util.tools import read_json_file
-
-RAWI_DATA = 'compare_to_Rawi_gbm/Rawi_data.json'
-CATNAP_DATA = 'catnap/catnap_classification.json'
+from constants import RAWI_DATA, CATNAP_DATA
 
 def print_antibody_virus_stats_for_rawi():
     rawi_data = read_json_file(RAWI_DATA)
