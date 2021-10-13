@@ -1,14 +1,10 @@
 import collections
-
+from catnap.constants import CATNAP_FLAT, IC50_TRESHOLD
 import pandas as pd
 from catnap.download_dataset import ASSAY_FILE
 from catnap.censored_data_preprocess import estimate_censored_mean
 from tqdm import tqdm
 from util.tools import dump_json
-
-RAWI_DATA = 'compare_to_Rawi_gbm/Rawi_data.json'
-CATNAP_ASSAYS_CLASSIFICATION = 'catnap_classification.json'
-IC50_TRESHOLD = 50
 
 def read_assays_df():
     assay_df = pd.read_csv(ASSAY_FILE, sep = '\t')
@@ -26,7 +22,7 @@ def virus_is_sensitive(ic50: str):
     ic50 = float(ic50[1:]) if ic50.startswith('<') else float(ic50)
     return ic50 < IC50_TRESHOLD
 
-def read_assays_for_classification():
+def catnap_by_antibodies():
     assays_df = read_assays_df()
     assays = collections.defaultdict(lambda: {})
     # The for loop iterates through assays grouped by the antibody and virus pairs
@@ -53,7 +49,17 @@ def read_assays_for_classification():
         assays[antibody][virus] = outcome
     return assays
 
+def flatten_catnap_data(catnap_data):
+    flat = []
+    id = 0
+    for antibody, viruses in catnap_data.items():
+        for virus in viruses:
+            flat.append((id, antibody, virus, catnap_data[antibody][virus]))
+            id += 1
+    return flat
+
 if __name__ == '__main__':
-    assays = read_assays_for_classification()
-    dump_json(assays, CATNAP_ASSAYS_CLASSIFICATION)
+    catnap_by_antibodies = catnap_by_antibodies()
+    catnap_flat = flatten_catnap_data(catnap_by_antibodies)
+    dump_json(catnap_flat, CATNAP_FLAT)
 
