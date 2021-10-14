@@ -12,7 +12,7 @@ class AssayDataset(t.utils.data.Dataset):
         self.pngs_mask_to_kemr_tensor = pngs_mask_to_kemr_tensor
 
     def __getitem__(self, i):
-        antibody, virus, ground_truth = self.assays[i]
+        id, antibody, virus, ground_truth = self.assays[i]
         antibody_light_tensor = self.antibody_light_seq[antibody]
         antibody_heavy_tensor = self.antibody_heavy_seq[antibody]
         virus_tensor          = self.virus_seq[virus]

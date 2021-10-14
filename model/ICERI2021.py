@@ -2,7 +2,7 @@ from util.tools import device
 import torch as t
 from preprocessing.sequences import aminoacids_len
 
-class BioNet(t.nn.Module):
+class ICERI2021Net(t.nn.Module):
 
     def __init__(self, conf):
         super().__init__()

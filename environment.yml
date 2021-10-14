@@ -4,8 +4,8 @@ channels:
   - pytorch
 dependencies:
   - blas=1.0=mkl
-  - ca-certificates=2021.7.5=haa95532_1
-  - certifi=2021.5.30=py39haa95532_0
+  - ca-certificates=2021.9.30=haa95532_1
+  - certifi=2021.10.8=py39haa95532_0
   - cudatoolkit=10.2.89=h74a9793_1
   - freetype=2.10.4=hd328e21_0
   - intel-openmp=2021.3.0=haa95532_3372
@@ -19,12 +19,14 @@ dependencies:
   - mkl_fft=1.3.0=py39h277e83a_2
   - mkl_random=1.2.2=py39hf11a4ad_0
   - ninja=1.10.2=h6d14046_1
-  - numpy-base=1.20.3=py39hc2deb75_0
+  - numpy=1.21.2=py39hfca59bb_0
+  - numpy-base=1.21.2=py39h0829f74_0
   - olefile=0.46=pyhd3eb1b0_0
   - openssl=1.1.1l=h2bbff1b_0
-  - pip=21.2.4=py38haa95532_0
+  - pip=21.2.4=py39haa95532_0
   - python=3.9.7=h6244533_1
   - pytorch=1.9.1=py3.9_cuda10.2_cudnn7_0
+  - pyyaml=5.4.1=py39h2bbff1b_1
   - setuptools=58.0.4=py39haa95532_0
   - six=1.16.0=pyhd3eb1b0_0
   - sqlite=3.36.0=h2bbff1b_0
@@ -39,6 +41,7 @@ dependencies:
   - wheel=0.37.0=pyhd3eb1b0_1
   - wincertstore=0.2=py39haa95532_2
   - xz=5.2.5=h62dcd97_0
+  - yaml=0.2.5=he774522_0
   - zlib=1.2.11=h62dcd97_4
   - zstd=1.4.9=h19a0ad4_0
   - pip:
@@ -47,7 +50,6 @@ dependencies:
     - joblib==1.0.1
     - kiwisolver==1.3.2
     - matplotlib==3.4.3
-    - numpy==1.21.2
     - pandas==1.3.3
     - pillow==8.3.2
     - pyparsing==2.4.7

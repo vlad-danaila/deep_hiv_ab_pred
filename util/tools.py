@@ -5,6 +5,7 @@ import os
 import urllib
 from math import log10
 import time
+import yaml
 
 def dump_json(obj, path):
     with open(path, mode='w') as file:
@@ -66,3 +67,7 @@ def to_numpy(tensor: t.Tensor):
 
 def to_torch(x, type = t.float64, device = 'cpu', grad = False):
     return t.tensor(x, dtype = type, device = device, requires_grad = grad)
+
+def read_yaml(path):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)

@@ -18,7 +18,7 @@ def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False)
 
     desc = 'training' if isTrain else 'evaluating'
     # Iterate through the dataset using the data loader
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in tqdm(enumerate(loader), desc = desc):
+    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         # Network forward pass
         pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
         # Calculate loss value
@@ -61,7 +61,7 @@ def eval_network(model, conf, loader, loss_fn):
         return test_metrics
 
 # Train
-def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs):
+def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model'):
     loss_fn = t.nn.BCELoss()
     # The optimizer updates the parameters of the model during training
     optimizer = t.optim.RMSprop(model.parameters(), lr = conf['LEARNING_RATE'])
@@ -80,20 +80,33 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
             train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
 
-            test_metrics = eval_network(model, conf, loader_val, loss_fn)
-            metrics_test_per_epochs.append(test_metrics)
+            if loader_val:
+                test_metrics = eval_network(model, conf, loader_val, loss_fn)
+                metrics_test_per_epochs.append(test_metrics)
 
-            # We save a model chekpoint if we find any improvement
-            if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
-                best = test_metrics
-                t.save({'model': model.state_dict()}, 'model cross validation {}.tar'.format(cross_validation_round))
+                # We save a model chekpoint if we find any improvement
+                if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
+                    best = test_metrics
+                    t.save({'model': model.state_dict()}, f'{model_title} cv {cross_validation_round}.tar')
 
-            # Logging
-            print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
+                # Logging
+                print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
+            else:
+                # We save a model chekpoint if we find any improvement
+                if train_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
+                    best = train_metrics
+                    t.save({'model': model.state_dict()}, f'{model_title}.tar')
+
+                # Logging
+                print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
 
         print('-' * 10)
-        print(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
+        if cross_validation_round is not None:
+            print(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
+        else:
+            print(f'Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
         print('-' * 10)
+
         return metrics_train_per_epochs, metrics_test_per_epochs, best
 
     except KeyboardInterrupt as e:
