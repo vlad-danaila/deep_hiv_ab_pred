@@ -22,7 +22,9 @@ def create_splits_to_compare_with_rawi(catnap):
         pretrain_data = [ data[0] for data in catnap if data[1] != antibody ]
         cv_tuples = [(antibody, virus) for virus in virus_ids]
         cv_data = [data[0] for data in catnap if (data[1], data[2]) in cv_tuples]
-        assert len(cv_data) == len(cv_tuples)
+        if len(cv_data) != len(cv_tuples):
+            print('Skipping', antibody)
+            continue
         cv_splits = cross_validation_splits(cv_data)
         splits[antibody] = { 'pretraining': pretrain_data, 'cross_validation': cv_splits }
     return splits

@@ -4,7 +4,12 @@ import pandas as pd
 from catnap.download_dataset import ASSAY_FILE
 from catnap.censored_data_preprocess import estimate_censored_mean
 from tqdm import tqdm
-from util.tools import dump_json
+from util.tools import dump_json, read_yaml
+from preprocessing.sequences import parse_catnap_sequences
+from hyperparameters.constants import CONF_ICERI
+
+KMER_LEN = 'KMER_LEN'
+KMER_STRIDE = 'KMER_STRIDE'
 
 def read_assays_df():
     assay_df = pd.read_csv(ASSAY_FILE, sep = '\t')
@@ -25,8 +30,14 @@ def virus_is_sensitive(ic50: str):
 def catnap_by_antibodies():
     assays_df = read_assays_df()
     assays = collections.defaultdict(lambda: {})
+    conf = read_yaml(CONF_ICERI)
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+        conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
+    )
     # The for loop iterates through assays grouped by the antibody and virus pairs
     for (antibody, virus), df in tqdm(assays_df.groupby(['Antibody', 'Virus'])):
+        if antibody not in antibody_light_seq or antibody not in antibody_heavy_seq or virus not in virus_seq:
+            continue
         ic50 = df.IC50
         # consider resistant by default
         outcome = False

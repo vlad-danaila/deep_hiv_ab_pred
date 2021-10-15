@@ -3,7 +3,7 @@ from compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI
 import torch as t
 from catnap.constants import CATNAP_FLAT
 from preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from preprocessing.sequences import parse_catnap
+from preprocessing.sequences import parse_catnap_sequences
 from hyperparameters.constants import CONF_ICERI
 from model.ICERI2021 import ICERI2021Net
 from training.training import train_network
@@ -17,7 +17,7 @@ def pretrain_net(antibody, splits):
     global catnap, conf
     pretraining_assays = [a for a in catnap if a[0] in splits[PRETRAINING]]
     assert len(pretraining_assays) == len(splits[PRETRAINING])
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
         conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
     )
     pretrain_set = AssayDataset(
