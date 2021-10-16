@@ -56,16 +56,16 @@ def cross_validate(antibody, splits_cv):
         )
 
 def train_net():
-    conf = read_yaml(CONF_ICERI)
-    all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
-    catnap = read_json_file(CATNAP_FLAT)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
-        conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
-    )
     for antibody, splits in all_splits.items():
         print('Antibody', antibody)
         pretrain_net(antibody, splits[PRETRAINING])
         cross_validate(antibody, splits[CV])
 
 if __name__ == '__main__':
+    conf = read_yaml(CONF_ICERI)
+    all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
+    catnap = read_json_file(CATNAP_FLAT)
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+        conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
+    )
     train_net()
