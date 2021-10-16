@@ -56,6 +56,7 @@ def cross_validate(antibody, splits_cv):
         )
 
 def train_net():
+    global all_splits
     for antibody, splits in all_splits.items():
         print('Antibody', antibody)
         pretrain_net(antibody, splits[PRETRAINING])
