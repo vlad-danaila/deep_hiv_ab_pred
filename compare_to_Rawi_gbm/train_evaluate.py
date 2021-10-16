@@ -8,6 +8,7 @@ from hyperparameters.constants import CONF_ICERI
 from model.ICERI2021 import ICERI2021Net
 from training.training import train_network, eval_network
 from os.path import join
+from training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 
 PRETRAINING = 'pretraining'
 CV = 'cross_validation'
@@ -46,17 +47,15 @@ def cross_validate(antibody, splits_cv):
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
         # Try freezing part of net
-        for param in model.parameters():
-            param.requires_grad = False
-        for param in model.fully_connected.parameters():
-            param.requires_grad = True
+        # for param in model.parameters():
+        #     param.requires_grad = False
+        # for param in model.fully_connected.parameters():
+        #     param.requires_grad = True
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}_cv_{i}', MODELS_FOLDER
+            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER
         )
-        # eval_network(model, conf, loader_test, t.nn.BCELoss())
 
-
-if __name__ == '__main__':
+def train_net():
     conf = read_yaml(CONF_ICERI)
     all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
     catnap = read_json_file(CATNAP_FLAT)
@@ -64,5 +63,9 @@ if __name__ == '__main__':
         conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
     )
     for antibody, splits in all_splits.items():
+        print('Antibody', antibody)
         pretrain_net(antibody, splits[PRETRAINING])
         cross_validate(antibody, splits[CV])
+
+if __name__ == '__main__':
+    train_net()

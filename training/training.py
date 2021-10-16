@@ -75,6 +75,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     # pbar = tqdm(total = epochs * (len(loader_train) + len_validation),
     #             desc = 'Training',
     #             file = sys.stdout)
+    pbar = None
 
     loss_fn = t.nn.BCELoss()
     # The optimizer updates the parameters of the model during training
@@ -114,7 +115,9 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                 # Logging
                 print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
                 pbar.refresh()
-        pbar.close()
+
+        if pbar:
+            pbar.close()
 
         print('-' * 10)
         if cross_validation_round is not None:
