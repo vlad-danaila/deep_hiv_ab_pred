@@ -1,5 +1,5 @@
 import torch as t
-from util.tools import normalize, unnormalize, to_torch, to_numpy
+from deep_hiv_ab_pred.util.tools import normalize, unnormalize, to_torch, to_numpy
 from typing import Tuple, Union
 from scipy.stats import norm
 import numpy as np

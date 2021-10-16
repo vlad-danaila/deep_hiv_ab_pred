@@ -1,7 +1,7 @@
 import os
 import collections
-from util.tools import read_fasta, dump_json
-from constants import RAWI_DATA, SEQ_FOLDER
+from deep_hiv_ab_pred.util.tools import read_fasta, dump_json
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import RAWI_DATA, SEQ_FOLDER
 
 if __name__ == '__main__':
 

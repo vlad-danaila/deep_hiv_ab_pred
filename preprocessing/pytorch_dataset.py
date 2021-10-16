@@ -1,5 +1,5 @@
 import torch as t
-from util.tools import device
+from deep_hiv_ab_pred.util.tools import device
 
 class AssayDataset(t.utils.data.Dataset):
 

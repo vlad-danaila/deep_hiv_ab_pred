@@ -1,5 +1,5 @@
-from util.tools import create_folder, download_file
-from catnap.constants import *
+from deep_hiv_ab_pred.util.tools import create_folder, download_file
+from deep_hiv_ab_pred.catnap.constants import *
 
 """ The virus sequences are aligned, sometimes the characters # and * are inserted by alignment software. 
 Unfortunately, we are unsure about the exact meaning of these characters, and they could be software specific. 

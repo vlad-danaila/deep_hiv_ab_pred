@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY, LOSS
+from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY, LOSS
 
 def plot_train_test(train, test, title, y_title):
     plt.plot(range(len(train)), train, label = 'Train')

@@ -1,7 +1,7 @@
 import numpy as np
-from catnap.constants import CATNAP_FLAT
-from util.tools import read_json_file, dump_json
-from compare_to_Rawi_gbm.constants import RAWI_DATA, COMPARE_SPLITS_FOR_RAWI
+from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
+from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import RAWI_DATA, COMPARE_SPLITS_FOR_RAWI
 import random
 from sklearn.model_selection import RepeatedKFold
 
