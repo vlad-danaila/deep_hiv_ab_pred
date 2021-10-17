@@ -4,7 +4,7 @@ from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE
 from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
 
-aminoacids = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'U', 'O', 'X']
+aminoacids = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'U', 'O', 'X', '-']
 amino_to_index = { aa: i for (i, aa) in enumerate(aminoacids) }
 aminoacids_len = len(aminoacids)
 
@@ -30,7 +30,7 @@ def read_virus_fasta_sequences(fasta_file_path, kmer_len, kmer_stride):
         id_split = seq_record.id.split('.')
         virus_id = id_split[-2]
         seq = str(seq_record.seq)
-        seq = seq.replace('-', '')
+        # seq = seq.replace('-', '')
         virus_seq_dict[virus_id] = sequence_to_indexes(seq, kmer_len, kmer_stride)
     return virus_seq_dict
 
@@ -54,7 +54,8 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
     for seq_record in SeqIO.parse(fasta_file_path, "fasta"):
         id_split = seq_record.id.split('.')
         virus_id = id_split[-2]
-        seq = str(seq_record.seq).replace('-', '')
+        # seq = str(seq_record.seq).replace('-', '')
+        seq = str(seq_record.seq)
         virus_seq_dict[virus_id] = seq
 
     for virus, seq in virus_seq_dict.items():
