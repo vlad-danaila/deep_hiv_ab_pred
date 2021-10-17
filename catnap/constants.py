@@ -28,5 +28,5 @@ VIRUS_WITH_PNGS_FILE = os.path.join(CATNAP_FOLDER, 'virseqs_aa_O.fasta')
 ANTIBODIES_DETAILS_DOWNLOAD = 'https://www.hiv.lanl.gov/cgi-bin/common_code/download.cgi?/scratch/NEUTRALIZATION/abs.txt'
 ANTIBODIES_DETAILS_FILE = os.path.join(CATNAP_FOLDER, 'antibodies_details.text')
 
-CATNAP_FLAT = 'catnap/catnap_flat.json'
+CATNAP_FLAT = os.path.join('deep_hiv_ab_pred', 'catnap', 'catnap_flat.json')
 IC50_TRESHOLD = 50

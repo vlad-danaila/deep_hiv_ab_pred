@@ -17,8 +17,7 @@ KMER_STRIDE = 'KMER_STRIDE'
 TRAIN = 'train'
 TEST = 'test'
 
-def pretrain_net(antibody, splits_pretraining):
-    global catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
+def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
     pretrain_set = AssayDataset(
@@ -32,8 +31,7 @@ def pretrain_net(antibody, splits_pretraining):
         model, conf, loader_pretrain, None, None, conf['EPOCHS_PRETRAIN'], f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
-def cross_validate(antibody, splits_cv):
-    global catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
+def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
     for (i, cv_fold) in enumerate(splits_cv):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
         train_assays = [a for a in catnap if a[0] in train_ids]
@@ -56,17 +54,16 @@ def cross_validate(antibody, splits_cv):
         )
 
 def train_net():
-    global all_splits
-    for antibody, splits in all_splits.items():
-        print('Antibody', antibody)
-        pretrain_net(antibody, splits[PRETRAINING])
-        cross_validate(antibody, splits[CV])
-
-if __name__ == '__main__':
     conf = read_yaml(CONF_ICERI)
     all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
     catnap = read_json_file(CATNAP_FLAT)
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
         conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
     )
+    for antibody, splits in all_splits.items():
+        print('Antibody', antibody)
+        pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+        cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+
+if __name__ == '__main__':
     train_net()
