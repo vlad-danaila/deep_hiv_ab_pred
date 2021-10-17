@@ -1,14 +1,14 @@
-from util.tools import read_json_file, read_yaml, device
-from compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER
+from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER
 import torch as t
-from catnap.constants import CATNAP_FLAT
-from preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from preprocessing.sequences import parse_catnap_sequences
-from hyperparameters.constants import CONF_ICERI
-from model.ICERI2021 import ICERI2021Net
-from training.training import train_network, eval_network
+from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
+from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
+from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
+from deep_hiv_ab_pred.model.ICERI2021 import ICERI2021Net
+from deep_hiv_ab_pred.training.training import train_network, eval_network
 from os.path import join
-from training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 
 PRETRAINING = 'pretraining'
 CV = 'cross_validation'

@@ -1,12 +1,12 @@
 import collections
-from catnap.constants import CATNAP_FLAT, IC50_TRESHOLD
+from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT, IC50_TRESHOLD
 import pandas as pd
-from catnap.download_dataset import ASSAY_FILE
-from catnap.censored_data_preprocess import estimate_censored_mean
+from deep_hiv_ab_pred.catnap.download_dataset import ASSAY_FILE
+from deep_hiv_ab_pred.catnap.censored_data_preprocess import estimate_censored_mean
 from tqdm import tqdm
-from util.tools import dump_json, read_yaml
-from preprocessing.sequences import parse_catnap_sequences
-from hyperparameters.constants import CONF_ICERI
+from deep_hiv_ab_pred.util.tools import dump_json, read_yaml
+from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
 
 KMER_LEN = 'KMER_LEN'
 KMER_STRIDE = 'KMER_STRIDE'

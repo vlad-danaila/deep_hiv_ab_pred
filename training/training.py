@@ -1,11 +1,11 @@
 import os
 
-from training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import sklearn.metrics
 import sklearn as sk
 from tqdm import tqdm
-from util.tools import to_numpy
+from deep_hiv_ab_pred.util.tools import to_numpy
 import torch as t
 import math
 from tqdm import tqdm
