@@ -114,6 +114,8 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 
                 # Logging
                 print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
+
+            if pbar:
                 pbar.refresh()
 
         if pbar:
