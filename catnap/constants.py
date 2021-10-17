@@ -1,7 +1,7 @@
 import os
 
 # Folder to download the dataset
-CATNAP_FOLDER = os.path.join('catnap', 'catnap_data')
+CATNAP_FOLDER = os.path.join('deep_hiv_ab_pred', 'catnap', 'catnap_data')
 
 # Download file containing experiments data
 ASSAY_DOWNLOAD = 'https://www.hiv.lanl.gov/cgi-bin/common_code/download.cgi?/scratch/NEUTRALIZATION/assay.txt'
