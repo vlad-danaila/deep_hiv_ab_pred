@@ -9,6 +9,7 @@ from deep_hiv_ab_pred.model.ICERI2021 import ICERI2021Net
 from deep_hiv_ab_pred.training.training import train_network, eval_network
 from os.path import join
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+import mlflow
 
 PRETRAINING = 'pretraining'
 CV = 'cross_validation'
@@ -28,7 +29,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     )
     model = ICERI2021Net(conf).to(device)
     _, _, best = train_network(
-        model, conf, loader_pretrain, None, None, conf['EPOCHS_PRETRAIN'], f'model_{antibody}_pretrain', MODELS_FOLDER
+        model, conf, loader_pretrain, None, None, conf['EPOCHS_PRETRAIN'], f'model_{antibody}_pretrain', MODELS_FOLDER, 'pretrain'
     )
 
 def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
@@ -50,20 +51,28 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         # for param in model.fully_connected.parameters():
         #     param.requires_grad = True
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER
+            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, f'cv{i+1}'
         )
 
-def train_net():
-    conf = read_yaml(CONF_ICERI)
-    all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
-    catnap = read_json_file(CATNAP_FLAT)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
-        conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
-    )
-    for antibody, splits in all_splits.items():
-        print('Antibody', antibody)
-        pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-        cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+def train_net(experiment, tags = None):
+    with mlflow.start_run(experiment_id = experiment, tags = tags):
+        conf = read_yaml(CONF_ICERI)
+        mlflow.log_params(conf)
+        all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
+        mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
+        catnap = read_json_file(CATNAP_FLAT)
+        mlflow.log_artifact(CATNAP_FLAT)
+        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+            conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
+        )
+        for antibody, splits in all_splits.items():
+            print('Antibody', antibody)
+            pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
 
 if __name__ == '__main__':
-    train_net()
+    tags = {
+        'note1': 'virus seq aligned unlike in ICERI2021',
+        'note2': 'no parameters are freezed'
+    }
+    train_net('ICERI2021', tags)

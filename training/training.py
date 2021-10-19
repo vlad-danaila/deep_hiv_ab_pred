@@ -1,5 +1,7 @@
 import os
 
+import mlflow
+
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import sklearn.metrics
@@ -69,7 +71,7 @@ def eval_network(model, conf, loader, loss_fn, pbar = None):
         return test_metrics
 
 # Train
-def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = ''):
+def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', ml_flow_prefix = ''):
 
     len_validation = 0 if loader_val is None else len(loader_val)
     # pbar = tqdm(total = epochs * (len(loader_train) + len_validation),
@@ -94,10 +96,20 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
             model.train()
             train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True, pbar = pbar)
             metrics_train_per_epochs.append(train_metrics)
+            mlflow.log_metrics({
+                    f'{ml_flow_prefix} train mcc': train_metrics[MATTHEWS_CORRELATION_COEFFICIENT],
+                    f'{ml_flow_prefix} train acc': train_metrics[ACCURACY],
+                    f'{ml_flow_prefix} train loss': train_metrics[LOSS]
+                }, step = epoch)
 
             if loader_val:
                 test_metrics = eval_network(model, conf, loader_val, loss_fn, pbar = pbar)
                 metrics_test_per_epochs.append(test_metrics)
+                mlflow.log_metrics({
+                    f'{ml_flow_prefix} val mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT],
+                    f'{ml_flow_prefix} val acc': test_metrics[ACCURACY],
+                    f'{ml_flow_prefix} val loss': test_metrics[LOSS]
+                }, step = epoch)
 
                 # We save a model chekpoint if we find any improvement
                 if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
@@ -127,6 +139,11 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
         else:
             print(f'Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
         print('-' * 10)
+
+        mlflow.log_metrics({
+            f'{ml_flow_prefix} best mcc': best[MATTHEWS_CORRELATION_COEFFICIENT],
+            f'{ml_flow_prefix} best acc': best[ACCURACY]
+        })
 
         return metrics_train_per_epochs, metrics_test_per_epochs, best
 
