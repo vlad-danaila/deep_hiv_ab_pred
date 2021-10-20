@@ -6,6 +6,7 @@ import urllib
 from math import log10
 import time
 import yaml
+import mlflow
 
 def dump_json(obj, path):
     with open(path, mode='w') as file:
@@ -71,3 +72,9 @@ def to_torch(x, type = t.float64, device = 'cpu', grad = False):
 def read_yaml(path):
     with open(path, "r") as f:
         return yaml.safe_load(f)
+
+def get_experiment(name):
+    experiment = mlflow.get_experiment_by_name(name)
+    if experiment is None:
+        return mlflow.create_experiment(name)
+    return experiment.experiment_id

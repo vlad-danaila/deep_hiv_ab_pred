@@ -1,4 +1,6 @@
-from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device
+import numpy as np
+import statistics
+from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_experiment
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
@@ -33,6 +35,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     )
 
 def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
+    cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
         train_assays = [a for a in catnap if a[0] in train_ids]
@@ -51,12 +54,14 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         # for param in model.fully_connected.parameters():
         #     param.requires_grad = True
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, f'cv{i+1}'
+            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, f'{antibody} cv{i+1}'
         )
+        cv_metrics.append(best)
+    return cv_metrics
 
-def train_net(experiment, tags = None):
-    mlflow.create_experiment(experiment)
-    with mlflow.start_run(experiment_id = experiment, tags = tags):
+def train_net(experiment_name, tags = None):
+    experiment_id = get_experiment(experiment_name)
+    with mlflow.start_run(experiment_id = experiment_id, tags = tags):
         conf = read_yaml(CONF_ICERI)
         mlflow.log_params(conf)
         all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
@@ -66,10 +71,32 @@ def train_net(experiment, tags = None):
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
             conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
         )
+        acc, mcc = [], []
         for antibody, splits in all_splits.items():
             print('Antibody', antibody)
             pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-            cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            cv_metrics = cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            cv_metrics = np.array(cv_metrics)
+            cv_mean_acc = cv_metrics[:, ACCURACY].mean()
+            cv_std_acc = cv_metrics[:, ACCURACY].std()
+            cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
+            cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
+            print('Antibody', antibody)
+            print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
+            print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
+            mlflow.log_metrics({
+                f'cv mean acc {antibody}': cv_mean_acc,
+                f'cv std acc {antibody}': cv_std_acc,
+                f'cv mean mcc {antibody}': cv_mean_mcc,
+                f'cv std mcc {antibody}': cv_std_mcc
+            })
+            acc.append(cv_mean_acc)
+            mcc.append(cv_mean_mcc)
+        global_acc = statistics.mean(acc)
+        global_mcc = statistics.mean(mcc)
+        print('Global ACC', global_acc)
+        print('Global MCC', global_mcc)
+        mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
 
 if __name__ == '__main__':
     tags = {
