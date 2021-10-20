@@ -144,6 +144,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
             f'{ml_flow_prefix} best mcc': best[MATTHEWS_CORRELATION_COEFFICIENT],
             f'{ml_flow_prefix} best acc': best[ACCURACY]
         })
+        mlflow.log_artifact(os.path.join(model_path, f'{model_title}.tar'))
 
         return metrics_train_per_epochs, metrics_test_per_epochs, best
 
