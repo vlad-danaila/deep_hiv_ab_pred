@@ -54,7 +54,7 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         # for param in model.fully_connected.parameters():
         #     param.requires_grad = True
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, f'{antibody} cv{i+1}'
+            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, f'{antibody} cv{i+1}', False
         )
         cv_metrics.append(best)
     return cv_metrics

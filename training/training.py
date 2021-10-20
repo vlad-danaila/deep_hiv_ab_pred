@@ -71,7 +71,7 @@ def eval_network(model, conf, loader, loss_fn, pbar = None):
         return test_metrics
 
 # Train
-def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', ml_flow_prefix = ''):
+def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', ml_flow_prefix = '', save_model = True):
 
     len_validation = 0 if loader_val is None else len(loader_val)
     # pbar = tqdm(total = epochs * (len(loader_train) + len_validation),
@@ -114,7 +114,8 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                 # We save a model chekpoint if we find any improvement
                 if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
                     best = test_metrics
-                    t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title} cv {cross_validation_round + 1}.tar'))
+                    if save_model:
+                        t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title} cv {cross_validation_round + 1}.tar'))
 
                 # Logging
                 print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
@@ -122,7 +123,8 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                 # We save a model chekpoint if we find any improvement
                 if train_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
                     best = train_metrics
-                    t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
+                    if save_model:
+                        t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
 
                 # Logging
                 print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
@@ -144,8 +146,9 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
             f'{ml_flow_prefix} best mcc': best[MATTHEWS_CORRELATION_COEFFICIENT],
             f'{ml_flow_prefix} best acc': best[ACCURACY]
         })
-        checkpoint_path = f'{model_title} cv {cross_validation_round + 1}.tar' if loader_val else f'{model_title}.tar'
-        mlflow.log_artifact(os.path.join(model_path, checkpoint_path))
+        if save_model:
+            checkpoint_path = f'{model_title} cv {cross_validation_round + 1}.tar' if loader_val else f'{model_title}.tar'
+            mlflow.log_artifact(os.path.join(model_path, checkpoint_path))
 
         return metrics_train_per_epochs, metrics_test_per_epochs, best
 
