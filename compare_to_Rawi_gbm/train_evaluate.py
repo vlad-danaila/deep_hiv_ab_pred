@@ -55,6 +55,7 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         )
 
 def train_net(experiment, tags = None):
+    mlflow.create_experiment(experiment)
     with mlflow.start_run(experiment_id = experiment, tags = tags):
         conf = read_yaml(CONF_ICERI)
         mlflow.log_params(conf)
