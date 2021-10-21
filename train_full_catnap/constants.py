@@ -15,3 +15,5 @@ For windows: install clustalw2, align the catnap viruses and create a phylogenet
 
 VIRUS_TREE = join(CATNAP_FOLDER, 'virseqs_aa.ph')
 VIRUS_DISTANCE_MATRIX = join(CATNAP_FOLDER, 'virseqs_aa.dst')
+
+NB_VIRUS_CLUSTERS = 10
