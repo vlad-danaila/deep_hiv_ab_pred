@@ -73,7 +73,7 @@ def train_net(experiment_name, tags = None):
         )
         acc, mcc = [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
-            print('Antibody', antibody)
+            print(f'{i}. Antibody', antibody)
             pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
             cv_metrics = cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
             cv_metrics = np.array(cv_metrics)
