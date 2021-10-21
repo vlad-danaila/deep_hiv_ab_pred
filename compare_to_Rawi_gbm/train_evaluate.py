@@ -65,14 +65,14 @@ def train_net(experiment_name, tags = None):
         conf = read_yaml(CONF_ICERI)
         mlflow.log_params(conf)
         all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
-        mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
+        # mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
         catnap = read_json_file(CATNAP_FLAT)
-        mlflow.log_artifact(CATNAP_FLAT)
+        # mlflow.log_artifact(CATNAP_FLAT)
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
             conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
         )
         acc, mcc = [], []
-        for antibody, splits in all_splits.items():
+        for i, (antibody, splits) in enumerate(all_splits.items()):
             print('Antibody', antibody)
             pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
             cv_metrics = cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
@@ -81,7 +81,7 @@ def train_net(experiment_name, tags = None):
             cv_std_acc = cv_metrics[:, ACCURACY].std()
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
-            print('Antibody', antibody)
+            print(f'{i}. Antibody', antibody)
             print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
             print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
             mlflow.log_metrics({

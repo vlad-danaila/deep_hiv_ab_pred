@@ -148,7 +148,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
         })
         if save_model:
             checkpoint_path = f'{model_title} cv {cross_validation_round + 1}.tar' if loader_val else f'{model_title}.tar'
-            mlflow.log_artifact(os.path.join(model_path, checkpoint_path))
+            # mlflow.log_artifact(os.path.join(model_path, checkpoint_path))
 
         return metrics_train_per_epochs, metrics_test_per_epochs, best
 
