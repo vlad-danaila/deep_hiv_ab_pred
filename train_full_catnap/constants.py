@@ -17,3 +17,9 @@ VIRUS_TREE = join(CATNAP_FOLDER, 'virseqs_aa.ph')
 VIRUS_DISTANCE_MATRIX = join(CATNAP_FOLDER, 'virseqs_aa.dst')
 
 NB_VIRUS_CLUSTERS = 10
+
+TRAIN_VAL_SPLIT = 1/9
+TEST_SPLIT = .1
+
+ROOT = join('deep_hiv_ab_pred', 'train_full_catnap')
+SPLITS_HOLD_OUT_ONE_CLUSTER = join(ROOT, 'splits_hold_out_one_cluster.json')
