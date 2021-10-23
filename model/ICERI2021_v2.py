@@ -25,7 +25,7 @@ class ICERI2021Net_V2(t.nn.Module):
             bidirectional = True
         )
         self.virus_gru = t.nn.GRU(
-            input_size = conf['KMER_LEN'] * conf['EMBEDDING_SIZE'] + conf['KMER_LEN'],
+            input_size = conf['KMER_LEN_VIRUS'] * conf['EMBEDDING_SIZE'] + conf['KMER_LEN_VIRUS'],
             hidden_size = conf['VIRUS_RNN_HIDDEN_SIZE'],
             num_layers = conf['VIRUS_RNN_HIDDEN_NB_LAYERS'],
             dropout = conf['VIRUS_RNN_DROPOUT'],
