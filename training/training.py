@@ -132,10 +132,6 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
             print(f'Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
         print('-' * 10)
 
-        mlflow.log_metrics({
-            f'{ml_flow_prefix} mcc': best[MATTHEWS_CORRELATION_COEFFICIENT],
-            f'{ml_flow_prefix} acc': best[ACCURACY]
-        })
         if save_model:
             checkpoint_path = f'{model_title} cv {cross_validation_round + 1}.tar' if loader_val else f'{model_title}.tar'
 
