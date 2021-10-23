@@ -24,9 +24,10 @@ class ICERI2021Net_V2(t.nn.Module):
             batch_first = True,
             bidirectional = True
         )
+        self.VIRUS_RNN_HIDDEN_SIZE = conf['ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE'] + conf['ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE']
         self.virus_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_VIRUS'] * conf['EMBEDDING_SIZE'] + conf['KMER_LEN_VIRUS'],
-            hidden_size = conf['VIRUS_RNN_HIDDEN_SIZE'],
+            hidden_size = self.VIRUS_RNN_HIDDEN_SIZE,
             num_layers = conf['VIRUS_RNN_HIDDEN_NB_LAYERS'],
             dropout = conf['VIRUS_RNN_DROPOUT'],
             batch_first = True,
@@ -34,7 +35,7 @@ class ICERI2021Net_V2(t.nn.Module):
         )
         self.embedding_dropout = t.nn.Dropout(conf['EMBEDDING_DROPOUT'])
         self.fc_dropout = t.nn.Dropout(conf['FULLY_CONNECTED_DROPOUT'])
-        self.fully_connected = t.nn.Linear(2 *  conf['VIRUS_RNN_HIDDEN_SIZE'], 1)
+        self.fully_connected = t.nn.Linear(2 * self.VIRUS_RNN_HIDDEN_SIZE, 1)
         self.sigmoid = t.nn.Sigmoid()
 
     def ab_light_state_init(self, batch_size):
@@ -44,14 +45,14 @@ class ICERI2021Net_V2(t.nn.Module):
         return t.zeros(self.conf['ANTIBODIES_HEAVY_RNN_NB_LAYERS'] * 2, batch_size, self.conf['ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE'], device=device)
 
     def virus_state_init(self, batch_size):
-        return t.zeros(self.conf['VIRUS_RNN_HIDDEN_NB_LAYERS'] * 2, batch_size, self.conf['VIRUS_RNN_HIDDEN_SIZE'], device=device)
+        return t.zeros(self.conf['VIRUS_RNN_HIDDEN_NB_LAYERS'] * 2, batch_size, self.VIRUS_RNN_HIDDEN_SIZE, device=device)
 
     def forward(self, ab_light, ab_heavy, virus, pngs_mask):
         batch_size = len(ab_light)
 
-        ab_light = self.aminoacid_embedding(ab_light).reshape(batch_size, -1, self.conf['KMER_LEN'] * self.conf['EMBEDDING_SIZE'])
-        ab_heavy = self.aminoacid_embedding(ab_heavy).reshape(batch_size, -1, self.conf['KMER_LEN'] * self.conf['EMBEDDING_SIZE'])
-        virus = self.aminoacid_embedding(virus).reshape(batch_size, -1, self.conf['KMER_LEN'] * self.conf['EMBEDDING_SIZE'])
+        ab_light = self.aminoacid_embedding(ab_light).reshape(batch_size, -1, self.conf['KMER_LEN_ANTB'] * self.conf['EMBEDDING_SIZE'])
+        ab_heavy = self.aminoacid_embedding(ab_heavy).reshape(batch_size, -1, self.conf['KMER_LEN_ANTB'] * self.conf['EMBEDDING_SIZE'])
+        virus = self.aminoacid_embedding(virus).reshape(batch_size, -1, self.conf['KMER_LEN_VIRUS'] * self.conf['EMBEDDING_SIZE'])
 
         ab_light = self.embedding_dropout(ab_light)
         ab_heavy = self.embedding_dropout(ab_heavy)

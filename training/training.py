@@ -71,7 +71,7 @@ def eval_network(model, conf, loader, loss_fn, pbar = None):
         return test_metrics
 
 # Train
-def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', ml_flow_prefix = '', save_model = True):
+def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True):
 
     len_validation = 0 if loader_val is None else len(loader_val)
     # pbar = tqdm(total = epochs * (len(loader_train) + len_validation),

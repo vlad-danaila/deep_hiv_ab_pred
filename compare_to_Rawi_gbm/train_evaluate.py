@@ -31,7 +31,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     )
     model = ICERI2021Net(conf).to(device)
     _, _, best = train_network(
-        model, conf, loader_pretrain, None, None, conf['EPOCHS_PRETRAIN'], f'model_{antibody}_pretrain', MODELS_FOLDER, 'pretrain'
+        model, conf, loader_pretrain, None, None, conf['EPOCHS_PRETRAIN'], f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
 def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
@@ -54,7 +54,7 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         # for param in model.fully_connected.parameters():
         #     param.requires_grad = True
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, f'{antibody} cv{i+1}', False
+            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, False
         )
         cv_metrics.append(best)
     return cv_metrics
