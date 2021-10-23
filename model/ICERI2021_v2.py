@@ -9,7 +9,7 @@ class ICERI2021Net_V2(t.nn.Module):
         self.conf = conf
         self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = conf['EMBEDDING_SIZE'])
         self.light_ab_gru = t.nn.GRU(
-            input_size = conf['KMER_LEN'] * conf['EMBEDDING_SIZE'],
+            input_size = conf['KMER_LEN_ANTB'] * conf['EMBEDDING_SIZE'],
             hidden_size = conf['ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE'],
             num_layers = conf['ANTIBODIES_LIGHT_RNN_NB_LAYERS'],
             dropout = conf['ANTIBODIES_LIGHT_RNN_DROPOUT'],
@@ -17,7 +17,7 @@ class ICERI2021Net_V2(t.nn.Module):
             bidirectional = True
         )
         self.heavy_ab_gru = t.nn.GRU(
-            input_size = conf['KMER_LEN'] * conf['EMBEDDING_SIZE'],
+            input_size = conf['KMER_LEN_ANTB'] * conf['EMBEDDING_SIZE'],
             hidden_size = conf['ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE'],
             num_layers = conf['ANTIBODIES_HEAVY_RNN_NB_LAYERS'],
             dropout = conf['ANTIBODIES_HEAVY_RNN_DROPOUT'],
