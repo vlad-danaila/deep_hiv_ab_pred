@@ -54,8 +54,11 @@ def train(splits, catnap, conf):
     log_metrics(cv_metrics)
     return cv_metrics
 
-if __name__ == '__main__':
+def main():
     conf = read_yaml(CONF_ICERI_V2)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = train(splits, catnap, conf)
+
+if __name__ == '__main__':
+    main()
