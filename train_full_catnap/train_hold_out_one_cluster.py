@@ -11,18 +11,19 @@ import torch as t
 import numpy as np
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
+from os.path import join
 
-def log_metrics(metrics):
-    metrics = np.array(metrics)
-    for cv_fold in range(len(metrics)):
+def log_cv_metrics(cv_metrics):
+    cv_metrics = np.array(cv_metrics)
+    for cv_fold in range(len(cv_metrics)):
         mlflow.log_metrics({
-            f'cv{cv_fold} acc': metrics[cv_fold][ACCURACY],
-            f'cv{cv_fold} mcc': metrics[cv_fold][MATTHEWS_CORRELATION_COEFFICIENT]
+            f'cv{cv_fold} acc': cv_metrics[cv_fold][ACCURACY],
+            f'cv{cv_fold} mcc': cv_metrics[cv_fold][MATTHEWS_CORRELATION_COEFFICIENT]
         })
-    cv_mean_acc = metrics[:, ACCURACY].mean()
-    cv_std_acc = metrics[:, ACCURACY].std()
-    cv_mean_mcc = metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
-    cv_std_mcc = metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
+    cv_mean_acc = cv_metrics[:, ACCURACY].mean()
+    cv_std_acc = cv_metrics[:, ACCURACY].std()
+    cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
+    cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
     print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
     print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
     mlflow.log_metrics({
@@ -51,14 +52,45 @@ def train(splits, catnap, conf):
         )
         print(f'CV {i} Acc {best[ACCURACY]} MCC {best[MATTHEWS_CORRELATION_COEFFICIENT]}')
         cv_metrics.append(best)
-    log_metrics(cv_metrics)
+    log_cv_metrics(cv_metrics)
     return cv_metrics
 
-def main():
+def log_test_metrics(test_metrics):
+    print(f'Test Acc {test_metrics[ACCURACY]}')
+    print(f'Test MCC {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}')
+    mlflow.log_metrics({ 'test acc': test_metrics[ACCURACY], 'test mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] })
+
+def test(splits, catnap, conf):
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+        conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
+    )
+    test_ids = splits['test']
+    train_assays = [a for a in catnap if a[0] not in test_ids]
+    test_assays = [a for a in catnap if a[0] in test_ids]
+    train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
+    loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
+    model = ICERI2021Net_V2(conf).to(device)
+    model_name = 'model_test'
+    _, _, best = train_network(model, conf, loader_train, None, None, conf['EPOCHS'], model_name, MODELS_FOLDER)
+    checkpoint = t.load(join(MODELS_FOLDER, f'{model_name}.tar'))
+    model.load_state_dict(checkpoint['model'])
+    test_metrics = eval_network(model, conf, loader_test, t.nn.BCELoss())
+    log_test_metrics(test_metrics)
+    return test_metrics
+
+def main_train():
     conf = read_yaml(CONF_ICERI_V2)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = train(splits, catnap, conf)
 
+def main_test():
+    conf = read_yaml(CONF_ICERI_V2)
+    splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
+    catnap = read_json_file(CATNAP_FLAT)
+    metrics = test(splits, catnap, conf)
+
 if __name__ == '__main__':
-    main()
+    main_train()
