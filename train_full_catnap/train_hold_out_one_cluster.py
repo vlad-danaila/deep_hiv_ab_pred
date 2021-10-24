@@ -32,7 +32,7 @@ def log_cv_metrics(cv_metrics):
         f'cv std mcc': cv_std_mcc
     })
 
-def train(splits, catnap, conf):
+def train_hold_out_one_cluster(splits, catnap, conf):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
@@ -81,7 +81,7 @@ def main_train():
     conf = read_yaml(CONF_ICERI_V2)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
-    metrics = train(splits, catnap, conf)
+    metrics = train_hold_out_one_cluster(splits, catnap, conf)
 
 def main_test():
     conf = read_yaml(CONF_ICERI_V2)
@@ -91,3 +91,4 @@ def main_test():
 
 if __name__ == '__main__':
     main_train()
+    main_test()
