@@ -117,8 +117,9 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
                 metrics_test_per_epochs.append(test_metrics)
                 print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
             else:
+                metrics_train_per_epochs.append(train_metrics)
                 print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
-        last = test_metrics[-1] if loader_val else train_metrics[-1]
+        last = test_metrics if loader_val else train_metrics
         print('-' * 10)
         if cross_validation_round is not None:
             print(f'Cross validation round {cross_validation_round + 1}, Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
