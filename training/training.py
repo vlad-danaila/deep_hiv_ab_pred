@@ -103,7 +103,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     except KeyboardInterrupt as e:
         print('Training interrupted at epoch', epoch)
 
-def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True):
+def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = ''):
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
@@ -119,6 +119,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             else:
                 metrics_train_per_epochs.append(train_metrics)
                 print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
+        t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
         last = test_metrics if loader_val else train_metrics
         print('-' * 10)
         if cross_validation_round is not None:
