@@ -1,6 +1,5 @@
-from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, MODELS_FOLDER
-from deep_hiv_ab_pred.training.training import train_network, eval_network
+from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
@@ -9,7 +8,7 @@ from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_e
 from deep_hiv_ab_pred.model.ICERI2021_v2 import ICERI2021Net_V2
 import torch as t
 import numpy as np
-from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
 from os.path import join
 
@@ -47,9 +46,7 @@ def train(splits, catnap, conf):
         loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
         loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
         model = ICERI2021Net_V2(conf).to(device)
-        _, _, best = train_network(
-            model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER
-        )
+        _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER)
         print(f'CV {i} Acc {best[ACCURACY]} MCC {best[MATTHEWS_CORRELATION_COEFFICIENT]}')
         cv_metrics.append(best)
     log_cv_metrics(cv_metrics)
@@ -73,7 +70,7 @@ def test(splits, catnap, conf):
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = ICERI2021Net_V2(conf).to(device)
     model_name = 'model_test'
-    _, _, best = train_network(model, conf, loader_train, None, None, conf['EPOCHS'], model_name, MODELS_FOLDER)
+    _, _, best = train_network_n_times(model, conf, loader_train, None, None, conf['EPOCHS'], model_name, MODELS_FOLDER)
     checkpoint = t.load(join(MODELS_FOLDER, f'{model_name}.tar'))
     model.load_state_dict(checkpoint['model'])
     test_metrics = eval_network(model, conf, loader_test, t.nn.BCELoss())
