@@ -15,7 +15,7 @@ import sys
 
 # This function performs a forward pass of the network and records the metrics.
 # If training is ebabled, a backword pass and network parameter updates are also performed.
-def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False, pbar = None):
+def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     # metrics will hold the loss and accuracy
     metrics = np.zeros(3)
     # we calculate a weighted average by the number of samples in each batch,
@@ -55,19 +55,15 @@ def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False,
         correlation = sk.metrics.matthews_corrcoef(ground_truth, pred)
         metrics[MATTHEWS_CORRELATION_COEFFICIENT] += (correlation * weight)
         total_weight += weight
-
-        if pbar:
-            pbar.update(1)
-
     metrics /= total_weight
     return metrics
 
 # Evaluate
-def eval_network(model, conf, loader, loss_fn, pbar = None):
+def eval_network(model, conf, loader, loss_fn):
     model.eval()
     # During testing we do not calculate any gradients, nor perform any network parameter updates
     with t.no_grad():
-        test_metrics = run_network(model, conf, loader, loss_fn, isTrain = False, pbar = pbar)
+        test_metrics = run_network(model, conf, loader, loss_fn, isTrain = False)
         return test_metrics
 
 # Train
@@ -79,10 +75,10 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     try:
         for epoch in range(epochs):
             model.train()
-            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True, pbar = pbar)
+            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
-                test_metrics = eval_network(model, conf, loader_val, loss_fn, pbar = pbar)
+                test_metrics = eval_network(model, conf, loader_val, loss_fn)
                 metrics_test_per_epochs.append(test_metrics)
                 # We save a model chekpoint if we find any improvement
                 if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
@@ -114,10 +110,10 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
     try:
         for epoch in range(epochs):
             model.train()
-            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True, pbar = pbar)
+            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
-                test_metrics = eval_network(model, conf, loader_val, loss_fn, pbar = pbar)
+                test_metrics = eval_network(model, conf, loader_val, loss_fn)
                 metrics_test_per_epochs.append(test_metrics)
                 print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
             else:
