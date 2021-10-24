@@ -41,7 +41,7 @@ def read_antibody_fasta_sequences(fasta_file_path, antibody_trim, kmer_len, kmer
         antibody_id = id_split[0]
         seq = str(seq_record.seq)
         if len(seq) > antibody_trim:
-            print('Triming', seq_record.id)
+            # print('Triming', seq_record.id)
             # print(f'>{seq_record.id}')
             # print(seq_record.seq)
             seq = seq[:antibody_trim]
