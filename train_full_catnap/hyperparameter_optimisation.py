@@ -1,11 +1,12 @@
 import random
-
+from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 import numpy as np
 import optuna
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
-from deep_hiv_ab_pred.util.tools import read_json_file
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml
+
 # from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 
 def propose(trial: optuna.trial.Trial):
@@ -38,7 +39,9 @@ def train_hold_out_one_cluster(splits, catnap, conf):
 
 '''
 
-TODO: Must maximize instead of minimize
+TODO: 
+Prunning, vezi sa fie in ordine setul de splituri la cross validation
+Adauga suport pt sqlite si trial resume
 
 '''
 def get_objective_train_hold_out_one_cluster():
@@ -56,7 +59,9 @@ def get_objective_train_hold_out_one_cluster():
     return objective
 
 if __name__ == '__main__':
-    study = optuna.create_study()
+    study = optuna.create_study(study_name = 'ICERI2021_v2', direction = 'maximize', storage = 'sqlite:///ICERI2021_v2.db', load_if_exists = True)
+    initial_conf = read_yaml(CONF_ICERI_V2)
+    study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
     study.optimize(objective, n_trials=5)
     print(study.best_params)
