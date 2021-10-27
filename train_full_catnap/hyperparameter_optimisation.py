@@ -4,12 +4,12 @@ import numpy as np
 import optuna
 from optuna.pruners import BasePruner
 from optuna.trial._state import TrialState
-from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER
+from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, BEST_PARAMS
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
-from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml
+from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
 
-# from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
+from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
@@ -36,15 +36,12 @@ def propose(trial: optuna.trial.Trial):
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
     }
 
-def train_hold_out_one_cluster(splits, catnap, conf, trial):
-
-    for i in range(5):
-        trial.report(random.random(), i)
-
-        if trial.should_prune():
-            raise optuna.TrialPruned()
-
-    return np.array([[random.random(), random.random(), random.random()]])
+# def train_hold_out_one_cluster(splits, catnap, conf, trial):
+#     for i in range(5):
+#         trial.report(random.random(), i)
+#         if trial.should_prune():
+#             raise optuna.TrialPruned()
+#     return np.array([[random.random(), random.random(), random.random()]])
 
 def get_objective_train_hold_out_one_cluster():
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
@@ -85,19 +82,16 @@ class HoldOutOneClusterCVPruner(BasePruner):
         maximum = max(global_average)
         return trail_average < maximum - self.treshold
 
-'''
-
-TODO: 
-Ordoneaza cv folds in asa fel incat cele mai dificile sa fie primele
-
-'''
-
-if __name__ == '__main__':
-    pruner = HoldOutOneClusterCVPruner(.1)
+def optimize_hyperparameters():
+    pruner = HoldOutOneClusterCVPruner(.05)
     study = optuna.create_study(study_name = 'ICERI2021_v2', direction = 'maximize',
-                storage = 'sqlite:///ICERI2021_v2.db', load_if_exists = True, pruner = pruner)
+                            storage = 'sqlite:///ICERI2021_v2.db', load_if_exists = True, pruner = pruner)
     initial_conf = read_yaml(CONF_ICERI_V2)
     study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
     study.optimize(objective, n_trials=5)
     print(study.best_params)
+    dump_json(study.best_params, BEST_PARAMS)
+
+if __name__ == '__main__':
+    optimize_hyperparameters()

@@ -11,6 +11,7 @@ import numpy as np
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
 from os.path import join
+import optuna
 
 def log_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
@@ -32,7 +33,7 @@ def log_cv_metrics(cv_metrics):
         f'cv std mcc': cv_std_mcc
     })
 
-def train_hold_out_one_cluster(splits, catnap, conf):
+def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
@@ -49,6 +50,10 @@ def train_hold_out_one_cluster(splits, catnap, conf):
         _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER)
         print(f'CV {i} Acc {best[ACCURACY]} MCC {best[MATTHEWS_CORRELATION_COEFFICIENT]}')
         cv_metrics.append(best)
+        if trial:
+            trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)
+            if trial.should_prune():
+                raise optuna.TrialPruned()
     log_cv_metrics(cv_metrics)
     return cv_metrics
 
