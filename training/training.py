@@ -74,7 +74,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     best = [math.inf, 0, -math.inf]
     try:
         for epoch in range(epochs):
-            model.train_hold_out_one_cluster()
+            model.train()
             train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
@@ -109,7 +109,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     try:
         for epoch in range(epochs):
-            model.train_hold_out_one_cluster()
+            model.train()
             train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
