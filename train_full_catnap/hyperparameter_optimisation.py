@@ -25,10 +25,10 @@ def propose(trial: optuna.trial.Trial):
         'EPOCHS': trial.suggest_int('EPOCHS', 1, 100),
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'RNN_HIDDEN_SIZE': trial.suggest_int('ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE', 16, 1024),
-        'NB_LAYERS': trial.suggest_int('ANTIBODIES_LIGHT_RNN_NB_LAYERS', 1, 10),
+        'RNN_HIDDEN_SIZE': trial.suggest_int('RNN_HIDDEN_SIZE', 16, 1024),
+        'NB_LAYERS': trial.suggest_int('NB_LAYERS', 1, 10),
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
-        'ANTIBODIES_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_LIGHT_RNN_DROPOUT', 0, .5),
+        'ANTIBODIES_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_RNN_DROPOUT', 0, .5),
         'VIRUS_RNN_DROPOUT': trial.suggest_float('VIRUS_RNN_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
     }
