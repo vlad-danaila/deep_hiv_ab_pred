@@ -27,8 +27,7 @@ def propose(trial: optuna.trial.Trial):
         'RNN_HIDDEN_SIZE': trial.suggest_int('ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE', 16, 1024),
         'NB_LAYERS': trial.suggest_int('ANTIBODIES_LIGHT_RNN_NB_LAYERS', 1, 10),
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
-        'ANTIBODIES_LIGHT_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_LIGHT_RNN_DROPOUT', 0, .5),
-        'ANTIBODIES_HEAVY_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_HEAVY_RNN_DROPOUT', 0, .5),
+        'ANTIBODIES_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_LIGHT_RNN_DROPOUT', 0, .5),
         'VIRUS_RNN_DROPOUT': trial.suggest_float('VIRUS_RNN_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
     }
