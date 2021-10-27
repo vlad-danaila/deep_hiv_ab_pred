@@ -10,25 +10,25 @@ class ICERI2021Net_V2(t.nn.Module):
         self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = conf['EMBEDDING_SIZE'])
         self.light_ab_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_ANTB'] * conf['EMBEDDING_SIZE'],
-            hidden_size = conf['ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE'],
-            num_layers = conf['ANTIBODIES_LIGHT_RNN_NB_LAYERS'],
-            dropout = conf['ANTIBODIES_LIGHT_RNN_DROPOUT'],
+            hidden_size = conf['RNN_HIDDEN_SIZE'],
+            num_layers = conf['NB_LAYERS'],
+            dropout = conf['ANTIBODIES_RNN_DROPOUT'],
             batch_first = True,
             bidirectional = True
         )
         self.heavy_ab_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_ANTB'] * conf['EMBEDDING_SIZE'],
-            hidden_size = conf['ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE'],
-            num_layers = conf['ANTIBODIES_HEAVY_RNN_NB_LAYERS'],
-            dropout = conf['ANTIBODIES_HEAVY_RNN_DROPOUT'],
+            hidden_size = conf['RNN_HIDDEN_SIZE'],
+            num_layers = conf['NB_LAYERS'],
+            dropout = conf['ANTIBODIES_RNN_DROPOUT'],
             batch_first = True,
             bidirectional = True
         )
-        self.VIRUS_RNN_HIDDEN_SIZE = conf['ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE'] + conf['ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE']
+        self.VIRUS_RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] * 2
         self.virus_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_VIRUS'] * conf['EMBEDDING_SIZE'] + conf['KMER_LEN_VIRUS'],
             hidden_size = self.VIRUS_RNN_HIDDEN_SIZE,
-            num_layers = conf['VIRUS_RNN_HIDDEN_NB_LAYERS'],
+            num_layers = conf['NB_LAYERS'],
             dropout = conf['VIRUS_RNN_DROPOUT'],
             batch_first = True,
             bidirectional = True
@@ -39,13 +39,13 @@ class ICERI2021Net_V2(t.nn.Module):
         self.sigmoid = t.nn.Sigmoid()
 
     def ab_light_state_init(self, batch_size):
-        return t.zeros(self.conf['ANTIBODIES_LIGHT_RNN_NB_LAYERS'] * 2, batch_size, self.conf['ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE'], device=device)
+        return t.zeros(self.conf['NB_LAYERS'] * 2, batch_size, self.conf['RNN_HIDDEN_SIZE'], device=device)
 
     def ab_heavy_state_init(self, batch_size):
-        return t.zeros(self.conf['ANTIBODIES_HEAVY_RNN_NB_LAYERS'] * 2, batch_size, self.conf['ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE'], device=device)
+        return t.zeros(self.conf['NB_LAYERS'] * 2, batch_size, self.conf['RNN_HIDDEN_SIZE'], device=device)
 
     def virus_state_init(self, batch_size):
-        return t.zeros(self.conf['VIRUS_RNN_HIDDEN_NB_LAYERS'] * 2, batch_size, self.VIRUS_RNN_HIDDEN_SIZE, device=device)
+        return t.zeros(self.conf['NB_LAYERS'] * 2, batch_size, self.VIRUS_RNN_HIDDEN_SIZE, device=device)
 
     def forward(self, ab_light, ab_heavy, virus, pngs_mask):
         batch_size = len(ab_light)

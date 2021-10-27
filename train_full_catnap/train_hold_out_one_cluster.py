@@ -48,7 +48,6 @@ def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
         loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
         model = ICERI2021Net_V2(conf).to(device)
         _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER)
-        print(f'CV {i} Acc {best[ACCURACY]} MCC {best[MATTHEWS_CORRELATION_COEFFICIENT]}')
         cv_metrics.append(best)
         if trial:
             trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)

@@ -24,11 +24,8 @@ def propose(trial: optuna.trial.Trial):
         'EPOCHS': trial.suggest_int('EPOCHS', 1, 100),
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE': trial.suggest_int('ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE', 16, 1024),
-        'ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE': trial.suggest_int('ANTIBODIES_HEAVY_RNN_HIDDEN_SIZE', 16, 1024),
-        'ANTIBODIES_LIGHT_RNN_NB_LAYERS': trial.suggest_int('ANTIBODIES_LIGHT_RNN_NB_LAYERS', 1, 10),
-        'ANTIBODIES_HEAVY_RNN_NB_LAYERS': trial.suggest_int('ANTIBODIES_HEAVY_RNN_NB_LAYERS', 1, 10),
-        'VIRUS_RNN_HIDDEN_NB_LAYERS': trial.suggest_int('VIRUS_RNN_HIDDEN_NB_LAYERS', 1, 10),
+        'RNN_HIDDEN_SIZE': trial.suggest_int('ANTIBODIES_LIGHT_RNN_HIDDEN_SIZE', 16, 1024),
+        'NB_LAYERS': trial.suggest_int('ANTIBODIES_LIGHT_RNN_NB_LAYERS', 1, 10),
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         'ANTIBODIES_LIGHT_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_LIGHT_RNN_DROPOUT', 0, .5),
         'ANTIBODIES_HEAVY_RNN_DROPOUT': trial.suggest_float('ANTIBODIES_HEAVY_RNN_DROPOUT', 0, .5),
@@ -50,11 +47,12 @@ def get_objective_train_hold_out_one_cluster():
         conf = propose(trial)
         try:
             cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, trial)
+            cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
         except optuna.TrialPruned as pruneError:
             raise pruneError
         except Exception as e:
-            print(e)
+            raise e
             return 0
         return cv_mean_mcc
     return objective
