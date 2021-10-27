@@ -8,6 +8,7 @@ from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLU
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
+import torch as t
 
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 
@@ -51,8 +52,11 @@ def get_objective_train_hold_out_one_cluster():
         except optuna.TrialPruned as pruneError:
             raise pruneError
         except Exception as e:
+            if str(e).startswith('CUDA out of memory'):
+                print('CUDA out of memory')
+                t.cuda.empty_cache()
+                raise optuna.TrialPruned()
             raise e
-            return 0
         return cv_mean_mcc
     return objective
 
