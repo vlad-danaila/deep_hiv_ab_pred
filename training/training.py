@@ -106,19 +106,27 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = ''):
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    metrics_train_per_epochs, metrics_test_per_epochs = [], []
     try:
         for epoch in range(epochs):
             model.train()
-            run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
-            test_metrics = eval_network(model, conf, loader_val, loss_fn)
-            print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
+            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
+            metrics_train_per_epochs.append(train_metrics)
+            if loader_val:
+                test_metrics = eval_network(model, conf, loader_val, loss_fn)
+                metrics_test_per_epochs.append(test_metrics)
+                print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
+            else:
+                metrics_train_per_epochs.append(train_metrics)
+                print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
+        last = test_metrics if loader_val else train_metrics
         print('-' * 10)
         if cross_validation_round is not None:
-            print(f'Cross validation round {cross_validation_round + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
+            print(f'Cross validation round {cross_validation_round + 1}, Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
         else:
-            print(f'Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
+            print(f'Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
         print('-' * 10)
-        return test_metrics
+        return metrics_train_per_epochs, metrics_test_per_epochs, last
     except KeyboardInterrupt as e:
         print('Training interrupted at epoch', epoch)
