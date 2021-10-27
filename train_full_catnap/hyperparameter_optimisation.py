@@ -56,6 +56,10 @@ def get_objective_train_hold_out_one_cluster():
                 print('CUDA out of memory')
                 t.cuda.empty_cache()
                 raise optuna.TrialPruned()
+            elif str(e).contains('CUDA error'):
+                print('CUDA error')
+                t.cuda.empty_cache()
+                raise optuna.TrialPruned()
             raise e
         return cv_mean_mcc
     return objective
