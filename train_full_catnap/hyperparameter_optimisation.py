@@ -96,7 +96,7 @@ def optimize_hyperparameters():
     initial_conf = read_yaml(CONF_ICERI_V2)
     study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
-    study.optimize(objective, n_trials=5)
+    study.optimize(objective, n_trials=50)
     print(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 
