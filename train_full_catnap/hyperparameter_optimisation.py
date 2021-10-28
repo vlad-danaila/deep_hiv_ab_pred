@@ -9,7 +9,7 @@ from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
 import torch as t
-
+import logging
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 
 def propose(trial: optuna.trial.Trial):
@@ -60,7 +60,9 @@ def get_objective_train_hold_out_one_cluster():
                 print('CUDA error')
                 t.cuda.empty_cache()
                 raise optuna.TrialPruned()
-            raise e
+            logging.exception(str(e))
+            print('Configuration', conf)
+            raise optuna.TrialPruned()
         return cv_mean_mcc
     return objective
 
