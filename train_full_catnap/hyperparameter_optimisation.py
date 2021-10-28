@@ -54,11 +54,11 @@ def get_objective_train_hold_out_one_cluster():
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 print('CUDA out of memory')
-                t.cuda.empty_cache()
+                # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 print('CUDA error')
-                t.cuda.empty_cache()
+                # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e))
             print('Configuration', conf)
