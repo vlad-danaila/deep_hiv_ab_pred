@@ -30,8 +30,10 @@ def zero_padding(batch):
     ground_truth = [b[4] for b in batch]
     batched_ab_light = t.nn.utils.rnn.pad_sequence(ab_light, batch_first=True, padding_value=0)
     batched_ab_heavy = t.nn.utils.rnn.pad_sequence(ab_heavy, batch_first=True, padding_value=0)
-    batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value=0)
-    batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value=0)
+    # batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value=0)
+    batched_virus = t.stack(virus)
+    # batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value=0)
+    batched_pngs_mask = t.stack(pngs_mask)
     batched_ground_truth = t.tensor(ground_truth, dtype=t.float32, device=device)
     # print(batched_ab_light.shape, batched_ab_heavy.shape, batched_virus.shape, batched_ground_truth.shape)
     return batched_ab_light, batched_ab_heavy, batched_virus, batched_pngs_mask, batched_ground_truth

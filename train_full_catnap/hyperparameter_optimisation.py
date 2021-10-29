@@ -11,6 +11,7 @@ from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
 import torch as t
 import logging
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
+import os
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
@@ -91,10 +92,13 @@ class HoldOutOneClusterCVPruner(BasePruner):
 
 def optimize_hyperparameters():
     pruner = HoldOutOneClusterCVPruner(.05)
-    study = optuna.create_study(study_name = 'ICERI2021_v2', direction = 'maximize',
-                            storage = 'sqlite:///ICERI2021_v2.db', load_if_exists = True, pruner = pruner)
+    study_name = 'ICERI2021_v2'
+    study_exists = os.path.isfile(study_name + '.db')
+    study = optuna.create_study(study_name = study_name, direction = 'maximize',
+                            storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
     initial_conf = read_yaml(CONF_ICERI_V2)
-    study.enqueue_trial(initial_conf)
+    if not study_exists:
+        study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
     study.optimize(objective, n_trials=50)
     print(study.best_params)
