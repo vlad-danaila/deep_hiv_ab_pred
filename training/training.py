@@ -85,7 +85,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                     best = test_metrics
                     if save_model:
                         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title} cv {cross_validation_round + 1}.tar'))
-                if print_every_epoch:
+                if log_every_epoch:
                     print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
             else:
                 # We save a model chekpoint if we find any improvement
@@ -93,7 +93,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                     best = train_metrics
                     if save_model:
                         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
-                if print_every_epoch:
+                if log_every_epoch:
                     print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
         print('-' * 10)
         if cross_validation_round is not None:
