@@ -56,7 +56,7 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
             param.requires_grad = False
         model.embedding_dropout = t.nn.Dropout(p = 0)
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False
+            model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
         )
         cv_metrics.append(best)
         if trial:
