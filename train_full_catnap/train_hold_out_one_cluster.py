@@ -12,6 +12,7 @@ from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_C
 import mlflow
 from os.path import join
 import optuna
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
 
 def log_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
@@ -82,13 +83,15 @@ def test(splits, catnap, conf):
     return test_metrics
 
 def main_train():
-    conf = read_yaml(CONF_ICERI_V2)
+    # conf = read_yaml(CONF_ICERI_V2)
+    conf = read_json_file(HYPERPARAM_PRETRAIN)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = train_hold_out_one_cluster(splits, catnap, conf)
 
 def main_test():
-    conf = read_yaml(CONF_ICERI_V2)
+    # conf = read_yaml(CONF_ICERI_V2)
+    conf = read_json_file(HYPERPARAM_PRETRAIN)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = test(splits, catnap, conf)
