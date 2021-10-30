@@ -33,7 +33,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
         model, conf, loader_pretrain, None, None, conf['EPOCHS'], f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
-def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None):
+def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None, cv_folds_trim = 100):
     cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]

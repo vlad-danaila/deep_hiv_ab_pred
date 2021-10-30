@@ -32,7 +32,7 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
         'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
     }
 
-def get_objective_cross_validation(antibody):
+def get_objective_cross_validation(antibody, cv_folds_trim):
     splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)[antibody]
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(HYPERPARAM_PRETRAIN)
@@ -45,7 +45,8 @@ def get_objective_cross_validation(antibody):
     def objective(trial):
         conf = propose(trial, base_conf)
         try:
-            cv_metrics = cross_validate(antibody, splits['cross_validation'], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            cv_metrics = cross_validate(antibody, splits['cross_validation'], catnap, conf,
+                virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             return cv_mean_mcc
@@ -72,8 +73,8 @@ def optimize_hyperparameters(antibody_name):
     study_name = 'Compare_Rawi_ICERI2021_v2_' + antibody_name
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
-    objective = get_objective_cross_validation(antibody_name)
-    study.optimize(objective, n_trials=100)
+    objective = get_objective_cross_validation(antibody_name, cv_folds_trim = 10)
+    study.optimize(objective, n_trials=500)
     print(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 
