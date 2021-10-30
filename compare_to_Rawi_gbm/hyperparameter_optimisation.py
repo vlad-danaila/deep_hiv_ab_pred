@@ -22,10 +22,12 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
 
         'EMBEDDING_SIZE': base_conf['EMBEDDING_SIZE'],
+        'KMER_LEN_ANTB': base_conf['KMER_LEN_ANTB'],
         'KMER_LEN_VIRUS': base_conf['KMER_LEN_VIRUS'],
         'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
+        'KMER_STRIDE_ANTB': base_conf['KMER_STRIDE_ANTB'],
         'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
-        'NB_LAYERS': base_conf['NB_LAYERS'],
+        'NB_LAYERS': base_conf['NB_LAYERS']
     }
 
 def get_objective_cross_validation(antibody):
