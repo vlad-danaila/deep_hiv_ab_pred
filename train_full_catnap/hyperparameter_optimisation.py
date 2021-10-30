@@ -10,6 +10,7 @@ from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
 import torch as t
 import logging
+import sys
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 import os
 
@@ -91,6 +92,7 @@ class HoldOutOneClusterCVPruner(BasePruner):
         return trail_average < maximum - self.treshold
 
 def optimize_hyperparameters():
+    optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
     pruner = HoldOutOneClusterCVPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')

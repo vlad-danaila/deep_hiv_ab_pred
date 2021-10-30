@@ -10,6 +10,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RA
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import HoldOutOneClusterCVPruner
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate
+import sys
 
 def propose(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -66,6 +67,7 @@ def get_objective_cross_validation(antibody):
     return objective
 
 def optimize_hyperparameters(antibody_name):
+    optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
     pruner = HoldOutOneClusterCVPruner(.1)
     study_name = 'Compare_Rawi_ICERI2021_v2_' + antibody_name
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
