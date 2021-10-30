@@ -3,14 +3,13 @@ import optuna
 from deep_hiv_ab_pred.train_full_catnap.constants import BEST_PARAMS
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
-from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
+from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
 import logging
 import os
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, HYPERPARAM_PRETRAIN, KMER_LEN, KMER_STRIDE
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, HYPERPARAM_PRETRAIN
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import HoldOutOneClusterCVPruner
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate
-import sys
 
 def propose(trial: optuna.trial.Trial, base_conf: dict):
     return {
