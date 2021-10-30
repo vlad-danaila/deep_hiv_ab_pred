@@ -35,7 +35,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
 
 def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None, cv_folds_trim = 100):
     cv_metrics = []
-    for (i, cv_fold) in enumerate(splits_cv):
+    for (i, cv_fold) in enumerate(splits_cv[:cv_folds_trim]):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
         train_assays = [a for a in catnap if a[0] in train_ids]
         test_assays = [a for a in catnap if a[0] in test_ids]
