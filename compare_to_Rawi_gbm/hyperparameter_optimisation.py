@@ -66,14 +66,14 @@ def get_objective_cross_validation(antibody, cv_folds_trim):
         return cv_mean_mcc
     return objective
 
-def optimize_hyperparameters(antibody_name):
+def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1):
     optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
-    pruner = HoldOutOneClusterCVPruner(.1)
+    pruner = HoldOutOneClusterCVPruner(prune_trehold)
     study_name = 'Compare_Rawi_ICERI2021_v2_' + antibody_name
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
-    objective = get_objective_cross_validation(antibody_name, cv_folds_trim = 10)
-    study.optimize(objective, n_trials=500)
+    objective = get_objective_cross_validation(antibody_name, cv_folds_trim = cv_folds_trim)
+    study.optimize(objective, n_trials = n_trials)
     print(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 
