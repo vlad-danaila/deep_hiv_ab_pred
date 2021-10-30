@@ -1,7 +1,7 @@
 import numpy as np
 import statistics
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_experiment
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, KMER_LEN, KMER_STRIDE
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
@@ -12,11 +12,10 @@ from deep_hiv_ab_pred.training.training import train_network, eval_network
 from os.path import join
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
+import optuna
 
 PRETRAINING = 'pretraining'
 CV = 'cross_validation'
-KMER_LEN = 'KMER_LEN'
-KMER_STRIDE = 'KMER_STRIDE'
 TRAIN = 'train'
 TEST = 'test'
 
@@ -34,7 +33,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
         model, conf, loader_pretrain, None, None, conf['EPOCHS_PRETRAIN'], f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
-def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
+def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None):
     cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
@@ -49,6 +48,7 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
         # Try freezing part of net
+
         # for param in model.parameters():
         #     param.requires_grad = False
         # for param in model.fully_connected.parameters():
@@ -57,6 +57,10 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
             model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, False
         )
         cv_metrics.append(best)
+        if trial:
+            trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)
+            if trial.should_prune():
+                raise optuna.TrialPruned()
     return cv_metrics
 
 def train_net(experiment_name, tags = None):

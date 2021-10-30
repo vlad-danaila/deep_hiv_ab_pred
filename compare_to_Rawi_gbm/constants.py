@@ -10,4 +10,7 @@ HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
 # Need to clone https://github.com/RedaRawi/bNAb-ReP.git
 SEQ_FOLDER = r'C:\DOC\Workspace\bNAb-ReP\alignments'
 
-HYPERPARAM_PRETRAIN = join(HYPERPARAM_FOLDER, 'hyperparameters_iceri_2021_v2_29_10_2021.json')
+HYPERPARAM_PRETRAIN = join(HYPERPARAM_FOLDER, 'hyperparameters_iceri_2021_v2_30_10_2021.json')
+
+KMER_LEN = 'KMER_LEN'
+KMER_STRIDE = 'KMER_STRIDE'

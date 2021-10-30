@@ -1,19 +1,15 @@
-import random
-from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 import numpy as np
 import optuna
-from optuna.pruners import BasePruner
-from optuna.trial._state import TrialState
-from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, BEST_PARAMS
+from deep_hiv_ab_pred.train_full_catnap.constants import BEST_PARAMS
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
-import torch as t
 import logging
-from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 import os
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, HYPERPARAM_PRETRAIN
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, HYPERPARAM_PRETRAIN, KMER_LEN, KMER_STRIDE
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import HoldOutOneClusterCVPruner
+from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate
 
 def propose(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -33,15 +29,22 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
     }
 
 def get_objective_cross_validation(antibody):
-    all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
+    splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)[antibody]
     catnap = read_json_file(CATNAP_FLAT)
+    base_conf = read_json_file(HYPERPARAM_PRETRAIN)
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+        base_conf[KMER_LEN], base_conf[KMER_STRIDE], base_conf[KMER_LEN], base_conf[KMER_STRIDE]
+    )
+    if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
+        pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+
     def objective(trial):
-        base_conf = read_json_file(HYPERPARAM_PRETRAIN)
         conf = propose(trial, base_conf)
         try:
-            cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, trial)
+            cv_metrics = cross_validate(antibody, splits['cross_validation'], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
+            return cv_mean_mcc
         except optuna.TrialPruned as pruneError:
             raise pruneError
         except Exception as e:
@@ -60,7 +63,7 @@ def get_objective_cross_validation(antibody):
     return objective
 
 def optimize_hyperparameters(antibody_name):
-    pruner = HoldOutOneClusterCVPruner(.05)
+    pruner = HoldOutOneClusterCVPruner(.1)
     study_name = 'Compare_Rawi_ICERI2021_v2_' + antibody_name
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
