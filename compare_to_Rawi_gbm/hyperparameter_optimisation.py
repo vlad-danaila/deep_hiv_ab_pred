@@ -27,7 +27,8 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
         'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
         'KMER_STRIDE_ANTB': base_conf['KMER_STRIDE_ANTB'],
         'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
-        'NB_LAYERS': base_conf['NB_LAYERS']
+        'NB_LAYERS': base_conf['NB_LAYERS'],
+        'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
     }
 
 def get_objective_cross_validation(antibody):
