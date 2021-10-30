@@ -102,7 +102,7 @@ def optimize_hyperparameters():
     if not study_exists:
         study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=1000)
     print(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 

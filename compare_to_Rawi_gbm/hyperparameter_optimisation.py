@@ -73,7 +73,7 @@ def optimize_hyperparameters(antibody_name):
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
     objective = get_objective_cross_validation(antibody_name)
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=100)
     print(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 
