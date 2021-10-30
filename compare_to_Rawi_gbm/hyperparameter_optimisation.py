@@ -33,7 +33,7 @@ def get_objective_cross_validation(antibody):
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(HYPERPARAM_PRETRAIN)
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
-        base_conf[KMER_LEN], base_conf[KMER_STRIDE], base_conf[KMER_LEN], base_conf[KMER_STRIDE]
+        base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS'], base_conf['KMER_LEN_ANTB'], base_conf['KMER_STRIDE_ANTB']
     )
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
         pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
