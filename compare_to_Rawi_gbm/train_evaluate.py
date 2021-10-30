@@ -47,14 +47,16 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         model = ICERI2021Net_V2(conf).to(device)
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
-        # Try freezing part of net
-
-        # for param in model.parameters():
-        #     param.requires_grad = False
-        # for param in model.fully_connected.parameters():
-        #     param.requires_grad = True
+        # Freezing the embeddings and antibody subnetworks
+        for param in model.aminoacid_embedding.parameters():
+            param.requires_grad = False
+        for param in model.light_ab_gru.parameters():
+            param.requires_grad = False
+        for param in model.heavy_ab_gru.parameters():
+            param.requires_grad = False
+        model.embedding_dropout = t.nn.Dropout(p = 0)
         _, _, best = train_network(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS_CV'], f'model_{antibody}', MODELS_FOLDER, False
+            model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False
         )
         cv_metrics.append(best)
         if trial:
