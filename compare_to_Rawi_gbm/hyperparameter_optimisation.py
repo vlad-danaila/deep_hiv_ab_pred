@@ -1,15 +1,18 @@
 import numpy as np
 import optuna
-from deep_hiv_ab_pred.train_full_catnap.constants import BEST_PARAMS
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_FOLDER_ANTIBODIES
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
-from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
 import logging
 import os
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, HYPERPARAM_PRETRAIN
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
+    HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import HoldOutOneClusterCVPruner
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate
+from os.path import join
+import mlflow
 
 def propose(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -32,15 +35,10 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
     }
 
 def get_objective_cross_validation(antibody, cv_folds_trim):
-    splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)[antibody]
-    catnap = read_json_file(CATNAP_FLAT)
-    base_conf = read_json_file(HYPERPARAM_PRETRAIN)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
-        base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS'], base_conf['KMER_LEN_ANTB'], base_conf['KMER_STRIDE_ANTB']
-    )
+    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+    splits = all_splits[antibody]
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
         pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-
     def objective(trial):
         conf = propose(trial, base_conf)
         try:
@@ -75,7 +73,46 @@ def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000,
     objective = get_objective_cross_validation(antibody_name, cv_folds_trim = cv_folds_trim)
     study.optimize(objective, n_trials = n_trials)
     print(study.best_params)
-    dump_json(study.best_params, BEST_PARAMS)
+    dump_json(study.best_params, join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody_name}.json'))
+
+def get_data():
+    all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
+    catnap = read_json_file(CATNAP_FLAT)
+    base_conf = read_json_file(HYPERPARAM_PRETRAIN)
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+        base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS'], base_conf['KMER_LEN_ANTB'], base_conf['KMER_STRIDE_ANTB']
+    )
+    return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
+
+def test_optimized_antibody(antibody):
+    mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
+    optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS, prune_trehold = PRUNE_TREHOLD)
+    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+    mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
+    conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
+    mlflow.log_params(conf)
+    cv_metrics = cross_validate(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
+        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+    log_metrics(cv_metrics, antibody)
+
+def log_metrics(cv_metrics, antibody):
+    cv_metrics = np.array(cv_metrics)
+    cv_mean_acc = cv_metrics[:, ACCURACY].mean()
+    cv_std_acc = cv_metrics[:, ACCURACY].std()
+    cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
+    cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
+    print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
+    print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
+    mlflow.log_metrics({
+        f'cv mean acc {antibody}': cv_mean_acc,
+        f'cv std acc {antibody}': cv_std_acc,
+        f'cv mean mcc {antibody}': cv_mean_mcc,
+        f'cv std mcc {antibody}': cv_std_mcc
+    })
+
+def test_optimized_antibodies():
+    for antibody in ANTIBODIES_LIST:
+        test_optimized_antibody(antibody)
 
 if __name__ == '__main__':
-    optimize_hyperparameters('10-1074')
+    test_optimized_antibodies()
