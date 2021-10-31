@@ -90,6 +90,7 @@ def test_optimized_antibody(antibody):
     optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS, prune_trehold = PRUNE_TREHOLD)
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
     mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
+    # TODO tb sa iei si base conf in calcul
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
     mlflow.log_params(conf)
     cv_metrics = cross_validate(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
