@@ -7,6 +7,9 @@ from math import log10
 import time
 import yaml
 import mlflow
+import optuna
+from os.path import join
+from deep_hiv_ab_pred.hyperparameters.constants import HYPERPARAMETERS_FOLDER
 
 def dump_json(obj, path):
     with open(path, mode='w') as file:
@@ -78,3 +81,8 @@ def get_experiment(name):
     if experiment is None:
         return mlflow.create_experiment(name)
     return experiment.experiment_id
+
+'''ex: write_study_best_params_to_json('ICERI2021_v2', 'hyperparameters_iceri_2021_v2_30_10_2021.json')'''
+def write_study_best_params_to_json(study_name, hyperparameters_file):
+    study = optuna.create_study(study_name = study_name, direction = 'maximize', load_if_exists = True, storage = f'sqlite:///{study_name}.db')
+    dump_json(study.best_params, join(HYPERPARAMETERS_FOLDER, hyperparameters_file))
