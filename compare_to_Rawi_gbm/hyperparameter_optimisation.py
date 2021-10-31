@@ -13,6 +13,7 @@ from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate
 from os.path import join
 import mlflow
+import statistics
 
 def propose(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -93,7 +94,8 @@ def test_optimized_antibody(antibody):
     mlflow.log_params(conf)
     cv_metrics = cross_validate(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-    log_metrics(cv_metrics, antibody)
+    cv_mean_acc, cv_mean_mcc = log_metrics(cv_metrics, antibody)
+    return cv_mean_acc, cv_mean_mcc
 
 def log_metrics(cv_metrics, antibody):
     cv_metrics = np.array(cv_metrics)
@@ -109,10 +111,19 @@ def log_metrics(cv_metrics, antibody):
         f'cv mean mcc {antibody}': cv_mean_mcc,
         f'cv std mcc {antibody}': cv_std_mcc
     })
+    return cv_mean_acc, cv_mean_mcc
 
 def test_optimized_antibodies():
+    acc, mcc = [], []
     for antibody in ANTIBODIES_LIST:
-        test_optimized_antibody(antibody)
+        cv_mean_acc, cv_mean_mcc = test_optimized_antibody(antibody)
+        acc.append(cv_mean_acc)
+        mcc.append(cv_mean_mcc)
+    global_acc = statistics.mean(acc)
+    global_mcc = statistics.mean(mcc)
+    print('Global ACC', global_acc)
+    print('Global MCC', global_mcc)
+    mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
 
 if __name__ == '__main__':
     test_optimized_antibodies()
