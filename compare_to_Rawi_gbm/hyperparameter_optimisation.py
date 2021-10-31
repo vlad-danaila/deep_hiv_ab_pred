@@ -85,13 +85,24 @@ def get_data():
     )
     return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
 
+def add_properties_from_base_config(conf, base_conf):
+    conf['EMBEDDING_SIZE'] = base_conf['EMBEDDING_SIZE']
+    conf['KMER_LEN_ANTB'] = base_conf['KMER_LEN_ANTB']
+    conf['KMER_LEN_VIRUS'] = base_conf['KMER_LEN_VIRUS']
+    conf['KMER_STRIDE_VIRUS'] = base_conf['KMER_STRIDE_VIRUS']
+    conf['KMER_STRIDE_ANTB'] = base_conf['KMER_STRIDE_ANTB']
+    conf['RNN_HIDDEN_SIZE'] = base_conf['RNN_HIDDEN_SIZE']
+    conf['NB_LAYERS'] = base_conf['NB_LAYERS']
+    conf['ANTIBODIES_RNN_DROPOUT'] = base_conf['ANTIBODIES_RNN_DROPOUT']
+    return conf
+
 def test_optimized_antibody(antibody):
     mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
     optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS, prune_trehold = PRUNE_TREHOLD)
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
     mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
-    # TODO tb sa iei si base conf in calcul
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
+    conf = add_properties_from_base_config(conf, base_conf)
     mlflow.log_params(conf)
     cv_metrics = cross_validate(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
