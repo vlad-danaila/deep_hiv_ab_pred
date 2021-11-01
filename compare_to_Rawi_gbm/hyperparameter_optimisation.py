@@ -3,7 +3,7 @@ import optuna
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_FOLDER_ANTIBODIES
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY
-from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
+from deep_hiv_ab_pred.util.tools import read_json_file, dump_json, get_experiment
 import logging
 import os
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
@@ -65,10 +65,10 @@ def get_objective_cross_validation(antibody, cv_folds_trim):
         return cv_mean_mcc
     return objective
 
-def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1):
+def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = ''):
     optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
     pruner = HoldOutOneClusterCVPruner(prune_trehold)
-    study_name = 'Compare_Rawi_ICERI2021_v2_' + antibody_name
+    study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
     objective = get_objective_cross_validation(antibody_name, cv_folds_trim = cv_folds_trim)
@@ -96,9 +96,10 @@ def add_properties_from_base_config(conf, base_conf):
     conf['ANTIBODIES_RNN_DROPOUT'] = base_conf['ANTIBODIES_RNN_DROPOUT']
     return conf
 
-def test_optimized_antibody(antibody):
+def test_optimized_antibody(antibody, model_trial_name = ''):
     mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
-    optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS, prune_trehold = PRUNE_TREHOLD)
+    optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS,
+        prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name)
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
     mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
@@ -125,17 +126,20 @@ def log_metrics(cv_metrics, antibody):
     })
     return cv_mean_acc, cv_mean_mcc
 
-def test_optimized_antibodies():
-    acc, mcc = [], []
-    for antibody in ANTIBODIES_LIST:
-        cv_mean_acc, cv_mean_mcc = test_optimized_antibody(antibody)
-        acc.append(cv_mean_acc)
-        mcc.append(cv_mean_mcc)
-    global_acc = statistics.mean(acc)
-    global_mcc = statistics.mean(mcc)
-    print('Global ACC', global_acc)
-    print('Global MCC', global_mcc)
-    mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
+def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = ''):
+    experiment_name += f' {model_trial_name}'
+    experiment_id = get_experiment(experiment_name)
+    with mlflow.start_run(experiment_id = experiment_id, tags = tags):
+        acc, mcc = [], []
+        for antibody in ANTIBODIES_LIST:
+            cv_mean_acc, cv_mean_mcc = test_optimized_antibody(antibody, model_trial_name)
+            acc.append(cv_mean_acc)
+            mcc.append(cv_mean_mcc)
+        global_acc = statistics.mean(acc)
+        global_mcc = statistics.mean(mcc)
+        print('Global ACC', global_acc)
+        print('Global MCC', global_mcc)
+        mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
 
 if __name__ == '__main__':
-    test_optimized_antibodies()
+    test_optimized_antibodies('ICERI V2', model_trial_name = 'trial_409')
