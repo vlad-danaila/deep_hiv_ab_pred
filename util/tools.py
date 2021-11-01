@@ -86,3 +86,9 @@ def get_experiment(name):
 def write_study_best_params_to_json(study_name, hyperparameters_file):
     study = optuna.create_study(study_name = study_name, direction = 'maximize', load_if_exists = True, storage = f'sqlite:///{study_name}.db')
     dump_json(study.best_params, join(HYPERPARAMETERS_FOLDER, hyperparameters_file))
+
+# didn't test this yet
+def write_specific_study_params_to_json(study_name, study_number, hyperparameters_file):
+    study = optuna.create_study(study_name = study_name, direction = 'maximize', load_if_exists = True, storage = f'sqlite:///{study_name}.db')
+    trial_params = [t for t in study.get_trials() if t.number == study_number][0].params
+    dump_json(trial_params, join(HYPERPARAMETERS_FOLDER, hyperparameters_file))
