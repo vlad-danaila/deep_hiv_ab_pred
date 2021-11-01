@@ -17,7 +17,7 @@ KMER_LEN = 'KMER_LEN'
 KMER_STRIDE = 'KMER_STRIDE'
 
 CV_FOLDS_TRIM = 10
-N_TRIALS = 500
+N_TRIALS = 300
 PRUNE_TREHOLD = .05
 
 # This is 31 because 2 antibodies were removed, they didn't have sequences
