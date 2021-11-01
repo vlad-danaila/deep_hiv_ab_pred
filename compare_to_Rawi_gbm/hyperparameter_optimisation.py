@@ -140,6 +140,7 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
         print('Global ACC', global_acc)
         print('Global MCC', global_mcc)
         mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
+    dump_json({'finished': 'true'}, 'finished.json')
 
 if __name__ == '__main__':
     test_optimized_antibodies('ICERI V2', model_trial_name = 'trial_409')
