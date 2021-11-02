@@ -1,10 +1,9 @@
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, MODELS_FOLDER
 from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
-from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
-from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_experiment
+from deep_hiv_ab_pred.util.tools import read_json_file, device
 from deep_hiv_ab_pred.model.ICERI2021_v2 import ICERI2021Net_V2
 import torch as t
 import numpy as np

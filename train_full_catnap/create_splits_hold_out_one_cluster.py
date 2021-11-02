@@ -81,7 +81,7 @@ def group_assays_by_antibody_type(assays):
         assays_by_antibody_type[antibody_type].add(tuple(assay))
     return assays_by_antibody_type
 
-def train_val_test_splits(assays, virus_to_cluster):
+def train_val_test_splits(assays, virus_to_cluster, clusters, test_split = TEST_SPLIT):
     assays_by_antibody_type = group_assays_by_antibody_type(assays)
     test_set = []
     train_validation_sets = {cluster:[] for cluster in clusters}
@@ -90,7 +90,7 @@ def train_val_test_splits(assays, virus_to_cluster):
         assays_by_clusters = group_assays_by_visrus_clusters(assays_per_antibody, virus_to_cluster)
         # Gather test set
         for virus_cluster, assays_per_cluster in assays_by_clusters.items():
-            nb_test_sampled = math.ceil(TEST_SPLIT * len(assays_per_cluster))
+            nb_test_sampled = math.ceil(test_split * len(assays_per_cluster))
             test_sampled = set(random.sample(assays_per_cluster, nb_test_sampled))
             test_set.extend([s[0] for s in test_sampled])
             # assays_by_clusters[virus_cluster] = assays_per_cluster - test_sampled
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     )
     assays = read_json_file(CATNAP_FLAT)
     virus_to_cluster, cluster_to_virus, clusters = create_virus_to_cluster_mapping(virus_seq, nclusters = 5)
-    train_validation_sets, test_set = train_val_test_splits(assays, virus_to_cluster)
+    train_validation_sets, test_set = train_val_test_splits(assays, virus_to_cluster, clusters)
     splits = { 'test': test_set, 'cv': [] }
     train_and_val_assays = set(itertools.chain(*train_validation_sets.values()))
     for cluster_id, val_assays in train_validation_sets.items():

@@ -23,5 +23,6 @@ TEST_SPLIT = .1
 
 ROOT = join('deep_hiv_ab_pred', 'train_full_catnap')
 SPLITS_HOLD_OUT_ONE_CLUSTER = join(ROOT, 'splits_hold_out_one_cluster.json')
+SPLITS_UNIFORM = join(ROOT, 'splits_uniform.json')
 MODELS_FOLDER = join(ROOT, 'models')
 BEST_PARAMS = join(ROOT, 'best_parameters.json')
