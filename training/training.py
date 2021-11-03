@@ -1,17 +1,11 @@
 import os
-
-import mlflow
-
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import sklearn.metrics
 import sklearn as sk
-from tqdm import tqdm
-from deep_hiv_ab_pred.util.tools import to_numpy, to_torch, device
+from deep_hiv_ab_pred.util.tools import to_numpy
 import torch as t
 import math
-from tqdm import tqdm
-import sys
 
 # This function performs a forward pass of the network and records the metrics.
 # If training is ebabled, a backword pass and network parameter updates are also performed.
@@ -115,8 +109,6 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
         with t.no_grad():
             ab_light, ab_heavy, virus = model.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
             ab_hidden = model.forward_antibodyes(ab_light, ab_heavy, batch_size)
-        virus = to_torch(to_numpy(virus), type = t.float32, device = device, grad = True)
-        ab_hidden = to_torch(to_numpy(ab_hidden), type = t.float32, device = device, grad = True)
         pred = model.forward_virus(virus, pngs_mask, ab_hidden)
         loss = loss_fn(pred, ground_truth)
 
@@ -145,6 +137,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     for param in model.aminoacid_embedding.parameters():
         param.requires_grad = False
     model.embedding_dropout = t.nn.Dropout(p = 0)
+    model.embedding_dropout.requires_grad = False
 
     for param in model.light_ab_gru.parameters():
         param.requires_grad = False
@@ -154,20 +147,20 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
         param.requires_grad = False
     model.heavy_ab_gru.dropout = 0
 
-    model.aminoacid_embedding.eval()
-    model.light_ab_gru.eval()
-    model.heavy_ab_gru.eval()
-    model.virus_gru.train()
-    model.embedding_dropout.eval()
-    model.fc_dropout.train()
-    model.fully_connected.train()
-
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     best = [math.inf, 0, -math.inf]
     try:
         for epoch in range(epochs):
+            model.aminoacid_embedding.eval()
+            model.light_ab_gru.eval()
+            model.heavy_ab_gru.eval()
+            model.virus_gru.train()
+            model.embedding_dropout.eval()
+            model.fc_dropout.train()
+            model.fully_connected.train()
+
             train_metrics = run_net_with_frozen_antibody_and_embedding(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
 
