@@ -33,7 +33,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
         model, conf, loader_pretrain, None, None, conf['EPOCHS'], f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
-def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None, cv_folds_trim = 100):
+def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None, cv_folds_trim = 100):
     cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv[:cv_folds_trim]):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
@@ -73,7 +73,7 @@ def train_net(experiment_name, tags = None):
         for i, (antibody, splits) in enumerate(all_splits.items()):
             print(f'{i}. Antibody', antibody)
             pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-            cv_metrics = cross_validate(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            cv_metrics = cross_validate_antibody(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
             cv_metrics = np.array(cv_metrics)
             cv_mean_acc = cv_metrics[:, ACCURACY].mean()
             cv_std_acc = cv_metrics[:, ACCURACY].std()

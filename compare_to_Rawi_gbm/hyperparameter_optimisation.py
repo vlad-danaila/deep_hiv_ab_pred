@@ -10,7 +10,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RA
     HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import HoldOutOneClusterCVPruner
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate_antibody
 from os.path import join
 import mlflow
 import statistics
@@ -43,8 +43,8 @@ def get_objective_cross_validation(antibody, cv_folds_trim):
     def objective(trial):
         conf = propose(trial, base_conf)
         try:
-            cv_metrics = cross_validate(antibody, splits['cross_validation'], catnap, conf,
-                virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim)
+            cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf,
+                                                 virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             return cv_mean_mcc
@@ -105,8 +105,8 @@ def test_optimized_antibody(antibody, model_trial_name = ''):
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')
     conf = add_properties_from_base_config(conf, base_conf)
-    cv_metrics = cross_validate(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
-        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+    cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
+                                         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
     cv_mean_acc, cv_mean_mcc = log_metrics(cv_metrics, antibody)
     return cv_mean_acc, cv_mean_mcc
 
