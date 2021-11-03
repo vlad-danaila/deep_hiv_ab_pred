@@ -47,30 +47,32 @@ class ICERI2021Net_V2(t.nn.Module):
     def virus_state_init(self, batch_size):
         return t.zeros(self.conf['NB_LAYERS'] * 2, batch_size, self.VIRUS_RNN_HIDDEN_SIZE, device=device)
 
-    def forward(self, ab_light, ab_heavy, virus, pngs_mask):
-        batch_size = len(ab_light)
-
+    def forward_embeddings(self, ab_light, ab_heavy, virus, batch_size):
         ab_light = self.aminoacid_embedding(ab_light).reshape(batch_size, -1, self.conf['KMER_LEN_ANTB'] * self.conf['EMBEDDING_SIZE'])
         ab_heavy = self.aminoacid_embedding(ab_heavy).reshape(batch_size, -1, self.conf['KMER_LEN_ANTB'] * self.conf['EMBEDDING_SIZE'])
         virus = self.aminoacid_embedding(virus).reshape(batch_size, -1, self.conf['KMER_LEN_VIRUS'] * self.conf['EMBEDDING_SIZE'])
-
         ab_light = self.embedding_dropout(ab_light)
         ab_heavy = self.embedding_dropout(ab_heavy)
         virus = self.embedding_dropout(virus)
+        return ab_light, ab_heavy, virus
 
-        virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
-
+    def forward_antibodyes(self, ab_light, ab_heavy, batch_size):
         light_ab_all_output, light_ab_hidden = self.light_ab_gru(ab_light, self.ab_light_state_init(batch_size))
         light_ab_output = light_ab_all_output[:, -1]
-
         heavy_ab_all_output, heavy_ab_hidden = self.heavy_ab_gru(ab_heavy, self.ab_heavy_state_init(batch_size))
         heavy_ab_output = heavy_ab_all_output[:, -1]
-
         ab_hidden = t.cat([light_ab_hidden, heavy_ab_hidden], axis = 2)
+        return ab_hidden
 
+    def forward_virus(self, virus, pngs_mask, ab_hidden):
+        virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
         virus_ab_all_output, _ = self.virus_gru(virus_and_pngs, ab_hidden)
         virus_output = virus_ab_all_output[:, -1]
-
         virus_output = self.fc_dropout(virus_output)
-
         return self.sigmoid(self.fully_connected(virus_output).squeeze())
+
+    def forward(self, ab_light, ab_heavy, virus, pngs_mask):
+        batch_size = len(ab_light)
+        ab_light, ab_heavy, virus = self.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
+        ab_hidden = self.forward_antibodyes(ab_light, ab_heavy, batch_size)
+        return self.forward_virus(virus, pngs_mask, ab_hidden)

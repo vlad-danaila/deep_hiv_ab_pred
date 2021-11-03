@@ -8,7 +8,7 @@ from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_pa
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
 from deep_hiv_ab_pred.model.ICERI2021_v2 import ICERI2021Net_V2
-from deep_hiv_ab_pred.training.training import train_network, eval_network
+from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding
 from os.path import join
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
@@ -47,15 +47,7 @@ def cross_validate(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask
         model = ICERI2021Net_V2(conf).to(device)
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
-        # Freezing the embeddings and antibody subnetworks
-        for param in model.aminoacid_embedding.parameters():
-            param.requires_grad = False
-        for param in model.light_ab_gru.parameters():
-            param.requires_grad = False
-        for param in model.heavy_ab_gru.parameters():
-            param.requires_grad = False
-        model.embedding_dropout = t.nn.Dropout(p = 0)
-        _, _, best = train_network(
+        _, _, best = train_with_frozen_antibody_and_embedding(
             model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
         )
         cv_metrics.append(best)
