@@ -7,7 +7,7 @@ from deep_hiv_ab_pred.util.tools import read_json_file, dump_json, get_experimen
 import logging
 import os
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
-    HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST
+    HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import HoldOutOneClusterCVPruner
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate_antibody
@@ -96,7 +96,7 @@ def add_properties_from_base_config(conf, base_conf):
     conf['ANTIBODIES_RNN_DROPOUT'] = base_conf['ANTIBODIES_RNN_DROPOUT']
     return conf
 
-def test_optimized_antibody(antibody, model_trial_name = ''):
+def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
     optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS,
         prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name)
@@ -106,7 +106,7 @@ def test_optimized_antibody(antibody, model_trial_name = ''):
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')
     conf = add_properties_from_base_config(conf, base_conf)
     cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
-                                         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
     cv_mean_acc, cv_mean_mcc = log_metrics(cv_metrics, antibody)
     return cv_mean_acc, cv_mean_mcc
 
@@ -126,13 +126,13 @@ def log_metrics(cv_metrics, antibody):
     })
     return cv_mean_acc, cv_mean_mcc
 
-def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = ''):
+def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     experiment_name += f' {model_trial_name}'
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
         acc, mcc = [], []
         for antibody in ANTIBODIES_LIST:
-            cv_mean_acc, cv_mean_mcc = test_optimized_antibody(antibody, model_trial_name)
+            cv_mean_acc, cv_mean_mcc = test_optimized_antibody(antibody, model_trial_name, freeze_mode)
             acc.append(cv_mean_acc)
             mcc.append(cv_mean_mcc)
         global_acc = statistics.mean(acc)
@@ -145,4 +145,5 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
 if __name__ == '__main__':
     test_optimized_antibodies('ICERI V2',
         tags = {'note1': 'embeddings & antibodies nets are freezed, dropout set to 0, no grad computed'},
-        model_trial_name = 'trial_409')
+        model_trial_name = 'trial_409',
+        freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS)
