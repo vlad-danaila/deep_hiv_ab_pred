@@ -77,7 +77,7 @@ def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EM
         catnap = read_json_file(CATNAP_FLAT)
         # mlflow.log_artifact(CATNAP_FLAT)
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
-            conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
+            conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
         )
         acc, mcc = [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
