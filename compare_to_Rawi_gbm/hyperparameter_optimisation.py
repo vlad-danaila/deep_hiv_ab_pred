@@ -143,4 +143,6 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
     dump_json({'finished': 'true'}, 'finished.json')
 
 if __name__ == '__main__':
-    test_optimized_antibodies('ICERI V2', model_trial_name = 'trial_409')
+    test_optimized_antibodies('ICERI V2',
+        tags = {'note1': 'embeddings & antibodies nets are freezed, dropout set to 0, no grad computed'},
+        model_trial_name = 'trial_409')
