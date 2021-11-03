@@ -1,7 +1,8 @@
 import numpy as np
 import statistics
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_experiment
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, KMER_LEN, KMER_STRIDE
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, KMER_LEN, KMER_STRIDE, \
+    FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER, FREEZE_ALL, HYPERPARAM_PRETRAIN
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
@@ -33,7 +34,9 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
         model, conf, loader_pretrain, None, None, conf['EPOCHS'], f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
-def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial = None, cv_folds_trim = 100):
+def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq,
+    antibody_heavy_seq, trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
+
     cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv[:cv_folds_trim]):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
@@ -47,21 +50,28 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         model = ICERI2021Net_V2(conf).to(device)
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
-        _, _, best = train_with_frozen_antibody_and_embedding(
-            model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
-        )
-        cv_metrics.append(best)
+        if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
+            _, _, metrics = train_with_frozen_antibody_and_embedding(
+                model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
+            )
+        elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
+            raise 'Unimplemented'
+        elif freeze_mode == FREEZE_ALL:
+            metrics = eval_network(model, conf, loader_test, t.nn.BCELoss())
+        else:
+            raise 'Must provide a freeze mode.'
+        cv_metrics.append(metrics)
         if trial:
-            trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)
+            trial.report(metrics[MATTHEWS_CORRELATION_COEFFICIENT], i)
             if trial.should_prune():
                 raise optuna.TrialPruned()
     return cv_metrics
 
-def train_net(experiment_name, tags = None):
+def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
-        conf = read_yaml(CONF_ICERI)
-        mlflow.log_params(conf)
+        conf = read_json_file(HYPERPARAM_PRETRAIN)
+        mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
         all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
         # mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
         catnap = read_json_file(CATNAP_FLAT)
@@ -73,7 +83,8 @@ def train_net(experiment_name, tags = None):
         for i, (antibody, splits) in enumerate(all_splits.items()):
             print(f'{i}. Antibody', antibody)
             pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-            cv_metrics = cross_validate_antibody(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            cv_metrics = cross_validate_antibody(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask,
+                antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
             cv_metrics = np.array(cv_metrics)
             cv_mean_acc = cv_metrics[:, ACCURACY].mean()
             cv_std_acc = cv_metrics[:, ACCURACY].std()
@@ -101,4 +112,4 @@ if __name__ == '__main__':
         'note1': 'virus seq aligned unlike in ICERI2021',
         'note2': 'no parameters are freezed'
     }
-    train_net('ICERI2021', tags)
+    train_net('ICERI2021', tags, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS)
