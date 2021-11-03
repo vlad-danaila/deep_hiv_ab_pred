@@ -7,7 +7,7 @@ import numpy as np
 import sklearn.metrics
 import sklearn as sk
 from tqdm import tqdm
-from deep_hiv_ab_pred.util.tools import to_numpy
+from deep_hiv_ab_pred.util.tools import to_numpy, to_torch, device
 import torch as t
 import math
 from tqdm import tqdm
@@ -115,6 +115,8 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
         with t.no_grad():
             ab_light, ab_heavy, virus = model.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
             ab_hidden = model.forward_antibodyes(ab_light, ab_heavy, batch_size)
+        virus = to_torch(to_numpy(virus), type = t.float32, device = device, grad = True)
+        ab_hidden = to_torch(to_numpy(ab_hidden), type = t.float32, device = device, grad = True)
         pred = model.forward_virus(virus, pngs_mask, ab_hidden)
         loss = loss_fn(pred, ground_truth)
 
