@@ -14,6 +14,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cr
 from os.path import join
 import mlflow
 import statistics
+from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody
 
 def propose(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -107,23 +108,7 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     conf = add_properties_from_base_config(conf, base_conf)
     cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
-    cv_mean_acc, cv_mean_mcc = log_metrics(cv_metrics, antibody)
-    return cv_mean_acc, cv_mean_mcc
-
-def log_metrics(cv_metrics, antibody):
-    cv_metrics = np.array(cv_metrics)
-    cv_mean_acc = cv_metrics[:, ACCURACY].mean()
-    cv_std_acc = cv_metrics[:, ACCURACY].std()
-    cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
-    cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
-    print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
-    print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
-    mlflow.log_metrics({
-        f'cv mean acc {antibody}': cv_mean_acc,
-        f'cv std acc {antibody}': cv_std_acc,
-        f'cv mean mcc {antibody}': cv_mean_mcc,
-        f'cv std mcc {antibody}': cv_std_mcc
-    })
+    cv_mean_acc, cv_mean_mcc = log_metrics_per_cv_antibody(cv_metrics, antibody)
     return cv_mean_acc, cv_mean_mcc
 
 def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):

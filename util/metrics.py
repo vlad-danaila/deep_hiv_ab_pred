@@ -1,0 +1,19 @@
+import numpy as np
+from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY
+import mlflow
+
+def log_metrics_per_cv_antibody(cv_metrics, antibody):
+    cv_metrics = np.array(cv_metrics)
+    cv_mean_acc = cv_metrics[:, ACCURACY].mean()
+    cv_std_acc = cv_metrics[:, ACCURACY].std()
+    cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
+    cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
+    print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
+    print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
+    mlflow.log_metrics({
+        f'cv mean acc {antibody}': cv_mean_acc,
+        f'cv std acc {antibody}': cv_std_acc,
+        f'cv mean mcc {antibody}': cv_mean_mcc,
+        f'cv std mcc {antibody}': cv_std_mcc
+    })
+    return cv_mean_acc, cv_mean_mcc
