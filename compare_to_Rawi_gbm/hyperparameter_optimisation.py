@@ -36,7 +36,7 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
         'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
     }
 
-def get_objective_cross_validation(antibody, cv_folds_trim):
+def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode):
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
     splits = all_splits[antibody]
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
@@ -44,8 +44,8 @@ def get_objective_cross_validation(antibody, cv_folds_trim):
     def objective(trial):
         conf = propose(trial, base_conf)
         try:
-            cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf,
-                                                 virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim)
+            cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf, virus_seq,
+                virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim, freeze_mode)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             return cv_mean_mcc
@@ -66,13 +66,13 @@ def get_objective_cross_validation(antibody, cv_folds_trim):
         return cv_mean_mcc
     return objective
 
-def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = ''):
+def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
     pruner = HoldOutOneClusterCVPruner(prune_trehold)
     study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
-    objective = get_objective_cross_validation(antibody_name, cv_folds_trim = cv_folds_trim)
+    objective = get_objective_cross_validation(antibody_name, cv_folds_trim, freeze_mode)
     study.optimize(objective, n_trials = n_trials)
     print(study.best_params)
     dump_json(study.best_params, join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody_name}.json'))
@@ -100,7 +100,7 @@ def add_properties_from_base_config(conf, base_conf):
 def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
     optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS,
-        prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name)
+        prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name, freeze_mode = freeze_mode)
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
     mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))

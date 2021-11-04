@@ -85,9 +85,9 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
         with t.no_grad():
-            ab_light, ab_heavy, virus = model.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
-            ab_hidden = model.forward_antibodyes(ab_light, ab_heavy, batch_size)
-        pred = model.forward_virus(virus, pngs_mask, ab_hidden)
+            ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
+            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy, batch_size)
+        pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
         loss = loss_fn(pred, ground_truth)
         if isTrain:
             assert optimizer != None
@@ -104,18 +104,18 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
 
 def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
     # Freezing the embeddings and antibody subnetworks
-    for param in model.aminoacid_embedding.parameters():
+    for param in model.module.aminoacid_embedding.parameters():
         param.requires_grad = False
-    model.embedding_dropout = t.nn.Dropout(p = 0)
-    model.embedding_dropout.requires_grad = False
+    model.module.embedding_dropout = t.nn.Dropout(p = 0)
+    model.module.embedding_dropout.requires_grad = False
 
-    for param in model.light_ab_gru.parameters():
+    for param in model.module.light_ab_gru.parameters():
         param.requires_grad = False
-    model.light_ab_gru.dropout = 0
+    model.module.light_ab_gru.dropout = 0
 
-    for param in model.heavy_ab_gru.parameters():
+    for param in model.module.heavy_ab_gru.parameters():
         param.requires_grad = False
-    model.heavy_ab_gru.dropout = 0
+    model.module.heavy_ab_gru.dropout = 0
 
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
@@ -123,13 +123,13 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     best = [math.inf, 0, -math.inf]
     try:
         for epoch in range(epochs):
-            model.aminoacid_embedding.eval()
-            model.light_ab_gru.eval()
-            model.heavy_ab_gru.eval()
-            model.virus_gru.train()
-            model.embedding_dropout.eval()
-            model.fc_dropout.train()
-            model.fully_connected.train()
+            model.module.aminoacid_embedding.eval()
+            model.module.light_ab_gru.eval()
+            model.module.heavy_ab_gru.eval()
+            model.module.virus_gru.train()
+            model.module.embedding_dropout.eval()
+            model.module.fc_dropout.train()
+            model.module.fully_connected.train()
 
             train_metrics = run_net_with_frozen_antibody_and_embedding(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
@@ -157,14 +157,14 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
         with t.no_grad():
-            ab_light, ab_heavy, virus = model.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
-            ab_hidden = model.forward_antibodyes(ab_light, ab_heavy, batch_size)
+            ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
+            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy, batch_size)
             virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
-            model.virus_gru.flatten_parameters()
-            virus_ab_all_output, _ = model.virus_gru(virus_and_pngs, ab_hidden)
+            model.module.virus_gru.flatten_parameters()
+            virus_ab_all_output, _ = model.module.virus_gru(virus_and_pngs, ab_hidden)
             virus_output = virus_ab_all_output[:, -1]
-        virus_output = model.fc_dropout(virus_output)
-        pred = model.sigmoid(model.fully_connected(virus_output).squeeze())
+        virus_output = model.module.fc_dropout(virus_output)
+        pred = model.sigmoid(model.module.fully_connected(virus_output).squeeze())
         loss = loss_fn(pred, ground_truth)
         if isTrain:
             assert optimizer != None
@@ -182,13 +182,13 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
 def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
     for param in model.parameters():
         param.requires_grad = False
-    for param in model.fully_connected.parameters():
+    for param in model.module.fully_connected.parameters():
         param.requires_grad = True
-    model.fc_dropout.requires_grad = True
-    model.embedding_dropout = t.nn.Dropout(p = 0)
-    model.light_ab_gru.dropout = 0
-    model.heavy_ab_gru.dropout = 0
-    model.virus_gru.dropout = 0
+    model.module.fc_dropout.requires_grad = True
+    model.module.embedding_dropout = t.nn.Dropout(p = 0)
+    model.module.light_ab_gru.dropout = 0
+    model.module.heavy_ab_gru.dropout = 0
+    model.module.virus_gru.dropout = 0
 
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
@@ -197,8 +197,8 @@ def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_
     try:
         for epoch in range(epochs):
             model.eval()
-            model.fc_dropout.train()
-            model.fully_connected.train()
+            model.module.fc_dropout.train()
+            model.module.fully_connected.train()
 
             train_metrics = run_net_with_frozen_net_except_of_last_layer(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
