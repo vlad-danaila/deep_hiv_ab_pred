@@ -15,17 +15,18 @@ from os.path import join
 import mlflow
 import statistics
 from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody
+import copy
 
-def propose(trial: optuna.trial.Trial, base_conf: dict):
+def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
         'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
         'EPOCHS': trial.suggest_int('EPOCHS', 1, 100),
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         'VIRUS_RNN_DROPOUT': trial.suggest_float('VIRUS_RNN_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
 
+        'EMBEDDING_DROPOUT': base_conf['EMBEDDING_DROPOUT'],
         'EMBEDDING_SIZE': base_conf['EMBEDDING_SIZE'],
         'KMER_LEN_ANTB': base_conf['KMER_LEN_ANTB'],
         'KMER_LEN_VIRUS': base_conf['KMER_LEN_VIRUS'],
@@ -36,13 +37,26 @@ def propose(trial: optuna.trial.Trial, base_conf: dict):
         'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
     }
 
+def propose_conf_for_frozen_net_without_last_layer(trial: optuna.trial.Trial, base_conf: dict):
+    conf = copy.deepcopy(base_conf)
+    conf['GRAD_NORM_CLIP'] = 1000
+    conf['BATCH_SIZE'] = trial.suggest_int('BATCH_SIZE', 50, 5000)
+    conf['EPOCHS'] = trial.suggest_int('EPOCHS', 1, 100)
+    conf['LEARNING_RATE'] = trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1)
+    conf['FULLY_CONNECTED_DROPOUT'] = trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
+
 def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode):
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
     splits = all_splits[antibody]
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
         pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
     def objective(trial):
-        conf = propose(trial, base_conf)
+        if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
+            conf = propose_conf_for_frozen_antb_and_embeddings(trial, base_conf)
+        elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
+            conf = propose_conf_for_frozen_net_without_last_layer(trial, base_conf)
+        else:
+            raise 'Must provide a proper freeze mode.'
         try:
             cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf, virus_seq,
                 virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim, freeze_mode)
