@@ -76,3 +76,8 @@ class ICERI2021Net_V2(t.nn.Module):
         ab_light, ab_heavy, virus = self.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
         ab_hidden = self.forward_antibodyes(ab_light, ab_heavy, batch_size)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
+
+def get_ICERI_v2_model(conf):
+    model = ICERI2021Net_V2(conf).to(device)
+    model = t.nn.DataParallel(model)
+    return model
