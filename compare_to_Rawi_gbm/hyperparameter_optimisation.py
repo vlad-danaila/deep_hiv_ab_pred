@@ -44,6 +44,7 @@ def propose_conf_for_frozen_net_without_last_layer(trial: optuna.trial.Trial, ba
     conf['EPOCHS'] = trial.suggest_int('EPOCHS', 1, 100)
     conf['LEARNING_RATE'] = trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1)
     conf['FULLY_CONNECTED_DROPOUT'] = trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
+    return conf
 
 def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode):
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
