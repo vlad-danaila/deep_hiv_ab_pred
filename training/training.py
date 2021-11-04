@@ -1,9 +1,6 @@
 import os
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
-import sklearn.metrics
-import sklearn as sk
-from deep_hiv_ab_pred.util.tools import to_numpy
 import torch as t
 import math
 from deep_hiv_ab_pred.util.metrics import compute_metrics
@@ -23,14 +20,12 @@ def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False)
             t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
             optimizer.step()
             optimizer.zero_grad()
-        metrics = compute_metrics(ground_truth, pred, loss)
         # The last batch have fewer elements then the rest.
         # For this reason we weight each metric by the population size of the batch using the variable named 'weight'
         weight = len(ground_truth) / conf['BATCH_SIZE']
-        metrics = metrics * weight
         total_weight += weight
-    metrics /= total_weight
-    return metrics
+        metrics += compute_metrics(ground_truth, pred, loss) * weight
+    return metrics / total_weight
 
 # Evaluate
 def eval_network(model, conf, loader, loss_fn):
@@ -95,12 +90,10 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
             t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
             optimizer.step()
             optimizer.zero_grad()
-        metrics = compute_metrics(ground_truth, pred, loss)
         weight = len(ground_truth) / conf['BATCH_SIZE']
-        metrics = metrics * weight
         total_weight += weight
-    metrics /= total_weight
-    return metrics
+        metrics += compute_metrics(ground_truth, pred, loss) * weight
+    return metrics / total_weight
 
 def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
     # Freezing the embeddings and antibody subnetworks
@@ -164,7 +157,7 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
             virus_ab_all_output, _ = model.module.virus_gru(virus_and_pngs, ab_hidden)
             virus_output = virus_ab_all_output[:, -1]
         virus_output = model.module.fc_dropout(virus_output)
-        pred = model.sigmoid(model.module.fully_connected(virus_output).squeeze())
+        pred = model.module.sigmoid(model.module.fully_connected(virus_output).squeeze())
         loss = loss_fn(pred, ground_truth)
         if isTrain:
             assert optimizer != None
@@ -172,12 +165,10 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
             t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
             optimizer.step()
             optimizer.zero_grad()
-        metrics = compute_metrics(ground_truth, pred, loss)
         weight = len(ground_truth) / conf['BATCH_SIZE']
-        metrics = metrics * weight
         total_weight += weight
-    metrics /= total_weight
-    return metrics
+        metrics += compute_metrics(ground_truth, pred, loss) * weight
+    return metrics / total_weight
 
 def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
     for param in model.parameters():
