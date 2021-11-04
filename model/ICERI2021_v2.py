@@ -57,15 +57,16 @@ class ICERI2021Net_V2(t.nn.Module):
         return ab_light, ab_heavy, virus
 
     def forward_antibodyes(self, ab_light, ab_heavy, batch_size):
+        self.light_ab_gru.flatten_parameters()
         light_ab_all_output, light_ab_hidden = self.light_ab_gru(ab_light, self.ab_light_state_init(batch_size))
-        light_ab_output = light_ab_all_output[:, -1]
+        self.heavy_ab_gru.flatten_parameters()
         heavy_ab_all_output, heavy_ab_hidden = self.heavy_ab_gru(ab_heavy, self.ab_heavy_state_init(batch_size))
-        heavy_ab_output = heavy_ab_all_output[:, -1]
         ab_hidden = t.cat([light_ab_hidden, heavy_ab_hidden], axis = 2)
         return ab_hidden
 
     def forward_virus(self, virus, pngs_mask, ab_hidden):
         virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
+        self.virus_gru.flatten_parameters()
         virus_ab_all_output, _ = self.virus_gru(virus_and_pngs, ab_hidden)
         virus_output = virus_ab_all_output[:, -1]
         virus_output = self.fc_dropout(virus_output)

@@ -9,7 +9,7 @@ from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_pa
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
-from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding
+from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
 from os.path import join
 from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
@@ -55,7 +55,9 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
                 model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
             )
         elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
-            raise 'Unimplemented'
+            _, _, metrics = train_with_fozen_net_except_of_last_layer(
+                model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
+            )
         elif freeze_mode == FREEZE_ALL:
             metrics = eval_network(model, conf, loader_test, t.nn.BCELoss())
         else:

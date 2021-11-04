@@ -192,6 +192,7 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
             ab_light, ab_heavy, virus = model.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
             ab_hidden = model.forward_antibodyes(ab_light, ab_heavy, batch_size)
             virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
+            model.virus_gru.flatten_parameters()
             virus_ab_all_output, _ = model.virus_gru(virus_and_pngs, ab_hidden)
             virus_output = virus_ab_all_output[:, -1]
         virus_output = model.fc_dropout(virus_output)
