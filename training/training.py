@@ -75,7 +75,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
         print('Training interrupted at epoch', epoch)
 
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    metrics = np.zeros(3)
+    metrics = np.zeros(4)
     total_weight = 0
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
@@ -145,7 +145,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
         print('Training interrupted at epoch', epoch)
 
 def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    metrics = np.zeros(3)
+    metrics = np.zeros(4)
     total_weight = 0
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
