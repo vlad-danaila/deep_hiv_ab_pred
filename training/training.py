@@ -6,48 +6,28 @@ import sklearn as sk
 from deep_hiv_ab_pred.util.tools import to_numpy
 import torch as t
 import math
+from deep_hiv_ab_pred.util.metrics import compute_metrics
 
-# This function performs a forward pass of the network and records the metrics.
-# If training is ebabled, a backword pass and network parameter updates are also performed.
 def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    # metrics will hold the loss and accuracy
-    metrics = np.zeros(3)
+    metrics = np.zeros(4)
     # we calculate a weighted average by the number of samples in each batch,
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
-
-    desc = 'training' if isTrain else 'evaluating'
-    # Iterate through the dataset using the data loader
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
-        # Network forward pass
         pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
-        # Calculate loss value
         loss = loss_fn(pred, ground_truth)
-
-        # Backword pass
         if isTrain:
             assert optimizer != None
-            # Gradient backwords propagation
             loss.backward()
-            # Gradient clipping protects against explosive gradients
             t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
-            # Network parameter updates
             optimizer.step()
-            # Refresh optimizer state
             optimizer.zero_grad()
-
-        pred = to_numpy(pred) > .5
-        ground_truth = to_numpy(ground_truth)
-
+        metrics = compute_metrics(ground_truth, pred, loss)
         # The last batch have fewer elements then the rest.
         # For this reason we weight each metric by the population size of the batch using the variable named 'weight'
         weight = len(ground_truth) / conf['BATCH_SIZE']
-        metrics[LOSS] += (loss.item() * weight)
-        accuracy = sk.metrics.accuracy_score(ground_truth, pred)
-        metrics[ACCURACY] += (accuracy * weight)
-        correlation = sk.metrics.matthews_corrcoef(ground_truth, pred)
-        metrics[MATTHEWS_CORRELATION_COEFFICIENT] += (correlation * weight)
+        metrics = metrics * weight
         total_weight += weight
     metrics /= total_weight
     return metrics
@@ -102,8 +82,6 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-
-    desc = 'training' if isTrain else 'evaluating'
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
         with t.no_grad():
@@ -111,23 +89,15 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
             ab_hidden = model.forward_antibodyes(ab_light, ab_heavy, batch_size)
         pred = model.forward_virus(virus, pngs_mask, ab_hidden)
         loss = loss_fn(pred, ground_truth)
-
         if isTrain:
             assert optimizer != None
             loss.backward()
             t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
             optimizer.step()
             optimizer.zero_grad()
-
-        pred = to_numpy(pred) > .5
-        ground_truth = to_numpy(ground_truth)
-
+        metrics = compute_metrics(ground_truth, pred, loss)
         weight = len(ground_truth) / conf['BATCH_SIZE']
-        metrics[LOSS] += (loss.item() * weight)
-        accuracy = sk.metrics.accuracy_score(ground_truth, pred)
-        metrics[ACCURACY] += (accuracy * weight)
-        correlation = sk.metrics.matthews_corrcoef(ground_truth, pred)
-        metrics[MATTHEWS_CORRELATION_COEFFICIENT] += (correlation * weight)
+        metrics = metrics * weight
         total_weight += weight
     metrics /= total_weight
     return metrics
@@ -184,8 +154,6 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
 def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-
-    desc = 'training' if isTrain else 'evaluating'
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
         with t.no_grad():
@@ -198,23 +166,15 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
         virus_output = model.fc_dropout(virus_output)
         pred = model.sigmoid(model.fully_connected(virus_output).squeeze())
         loss = loss_fn(pred, ground_truth)
-
         if isTrain:
             assert optimizer != None
             loss.backward()
             t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
             optimizer.step()
             optimizer.zero_grad()
-
-        pred = to_numpy(pred) > .5
-        ground_truth = to_numpy(ground_truth)
-
+        metrics = compute_metrics(ground_truth, pred, loss)
         weight = len(ground_truth) / conf['BATCH_SIZE']
-        metrics[LOSS] += (loss.item() * weight)
-        accuracy = sk.metrics.accuracy_score(ground_truth, pred)
-        metrics[ACCURACY] += (accuracy * weight)
-        correlation = sk.metrics.matthews_corrcoef(ground_truth, pred)
-        metrics[MATTHEWS_CORRELATION_COEFFICIENT] += (correlation * weight)
+        metrics = metrics * weight
         total_weight += weight
     metrics /= total_weight
     return metrics
