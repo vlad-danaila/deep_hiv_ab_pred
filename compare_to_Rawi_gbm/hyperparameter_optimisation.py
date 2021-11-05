@@ -83,7 +83,6 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode):
     return objective
 
 def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
-    optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
     pruner = BestPruner(prune_trehold)
     study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
     study = optuna.create_study(study_name = study_name, direction = 'maximize',

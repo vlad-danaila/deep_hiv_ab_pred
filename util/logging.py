@@ -1,7 +1,10 @@
 import logging
 import sys
+import optuna
 
 def setup_logging():
+    optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
+
     rootLogger = logging.getLogger()
     rootLogger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')

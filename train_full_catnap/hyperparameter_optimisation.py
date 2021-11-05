@@ -92,7 +92,6 @@ class BestPruner(BasePruner):
         return trail_average < maximum - self.treshold
 
 def optimize_hyperparameters():
-    optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
     pruner = BestPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
