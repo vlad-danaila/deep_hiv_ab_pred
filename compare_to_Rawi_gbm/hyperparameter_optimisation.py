@@ -102,14 +102,9 @@ def get_data():
     return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
 
 def add_properties_from_base_config(conf, base_conf):
-    conf['EMBEDDING_SIZE'] = base_conf['EMBEDDING_SIZE']
-    conf['KMER_LEN_ANTB'] = base_conf['KMER_LEN_ANTB']
-    conf['KMER_LEN_VIRUS'] = base_conf['KMER_LEN_VIRUS']
-    conf['KMER_STRIDE_VIRUS'] = base_conf['KMER_STRIDE_VIRUS']
-    conf['KMER_STRIDE_ANTB'] = base_conf['KMER_STRIDE_ANTB']
-    conf['RNN_HIDDEN_SIZE'] = base_conf['RNN_HIDDEN_SIZE']
-    conf['NB_LAYERS'] = base_conf['NB_LAYERS']
-    conf['ANTIBODIES_RNN_DROPOUT'] = base_conf['ANTIBODIES_RNN_DROPOUT']
+    for prop in base_conf:
+        if prop not in conf:
+            conf[prop] = base_conf[prop]
     return conf
 
 def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
