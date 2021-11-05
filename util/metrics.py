@@ -22,13 +22,11 @@ def log_metrics_per_cv_antibody(cv_metrics, antibody):
     })
     return cv_mean_acc, cv_mean_mcc
 
-def compute_metrics(ground_truth, pred, loss):
+def compute_metrics(ground_truth, pred, include_AUC = False):
     metrics = np.zeros(4)
-    pred = to_numpy(pred)
-    ground_truth = to_numpy(ground_truth)
-    metrics[AUC] += sk.metrics.roc_auc_score(ground_truth, pred)
+    if include_AUC:
+        metrics[AUC] = sk.metrics.roc_auc_score(ground_truth, pred)
     pred_bin = pred > .5
-    metrics[LOSS] += loss.item()
-    metrics[ACCURACY] += sk.metrics.accuracy_score(ground_truth, pred_bin)
-    metrics[MATTHEWS_CORRELATION_COEFFICIENT] += sk.metrics.matthews_corrcoef(ground_truth, pred_bin)
+    metrics[ACCURACY] = sk.metrics.accuracy_score(ground_truth, pred_bin)
+    metrics[MATTHEWS_CORRELATION_COEFFICIENT] = sk.metrics.matthews_corrcoef(ground_truth, pred_bin)
     return metrics

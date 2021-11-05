@@ -1,13 +1,14 @@
 import os
-from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import torch as t
 import math
 from deep_hiv_ab_pred.util.metrics import compute_metrics
 import optuna
+from deep_hiv_ab_pred.util.tools import to_numpy
 
-def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    metrics = np.zeros(4)
+def run_network_for_training(model, conf, loader, loss_fn, optimizer):
+    metrics = np.zeros(3)
     # we calculate a weighted average by the number of samples in each batch,
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
@@ -15,26 +16,28 @@ def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False)
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
         loss = loss_fn(pred, ground_truth)
-        if isTrain:
-            assert optimizer != None
-            loss.backward()
-            t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
-            optimizer.step()
-            optimizer.zero_grad()
+        loss.backward()
+        t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
+        optimizer.step()
+        optimizer.zero_grad()
         # The last batch have fewer elements then the rest.
         # For this reason we weight each metric by the population size of the batch using the variable named 'weight'
         weight = len(ground_truth) / conf['BATCH_SIZE']
         total_weight += weight
-        metrics += compute_metrics(ground_truth, pred, loss) * weight
+        metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
     return metrics / total_weight
 
-# Evaluate
-def eval_network(model, conf, loader, loss_fn):
+def eval_network(model, loader):
     model.eval()
-    # During testing we do not calculate any gradients, nor perform any network parameter updates
+    prediction_list, ground_truth_list = [], []
     with t.no_grad():
-        test_metrics = run_network(model, conf, loader, loss_fn, isTrain = False)
-        return test_metrics
+        for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
+            pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
+            prediction_list.append(to_numpy(pred))
+            ground_truth_list.append(to_numpy(ground_truth))
+    all_predictions = np.concatenate(prediction_list)
+    all_ground_truths = np.concatenate(ground_truth_list)
+    return compute_metrics(all_ground_truths, all_predictions, include_AUC = True)
 
 # Train
 def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
@@ -45,7 +48,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     try:
         for epoch in range(epochs):
             model.train()
-            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
+            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, conf, loader_val, loss_fn)
@@ -76,7 +79,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
         print('Training interrupted at epoch', epoch)
 
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    metrics = np.zeros(4)
+    metrics = np.zeros(3)
     total_weight = 0
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
@@ -93,7 +96,7 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
             optimizer.zero_grad()
         weight = len(ground_truth) / conf['BATCH_SIZE']
         total_weight += weight
-        metrics += compute_metrics(ground_truth, pred, loss) * weight
+        metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
     return metrics / total_weight
 
 def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
@@ -146,7 +149,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
         print('Training interrupted at epoch', epoch)
 
 def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    metrics = np.zeros(4)
+    metrics = np.zeros(3)
     total_weight = 0
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
@@ -168,7 +171,7 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
             optimizer.zero_grad()
         weight = len(ground_truth) / conf['BATCH_SIZE']
         total_weight += weight
-        metrics += compute_metrics(ground_truth, pred, loss) * weight
+        metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
     return metrics / total_weight
 
 def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
@@ -221,7 +224,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
     try:
         for epoch in range(epochs):
             model.train()
-            train_metrics = run_network(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
+            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, conf, loader_val, loss_fn)
