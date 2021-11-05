@@ -25,8 +25,8 @@ def log_cv_metrics(cv_metrics):
     cv_std_acc = cv_metrics[:, ACCURACY].std()
     cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
     cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
-    logging.info('CV Mean Acc ' + cv_mean_acc + ' CV Std Acc ' + cv_std_acc)
-    logging.info('CV Mean MCC ' + cv_mean_mcc + ' CV Std MCC ' + cv_std_mcc)
+    logging.info(f'CV Mean Acc {cv_mean_acc} CV Std Acc {cv_std_acc}')
+    logging.info(f'CV Mean MCC {cv_mean_mcc} CV Std MCC {cv_std_mcc}')
     mlflow.log_metrics({
         f'cv mean acc': cv_mean_acc,
         f'cv std acc': cv_std_acc,
