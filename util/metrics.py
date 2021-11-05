@@ -24,7 +24,7 @@ def log_metrics_per_cv_antibody(cv_metrics, antibody):
         f'cv mean auc {antibody}': cv_mean_auc,
         f'cv std auc {antibody}': cv_std_auc
     })
-    return cv_mean_acc, cv_mean_mcc
+    return cv_mean_acc, cv_mean_mcc, cv_mean_auc
 
 def compute_metrics(ground_truth, pred, include_AUC = False):
     metrics = np.zeros(4 if include_AUC else 3)

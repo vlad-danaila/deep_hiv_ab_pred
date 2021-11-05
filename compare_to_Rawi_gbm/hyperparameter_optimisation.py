@@ -119,24 +119,27 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     conf = add_properties_from_base_config(conf, base_conf)
     cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
         virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
-    cv_mean_acc, cv_mean_mcc = log_metrics_per_cv_antibody(cv_metrics, antibody)
-    return cv_mean_acc, cv_mean_mcc
+    cv_mean_acc, cv_mean_mcc, cv_mean_auc = log_metrics_per_cv_antibody(cv_metrics, antibody)
+    return cv_mean_acc, cv_mean_mcc, cv_mean_auc
 
 def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     setup_logging()
     experiment_name += f' {model_trial_name}'
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
-        acc, mcc = [], []
+        acc, mcc, auc = [], [], []
         for antibody in ANTIBODIES_LIST:
-            cv_mean_acc, cv_mean_mcc = test_optimized_antibody(antibody, model_trial_name, freeze_mode)
+            cv_mean_acc, cv_mean_mcc, cv_mean_auc = test_optimized_antibody(antibody, model_trial_name, freeze_mode)
             acc.append(cv_mean_acc)
             mcc.append(cv_mean_mcc)
+            auc.append(cv_mean_auc)
         global_acc = statistics.mean(acc)
         global_mcc = statistics.mean(mcc)
+        global_auc = statistics.mean(auc)
         print('Global ACC', global_acc)
         print('Global MCC', global_mcc)
-        mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
+        print('Global AUC', global_auc)
+        mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc, 'global_auc': global_auc })
     dump_json({'finished': 'true'}, 'finished.json')
 
 if __name__ == '__main__':
