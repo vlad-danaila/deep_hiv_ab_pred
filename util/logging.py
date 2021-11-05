@@ -1,6 +1,15 @@
 import logging
+import sys
 
 def setup_logging():
     rootLogger = logging.getLogger()
-    rootLogger.addHandler(logging.FileHandler('logs.log'))
-    logging.basicConfig()
+    rootLogger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+
+    console = logging.StreamHandler(sys.stdout)
+    console.setFormatter(formatter)
+    rootLogger.addHandler(console)
+
+    file = logging.FileHandler('main.log')
+    file.setFormatter(formatter)
+    rootLogger.addHandler(file)
