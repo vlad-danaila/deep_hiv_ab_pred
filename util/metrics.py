@@ -22,7 +22,7 @@ def log_metrics_per_cv_antibody(cv_metrics, antibody):
     return cv_mean_acc, cv_mean_mcc
 
 def compute_metrics(ground_truth, pred, include_AUC = False):
-    metrics = np.zeros(4)
+    metrics = np.zeros(4 if include_AUC else 3)
     if include_AUC:
         metrics[AUC] = sk.metrics.roc_auc_score(ground_truth, pred)
     pred_bin = pred > .5
