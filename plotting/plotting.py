@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY, LOSS
+from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY
 
 def plot_train_test(train, test, title, y_title):
     plt.plot(range(len(train)), train, label = 'Train')
@@ -16,12 +16,9 @@ def plot_train_test(train, test, title, y_title):
 def plot_epochs(train_metrics_list, test_metrics_list):
     test_correlation = list(map(lambda m: m[MATTHEWS_CORRELATION_COEFFICIENT], test_metrics_list))
     test_accuracy = list(map(lambda m: m[ACCURACY], test_metrics_list))
-    test_loss = list(map(lambda m: m[LOSS], test_metrics_list))
 
     train_corellation = list(map(lambda m: m[MATTHEWS_CORRELATION_COEFFICIENT], train_metrics_list))
     train_accuracy = list(map(lambda m: m[ACCURACY], train_metrics_list))
-    train_loss = list(map(lambda m: m[LOSS], train_metrics_list))
 
     plot_train_test(train_corellation, test_correlation, 'Correlation', 'Correlation')
     plot_train_test(train_accuracy, test_accuracy, 'Accuracy', 'Accuracy')
-    plot_train_test(train_loss, test_loss, 'Loss', 'Loss')

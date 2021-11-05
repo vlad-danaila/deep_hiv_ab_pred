@@ -9,7 +9,7 @@ from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
 from os.path import join
-from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
 import optuna
 from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody

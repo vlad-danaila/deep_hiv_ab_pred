@@ -3,8 +3,7 @@ from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
 import sklearn.metrics
 import sklearn as sk
-from deep_hiv_ab_pred.util.tools import to_numpy
-from deep_hiv_ab_pred.training.constants import LOSS, ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 
 def log_metrics_per_cv_antibody(cv_metrics, antibody):
     cv_metrics = np.array(cv_metrics)
