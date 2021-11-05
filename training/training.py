@@ -51,7 +51,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
             train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
-                test_metrics = eval_network(model, conf, loader_val, loss_fn)
+                test_metrics = eval_network(model, loader_val)
                 metrics_test_per_epochs.append(test_metrics)
                 # We save a model chekpoint if we find any improvement
                 if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
@@ -131,7 +131,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
             train_metrics = run_net_with_frozen_antibody_and_embedding(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
 
-            test_metrics = eval_network(model, conf, loader_val, loss_fn)
+            test_metrics = eval_network(model, loader_val)
             metrics_test_per_epochs.append(test_metrics)
             # We save a model chekpoint if we find any improvement
             if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
@@ -198,7 +198,7 @@ def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_
             train_metrics = run_net_with_frozen_net_except_of_last_layer(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
 
-            test_metrics = eval_network(model, conf, loader_val, loss_fn)
+            test_metrics = eval_network(model, loader_val)
             metrics_test_per_epochs.append(test_metrics)
             # We save a model chekpoint if we find any improvement
             if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
@@ -227,7 +227,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
-                test_metrics = eval_network(model, conf, loader_val, loss_fn)
+                test_metrics = eval_network(model, loader_val)
                 metrics_test_per_epochs.append(test_metrics)
                 print(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
             else:

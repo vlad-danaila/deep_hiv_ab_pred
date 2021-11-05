@@ -77,7 +77,7 @@ def test(splits, catnap, conf):
     _, _, best = train_network_n_times(model, conf, loader_train, None, None, conf['EPOCHS'], model_name, MODELS_FOLDER)
     checkpoint = t.load(join(MODELS_FOLDER, f'{model_name}.tar'))
     model.load_state_dict(checkpoint['model'])
-    test_metrics = eval_network(model, conf, loader_test, t.nn.BCELoss())
+    test_metrics = eval_network(model, loader_test)
     log_test_metrics(test_metrics)
     return test_metrics
 

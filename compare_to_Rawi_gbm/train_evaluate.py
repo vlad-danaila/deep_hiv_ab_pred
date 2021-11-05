@@ -58,7 +58,7 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
                 model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
             )
         elif freeze_mode == FREEZE_ALL:
-            metrics = eval_network(model, conf, loader_test, t.nn.BCELoss())
+            metrics = eval_network(model, loader_test)
         else:
             raise 'Must provide a freeze mode.'
         cv_metrics.append(metrics)
