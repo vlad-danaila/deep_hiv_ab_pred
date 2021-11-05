@@ -3,7 +3,7 @@ from deep_hiv_ab_pred.training.training import train_network_n_times, eval_netwo
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
-from deep_hiv_ab_pred.util.tools import read_json_file, device
+from deep_hiv_ab_pred.util.tools import read_json_file
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 import torch as t
 import numpy as np

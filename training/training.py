@@ -4,6 +4,7 @@ import numpy as np
 import torch as t
 import math
 from deep_hiv_ab_pred.util.metrics import compute_metrics
+import optuna
 
 def run_network(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(4)
@@ -211,10 +212,12 @@ def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_
     except KeyboardInterrupt as e:
         print('Training interrupted at epoch', epoch)
 
-def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = ''):
+def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', trial = None):
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
+    milestones = np.floor(epochs * np.array([.25, .5, .75]))
+    trial_counter = 0
     try:
         for epoch in range(epochs):
             model.train()
@@ -227,6 +230,12 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             else:
                 metrics_train_per_epochs.append(train_metrics)
                 print(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
+            if trial and epoch in milestones:
+                assert loader_val
+                trial.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], trial_counter)
+                trial_counter += 1
+                if trial.should_prune():
+                    raise optuna.TrialPruned()
         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
         last = test_metrics if loader_val else train_metrics
         print('-' * 10)

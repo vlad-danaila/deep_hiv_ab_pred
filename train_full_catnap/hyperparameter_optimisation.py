@@ -68,7 +68,7 @@ def get_objective_train_hold_out_one_cluster():
         return cv_mean_mcc
     return objective
 
-class HoldOutOneClusterCVPruner(BasePruner):
+class BestPruner(BasePruner):
     def __init__(self, treshold):
         self.treshold = treshold
 
@@ -93,7 +93,7 @@ class HoldOutOneClusterCVPruner(BasePruner):
 
 def optimize_hyperparameters():
     optuna.logging.get_logger("optuna").addHandler(logging.FileHandler('optuna log'))
-    pruner = HoldOutOneClusterCVPruner(.05)
+    pruner = BestPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
