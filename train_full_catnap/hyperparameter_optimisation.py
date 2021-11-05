@@ -55,15 +55,15 @@ def get_objective_train_hold_out_one_cluster():
             raise pruneError
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
-                print('CUDA out of memory')
+                logging.error('CUDA out of memory')
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
-                print('CUDA error')
+                logging.error('CUDA error')
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e))
-            print('Configuration', conf)
+            logging.error('Configuration', conf)
             raise optuna.TrialPruned()
         return cv_mean_mcc
     return objective
@@ -103,7 +103,7 @@ def optimize_hyperparameters():
         study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
     study.optimize(objective, n_trials=1000)
-    print(study.best_params)
+    logging.info(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import mlflow
 import sklearn.metrics
 import sklearn as sk
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
+import logging
 
 def log_metrics_per_cv_antibody(cv_metrics, antibody):
     cv_metrics = np.array(cv_metrics)
@@ -13,9 +14,9 @@ def log_metrics_per_cv_antibody(cv_metrics, antibody):
     cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
     cv_mean_auc = cv_metrics[:, AUC].mean()
     cv_std_auc = cv_metrics[:, AUC].std()
-    print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
-    print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
-    print('CV Mean AUC', cv_mean_auc, 'CV Std AUC', cv_std_auc)
+    logging.info('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
+    logging.info('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
+    logging.info('CV Mean AUC', cv_mean_auc, 'CV Std AUC', cv_std_auc)
     mlflow.log_metrics({
         f'cv mean acc {antibody}': cv_mean_acc,
         f'cv std acc {antibody}': cv_std_acc,

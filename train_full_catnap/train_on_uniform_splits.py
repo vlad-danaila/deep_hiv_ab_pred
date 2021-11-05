@@ -10,11 +10,12 @@ import mlflow
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import test
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
+import logging
 
 def log_metrics(metrics):
-    print('Acc', metrics[ACCURACY])
-    print('MCC', metrics[MATTHEWS_CORRELATION_COEFFICIENT])
-    print('AUC', metrics[AUC])
+    logging.info('Acc', metrics[ACCURACY])
+    logging.info('MCC', metrics[MATTHEWS_CORRELATION_COEFFICIENT])
+    logging.info('AUC', metrics[AUC])
     mlflow.log_metrics({
         f'acc': metrics[ACCURACY],
         f'mcc': metrics[MATTHEWS_CORRELATION_COEFFICIENT],

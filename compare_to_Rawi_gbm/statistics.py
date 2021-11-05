@@ -1,5 +1,6 @@
 from deep_hiv_ab_pred.util.tools import read_json_file
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import RAWI_DATA, CATNAP_DATA
+import logging
 
 def print_antibody_virus_stats_for_rawi():
     rawi_data = read_json_file(RAWI_DATA)

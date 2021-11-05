@@ -10,6 +10,7 @@ import mlflow
 import optuna
 from os.path import join
 from deep_hiv_ab_pred.hyperparameters.constants import HYPERPARAMETERS_FOLDER
+import logging
 
 def dump_json(obj, path):
     with open(path, mode='w') as file:
@@ -47,7 +48,7 @@ def timer_start():
     time_start = time.time()
 
 def timer(msg = 'Timing:'):
-    print(msg, time.time() - time_start)
+    logging.info(msg, time.time() - time_start)
     timer_start()
 
 def log_transform(x):

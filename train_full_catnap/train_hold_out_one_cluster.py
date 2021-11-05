@@ -12,6 +12,7 @@ import mlflow
 from os.path import join
 import optuna
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
+import logging
 
 def log_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
@@ -24,8 +25,8 @@ def log_cv_metrics(cv_metrics):
     cv_std_acc = cv_metrics[:, ACCURACY].std()
     cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
     cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
-    print('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
-    print('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
+    logging.info('CV Mean Acc', cv_mean_acc, 'CV Std Acc', cv_std_acc)
+    logging.info('CV Mean MCC', cv_mean_mcc, 'CV Std MCC', cv_std_mcc)
     mlflow.log_metrics({
         f'cv mean acc': cv_mean_acc,
         f'cv std acc': cv_std_acc,
@@ -57,8 +58,8 @@ def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
     return cv_metrics
 
 def log_test_metrics(test_metrics):
-    print(f'Test Acc {test_metrics[ACCURACY]}')
-    print(f'Test MCC {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}')
+    logging.info(f'Test Acc {test_metrics[ACCURACY]}')
+    logging.info(f'Test MCC {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}')
     mlflow.log_metrics({ 'test acc': test_metrics[ACCURACY], 'test mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] })
 
 def test(splits, catnap, conf):

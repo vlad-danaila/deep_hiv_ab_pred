@@ -17,6 +17,7 @@ import statistics
 from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody
 import copy
 from deep_hiv_ab_pred.util.logging import setup_logging
+import logging
 
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -69,15 +70,15 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode):
             raise pruneError
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
-                print('CUDA out of memory')
+                logging.error('CUDA out of memory')
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
-                print('CUDA error')
+                logging.error('CUDA error')
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e))
-            print('Configuration', conf)
+            logging.error('Configuration', conf)
             raise optuna.TrialPruned()
         return cv_mean_mcc
     return objective
@@ -90,7 +91,7 @@ def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000,
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
     objective = get_objective_cross_validation(antibody_name, cv_folds_trim, freeze_mode)
     study.optimize(objective, n_trials = n_trials)
-    print(study.best_params)
+    logging.info(study.best_params)
     dump_json(study.best_params, join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody_name}.json'))
 
 def get_data():
@@ -136,9 +137,9 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
         global_acc = statistics.mean(acc)
         global_mcc = statistics.mean(mcc)
         global_auc = statistics.mean(auc)
-        print('Global ACC', global_acc)
-        print('Global MCC', global_mcc)
-        print('Global AUC', global_auc)
+        logging.info('Global ACC', global_acc)
+        logging.info('Global MCC', global_mcc)
+        logging.info('Global AUC', global_auc)
         mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc, 'global_auc': global_auc })
     dump_json({'finished': 'true'}, 'finished.json')
 
