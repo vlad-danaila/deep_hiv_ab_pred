@@ -55,15 +55,15 @@ def get_objective_train_hold_out_one_cluster():
             raise pruneError
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
-                logging.error('CUDA out of memory')
+                logging.error('CUDA out of memory', exc_info = True)
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
-                logging.error('CUDA error')
+                logging.error('CUDA error', exc_info = True)
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
-            logging.exception(str(e))
-            logging.error('Configuration', conf)
+            logging.exception(str(e), exc_info = True)
+            logging.error('Configuration ' + conf)
             raise optuna.TrialPruned()
         return cv_mean_mcc
     return objective

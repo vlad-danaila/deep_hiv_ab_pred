@@ -69,15 +69,13 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
                 if log_every_epoch:
                     logging.info(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
-        logging.info('-' * 10)
         if cross_validation_round is not None:
             logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
         else:
             logging.info(f'Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
-        logging.info('-' * 10)
         return metrics_train_per_epochs, metrics_test_per_epochs, best
     except KeyboardInterrupt as e:
-        logging.info('Training interrupted at epoch', epoch)
+        logging.info('Training interrupted at epoch ' + epoch)
 
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
@@ -142,12 +140,10 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
             if log_every_epoch:
                 logging.info(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
 
-        logging.info('-' * 10)
         logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
-        logging.info('-' * 10)
         return metrics_train_per_epochs, metrics_test_per_epochs, best
     except KeyboardInterrupt as e:
-        logging.info('Training interrupted at epoch', epoch)
+        logging.info('Training interrupted at epoch ' + epoch)
 
 def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
@@ -209,12 +205,10 @@ def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_
             if log_every_epoch:
                 logging.info(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
 
-        logging.info('-' * 10)
         logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
-        logging.info('-' * 10)
         return metrics_train_per_epochs, metrics_test_per_epochs, best
     except KeyboardInterrupt as e:
-        logging.info('Training interrupted at epoch', epoch)
+        logging.info('Training interrupted at epoch ' + epoch)
 
 def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', trial = None):
     loss_fn = t.nn.BCELoss()
@@ -242,12 +236,10 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
                     raise optuna.TrialPruned()
         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
         last = test_metrics if loader_val else train_metrics
-        logging.info('-' * 10)
         if cross_validation_round is not None:
             logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
         else:
             logging.info(f'Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
-        logging.info('-' * 10)
         return metrics_train_per_epochs, metrics_test_per_epochs, last
     except KeyboardInterrupt as e:
-        logging.info('Training interrupted at epoch', epoch)
+        logging.info('Training interrupted at epoch ' + epoch)

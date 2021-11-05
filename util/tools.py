@@ -48,7 +48,7 @@ def timer_start():
     time_start = time.time()
 
 def timer(msg = 'Timing:'):
-    logging.info(msg, time.time() - time_start)
+    logging.info(msg + ' ' + (time.time() - time_start))
     timer_start()
 
 def log_transform(x):

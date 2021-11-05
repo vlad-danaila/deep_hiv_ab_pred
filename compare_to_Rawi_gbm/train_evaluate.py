@@ -83,7 +83,7 @@ def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EM
         )
         acc, mcc = [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
-            logging.info(f'{i}. Antibody', antibody)
+            logging.info(f'{i}. Antibody {antibody}')
             pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
             cv_metrics = cross_validate_antibody(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask,
                 antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
@@ -92,8 +92,8 @@ def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EM
             mcc.append(cv_mean_mcc)
         global_acc = statistics.mean(acc)
         global_mcc = statistics.mean(mcc)
-        logging.info('Global ACC', global_acc)
-        logging.info('Global MCC', global_mcc)
+        logging.info('Global ACC ' + global_acc)
+        logging.info('Global MCC ' + global_mcc)
         mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc })
 
 if __name__ == '__main__':
