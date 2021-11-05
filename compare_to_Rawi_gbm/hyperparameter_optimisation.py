@@ -2,7 +2,7 @@ import numpy as np
 import optuna
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_FOLDER_ANTIBODIES
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
-from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY
+from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json, get_experiment
 import logging
 import os
@@ -16,6 +16,7 @@ import mlflow
 import statistics
 from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody
 import copy
+from deep_hiv_ab_pred.util.logging import setup_logging
 
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -122,6 +123,7 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     return cv_mean_acc, cv_mean_mcc
 
 def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
+    setup_logging()
     experiment_name += f' {model_trial_name}'
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
