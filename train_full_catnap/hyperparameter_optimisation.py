@@ -17,7 +17,7 @@ def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
     kmer_len_virus = trial.suggest_int('KMER_LEN_VIRUS', 3, 110)
     return {
-        'EMBEDDING_SIZE': trial.suggest_int('EMBEDDING_SIZE', 2, 128),
+        'EMBEDDING_SIZE': trial.suggest_int('EMBEDDING_SIZE', 2, 64),
         'KMER_LEN_ANTB': kmer_len_antb,
         'KMER_STRIDE_ANTB': trial.suggest_int('KMER_STRIDE_ANTB', max(1, kmer_len_antb // 10), kmer_len_antb),
         'KMER_LEN_VIRUS': kmer_len_virus,
