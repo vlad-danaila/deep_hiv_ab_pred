@@ -3,7 +3,7 @@ from deep_hiv_ab_pred.util.tools import read_yaml, read_json_file, dump_json
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, SPLITS_UNIFORM
-from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.train_full_catnap.create_splits_hold_out_one_cluster import print_phylogenetic_tree, \
     create_virus_to_cluster_mapping, train_val_test_splits
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # For making sure the phylogenetic tree was created
     # print_phylogenetic_tree()
     conf = read_yaml(CONF_ICERI)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
     )
     assays = read_json_file(CATNAP_FLAT)

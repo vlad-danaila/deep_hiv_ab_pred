@@ -5,7 +5,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RA
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
 from os.path import join
@@ -78,7 +78,7 @@ def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EM
         # mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
         catnap = read_json_file(CATNAP_FLAT)
         # mlflow.log_artifact(CATNAP_FLAT)
-        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
             conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
         )
         acc, mcc = [], []

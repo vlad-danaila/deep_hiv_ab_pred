@@ -5,7 +5,7 @@ from deep_hiv_ab_pred.catnap.download_dataset import ASSAY_FILE
 from deep_hiv_ab_pred.catnap.censored_data_preprocess import estimate_censored_mean
 from tqdm import tqdm
 from deep_hiv_ab_pred.util.tools import dump_json, read_yaml
-from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
 
 KMER_LEN = 'KMER_LEN'
@@ -31,7 +31,7 @@ def catnap_by_antibodies():
     assays_df = read_assays_df()
     assays = collections.defaultdict(lambda: {})
     conf = read_yaml(CONF_ICERI)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf[KMER_LEN], conf[KMER_STRIDE], conf[KMER_LEN], conf[KMER_STRIDE]
     )
     # The for loop iterates through assays grouped by the antibody and virus pairs

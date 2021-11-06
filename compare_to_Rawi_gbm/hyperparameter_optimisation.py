@@ -8,7 +8,7 @@ import os
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
     HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
 from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import BestPruner
-from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate_antibody
 from os.path import join
 import mlflow
@@ -96,7 +96,7 @@ def get_data():
     all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(HYPERPARAM_PRETRAIN)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS'], base_conf['KMER_LEN_ANTB'], base_conf['KMER_STRIDE_ANTB']
     )
     return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq

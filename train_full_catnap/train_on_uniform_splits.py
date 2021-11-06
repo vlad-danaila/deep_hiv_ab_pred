@@ -2,7 +2,7 @@ from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_UNIFORM, MODELS_
 from deep_hiv_ab_pred.training.training import train_network_n_times
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.util.tools import read_json_file
 import torch as t
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT, AUC
@@ -23,7 +23,7 @@ def log_metrics(metrics):
     })
 
 def train_on_uniform_splits(splits, catnap, conf, trial = None):
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
     train_ids, val_ids = splits['train'], splits['val']

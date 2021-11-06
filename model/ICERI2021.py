@@ -1,6 +1,6 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
-from deep_hiv_ab_pred.preprocessing.sequences import aminoacids_len
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import aminoacids_len
 
 class ICERI2021Net(t.nn.Module):
 

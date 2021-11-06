@@ -2,7 +2,7 @@ from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLU
 from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from deep_hiv_ab_pred.preprocessing.sequences import parse_catnap_sequences
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.util.tools import read_json_file
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 import torch as t
@@ -35,7 +35,7 @@ def log_cv_metrics(cv_metrics):
     })
 
 def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
     cv_metrics = []
@@ -63,7 +63,7 @@ def log_test_metrics(test_metrics):
     mlflow.log_metrics({ 'test acc': test_metrics[ACCURACY], 'test mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] })
 
 def test(splits, catnap, conf):
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
     test_ids = splits['test']
