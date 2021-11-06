@@ -77,7 +77,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode):
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
-            logging.error('Configuration ' + conf)
+            logging.error(f'Configuration {conf}')
             raise optuna.TrialPruned()
         return cv_mean_mcc
     return objective
