@@ -1,4 +1,3 @@
-import random
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 import numpy as np
 import optuna
@@ -8,9 +7,8 @@ from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLU
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
-import torch as t
+from deep_hiv_ab_pred.util.logging import setup_logging
 import logging
-import sys
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 from deep_hiv_ab_pred.train_full_catnap.train_on_uniform_splits import train_on_uniform_splits
 import os
@@ -118,6 +116,7 @@ class BestPruner(BasePruner):
         return trail_average < maximum - self.treshold
 
 def optimize_hyperparameters():
+    setup_logging()
     pruner = BestPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
