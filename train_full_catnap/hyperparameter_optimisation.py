@@ -4,7 +4,7 @@ import numpy as np
 import optuna
 from optuna.pruners import BasePruner
 from optuna.trial._state import TrialState
-from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, BEST_PARAMS
+from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, SPLITS_UNIFORM, BEST_PARAMS
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, dump_json
@@ -12,6 +12,7 @@ import torch as t
 import logging
 import sys
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
+from deep_hiv_ab_pred.train_full_catnap.train_on_uniform_splits import train_on_uniform_splits
 import os
 
 def propose(trial: optuna.trial.Trial):
@@ -68,6 +69,31 @@ def get_objective_train_hold_out_one_cluster():
         return cv_mean_mcc
     return objective
 
+def get_objective_train_on_uniform_splits():
+    splits = read_json_file(SPLITS_UNIFORM)
+    catnap = read_json_file(CATNAP_FLAT)
+    def objective(trial):
+        conf = propose(trial)
+        try:
+            metrics = train_on_uniform_splits(splits, catnap, conf, trial)
+            metrics = np.array(metrics)
+            return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
+        except optuna.TrialPruned as pruneError:
+            raise pruneError
+        except Exception as e:
+            if str(e).startswith('CUDA out of memory'):
+                logging.error('CUDA out of memory', exc_info = True)
+                # t.cuda.empty_cache()
+                raise optuna.TrialPruned()
+            elif 'CUDA error' in str(e):
+                logging.error('CUDA error', exc_info = True)
+                # t.cuda.empty_cache()
+                raise optuna.TrialPruned()
+            logging.exception(str(e), exc_info = True)
+            logging.error(f'Configuration {conf}')
+            raise optuna.TrialPruned()
+    return objective
+
 class BestPruner(BasePruner):
     def __init__(self, treshold):
         self.treshold = treshold
@@ -100,7 +126,7 @@ def optimize_hyperparameters():
     initial_conf = read_yaml(CONF_ICERI_V2)
     if not study_exists:
         study.enqueue_trial(initial_conf)
-    objective = get_objective_train_hold_out_one_cluster()
+    objective = get_objective_train_on_uniform_splits()
     study.optimize(objective, n_trials=1000)
     logging.info(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
