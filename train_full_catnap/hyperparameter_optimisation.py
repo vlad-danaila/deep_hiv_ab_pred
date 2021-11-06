@@ -12,6 +12,7 @@ import logging
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_hold_out_one_cluster
 from deep_hiv_ab_pred.train_full_catnap.train_on_uniform_splits import train_on_uniform_splits
 import os
+import time
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
@@ -47,7 +48,9 @@ def get_objective_train_hold_out_one_cluster():
     def objective(trial):
         conf = propose(trial)
         try:
+            start = time.time()
             cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, trial)
+            end = time.time()
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
         except optuna.TrialPruned as pruneError:
@@ -64,7 +67,7 @@ def get_objective_train_hold_out_one_cluster():
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
             raise optuna.TrialPruned()
-        return cv_mean_mcc
+        return cv_mean_mcc, end - start
     return objective
 
 def get_objective_train_on_uniform_splits():
@@ -73,9 +76,11 @@ def get_objective_train_on_uniform_splits():
     def objective(trial):
         conf = propose(trial)
         try:
+            start = time.time()
             metrics = train_on_uniform_splits(splits, catnap, conf, trial)
+            end = time.time()
             metrics = np.array(metrics)
-            return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
+            return metrics[MATTHEWS_CORRELATION_COEFFICIENT], end - start
         except optuna.TrialPruned as pruneError:
             raise pruneError
         except Exception as e:
@@ -120,12 +125,13 @@ def optimize_hyperparameters():
     pruner = BestPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
-    study = optuna.create_study(study_name = study_name, direction = 'maximize',
+    study = optuna.create_study(study_name = study_name, directions=['maximize', "minimize"],
                             storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
     initial_conf = read_yaml(CONF_ICERI_V2)
     if not study_exists:
         study.enqueue_trial(initial_conf)
-    objective = get_objective_train_on_uniform_splits()
+    objective = get_objective_train_hold_out_one_cluster()
+    # objective = get_objective_train_on_uniform_splits()
     study.optimize(objective, n_trials=1000)
     logging.info(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
