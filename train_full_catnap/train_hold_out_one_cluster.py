@@ -50,10 +50,10 @@ def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
         model = get_ICERI_v2_model(conf)
         _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER)
         cv_metrics.append(best)
-        if trial:
-            trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)
-            if trial.should_prune():
-                raise optuna.TrialPruned()
+        # if trial:
+        #     trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)
+        #     if trial.should_prune():
+        #         raise optuna.TrialPruned()
     log_cv_metrics(cv_metrics)
     return cv_metrics
 

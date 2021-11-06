@@ -231,9 +231,9 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             if trial and epoch in milestones:
                 trial_counter += 1
                 assert loader_val
-                trial.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], trial_counter)
-                if trial.should_prune():
-                    raise optuna.TrialPruned()
+                # trial.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], trial_counter)
+                # if trial.should_prune():
+                #     raise optuna.TrialPruned()
         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
         last = test_metrics if loader_val else train_metrics
         if cross_validation_round is not None:
