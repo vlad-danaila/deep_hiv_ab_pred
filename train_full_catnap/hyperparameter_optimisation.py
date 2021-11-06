@@ -122,11 +122,11 @@ class BestPruner(BasePruner):
 
 def optimize_hyperparameters():
     setup_logging()
-    pruner = BestPruner(.05)
+    # pruner = BestPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
     study = optuna.create_study(study_name = study_name, directions=['maximize', "minimize"],
-                            storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
+        storage = f'sqlite:///{study_name}.db', load_if_exists = True)
     initial_conf = read_yaml(CONF_ICERI_V2)
     if not study_exists:
         study.enqueue_trial(initial_conf)
