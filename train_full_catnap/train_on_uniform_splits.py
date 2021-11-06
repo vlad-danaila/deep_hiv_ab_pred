@@ -13,9 +13,9 @@ from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 import logging
 
 def log_metrics(metrics):
-    logging.info('Acc ' + metrics[ACCURACY])
-    logging.info('MCC ' + metrics[MATTHEWS_CORRELATION_COEFFICIENT])
-    logging.info('AUC ' + metrics[AUC])
+    logging.info(f'Acc {metrics[ACCURACY]}')
+    logging.info(f'MCC {metrics[MATTHEWS_CORRELATION_COEFFICIENT]}')
+    logging.info(f'AUC {metrics[AUC]}')
     mlflow.log_metrics({
         f'acc': metrics[ACCURACY],
         f'mcc': metrics[MATTHEWS_CORRELATION_COEFFICIENT],
