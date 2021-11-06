@@ -219,7 +219,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
     try:
         for epoch in range(epochs):
             model.train()
-            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
+            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, loader_val)
