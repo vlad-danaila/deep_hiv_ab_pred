@@ -63,7 +63,7 @@ def get_objective_train_hold_out_one_cluster():
                 # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
-            logging.error('Configuration ' + conf)
+            logging.error(f'Configuration {conf}')
             raise optuna.TrialPruned()
         return cv_mean_mcc
     return objective
