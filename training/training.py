@@ -215,7 +215,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     milestones = np.floor(epochs * np.array([.25, .5, .75]))
-    trial_counter = -1
+    # trial_counter = -1
     try:
         for epoch in range(epochs):
             model.train()
@@ -228,9 +228,11 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             else:
                 metrics_train_per_epochs.append(train_metrics)
                 logging.info(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
-            if trial and epoch in milestones:
-                trial_counter += 1
-                assert loader_val
+            if epoch in milestones:
+
+            # if trial and epoch in milestones:
+            #     trial_counter += 1
+            #     assert loader_val
                 # trial.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], trial_counter)
                 # if trial.should_prune():
                 #     raise optuna.TrialPruned()

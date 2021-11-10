@@ -13,6 +13,7 @@ from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_
 from deep_hiv_ab_pred.train_full_catnap.train_on_uniform_splits import train_on_uniform_splits
 import os
 import time
+from deep_hiv_ab_pred.train_full_catnap.analyze_optuna_trials import get_best_trials_from_study
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
@@ -97,7 +98,7 @@ def get_objective_train_on_uniform_splits():
             raise optuna.TrialPruned()
     return objective
 
-class BestPruner(BasePruner):
+class CrossValidationPruner(BasePruner):
     def __init__(self, treshold):
         self.treshold = treshold
 
@@ -122,7 +123,8 @@ class BestPruner(BasePruner):
 
 def optimize_hyperparameters():
     setup_logging()
-    # pruner = BestPruner(.05)
+    trials = get_best_trials_from_study('ICERI_v2_previous', .48)
+    # pruner = CrossValidationPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
     study = optuna.create_study(study_name = study_name, directions=['maximize', "minimize"],
