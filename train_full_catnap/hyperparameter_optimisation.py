@@ -47,7 +47,7 @@ def propose(trial: optuna.trial.Trial):
 def get_objective_train_hold_out_one_cluster():
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner()
+    cvp = CrossValidationPruner(5, 3, 5, 90)
     def objective(trial):
         conf = propose(trial)
         try:
@@ -100,32 +100,32 @@ def get_objective_train_on_uniform_splits():
             raise optuna.TrialPruned()
     return objective
 
-class CrossValidationPruner(BasePruner):
-    def __init__(self, treshold):
-        self.treshold = treshold
-
-    def prune(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> bool:
-        step = trial.last_step
-        completed_trials = study.get_trials(deepcopy=False, states=(TrialState.COMPLETE,))
-        if not completed_trials:
-            return False
-        score_matrix = np.array([
-            [ t.intermediate_values[i] for i in range(len(t.intermediate_values)) ]
-            for t in completed_trials
-        ])
-        global_average = np.zeros(len(score_matrix))
-        trail_average = 0
-        for i in range(step + 1):
-            global_average = global_average + score_matrix[:, i]
-            trail_average = trail_average + trial.intermediate_values[i]
-        global_average = global_average / (step + 1)
-        trail_average = trail_average / (step + 1)
-        maximum = max(global_average)
-        return trail_average < maximum - self.treshold
+# class CrossValidationPruner(BasePruner):
+#     def __init__(self, treshold):
+#         self.treshold = treshold
+#
+#     def prune(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> bool:
+#         step = trial.last_step
+#         completed_trials = study.get_trials(deepcopy=False, states=(TrialState.COMPLETE,))
+#         if not completed_trials:
+#             return False
+#         score_matrix = np.array([
+#             [ t.intermediate_values[i] for i in range(len(t.intermediate_values)) ]
+#             for t in completed_trials
+#         ])
+#         global_average = np.zeros(len(score_matrix))
+#         trail_average = 0
+#         for i in range(step + 1):
+#             global_average = global_average + score_matrix[:, i]
+#             trail_average = trail_average + trial.intermediate_values[i]
+#         global_average = global_average / (step + 1)
+#         trail_average = trail_average / (step + 1)
+#         maximum = max(global_average)
+#         return trail_average < maximum - self.treshold
 
 def optimize_hyperparameters():
     setup_logging()
-    trials = get_best_trials_from_study('ICERI_v2_previous', .48)
+    # trials = get_best_trials_from_study('ICERI_v2_previous', .48)
     # pruner = CrossValidationPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
