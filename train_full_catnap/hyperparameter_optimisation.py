@@ -14,6 +14,7 @@ from deep_hiv_ab_pred.train_full_catnap.train_on_uniform_splits import train_on_
 import os
 import time
 from deep_hiv_ab_pred.train_full_catnap.analyze_optuna_trials import get_best_trials_from_study
+from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
@@ -46,11 +47,12 @@ def propose(trial: optuna.trial.Trial):
 def get_objective_train_hold_out_one_cluster():
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
+    cvp = CrossValidationPruner()
     def objective(trial):
         conf = propose(trial)
         try:
             start = time.time()
-            cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, trial)
+            cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, trial, cvp)
             end = time.time()
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()

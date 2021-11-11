@@ -1,4 +1,6 @@
 import os
+import time
+
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import torch as t
@@ -7,6 +9,7 @@ from deep_hiv_ab_pred.util.metrics import compute_metrics
 import optuna
 from deep_hiv_ab_pred.util.tools import to_numpy
 import logging
+from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 
 def run_network_for_training(model, conf, loader, loss_fn, optimizer):
     metrics = np.zeros(3)
@@ -210,16 +213,18 @@ def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_
     except KeyboardInterrupt as e:
         logging.info('Training interrupted at epoch ' + epoch)
 
-def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', trial = None):
+def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', pruner: CrossValidationPruner = None):
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     milestones = np.floor(epochs * np.array([.25, .5, .75]))
-    # trial_counter = -1
+    step_counter = 0
     try:
         for epoch in range(epochs):
             model.train()
+            start = time.time()
             train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
+            minutes = (time.time() - start) / 60
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, loader_val)
@@ -228,20 +233,15 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             else:
                 metrics_train_per_epochs.append(train_metrics)
                 logging.info(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
-            if epoch in milestones:
-
-            # if trial and epoch in milestones:
-            #     trial_counter += 1
-            #     assert loader_val
-                # trial.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], trial_counter)
-                # if trial.should_prune():
-                #     raise optuna.TrialPruned()
+            if epoch in milestones and pruner is not None:
+                cv_fold = cross_validation_round if cross_validation_round is not None else 0
+                # This throws a pruning exception if the trial needs to be pruned
+                pruner.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], minutes, step_counter, cv_fold)
+                step_counter += 1
         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
         last = test_metrics if loader_val else train_metrics
-        if cross_validation_round is not None:
-            logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
-        else:
-            logging.info(f'Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
+        cv_info = f'CV {cross_validation_round + 1}, ' if cross_validation_round is not None else ''
+        logging.info(f'{cv_info}Correlation: {last[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {last[ACCURACY]}')
         return metrics_train_per_epochs, metrics_test_per_epochs, last
     except KeyboardInterrupt as e:
         logging.info('Training interrupted at epoch ' + epoch)

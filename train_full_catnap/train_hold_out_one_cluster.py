@@ -1,3 +1,5 @@
+import random
+from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, MODELS_FOLDER
 from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
@@ -10,7 +12,6 @@ import numpy as np
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
 from os.path import join
-import optuna
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
 import logging
 
@@ -34,12 +35,15 @@ def log_cv_metrics(cv_metrics):
         f'cv std mcc': cv_std_mcc
     })
 
-def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
+def train_hold_out_one_cluster(splits, catnap, conf, pruner: CrossValidationPruner = None):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
     cv_metrics = []
-    for i, cv_fold in enumerate(splits['cv']):
+    cv_folds = list(range(len(splits['cv'])))
+    random.shuffle(cv_folds)
+    for i in cv_folds:
+        cv_fold = splits['cv'][i]
         train_ids, val_ids = cv_fold['train'], cv_fold['val']
         train_assays = [a for a in catnap if a[0] in train_ids]
         val_assays = [a for a in catnap if a[0] in val_ids]
@@ -48,12 +52,8 @@ def train_hold_out_one_cluster(splits, catnap, conf, trial = None):
         loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
         loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
         model = get_ICERI_v2_model(conf)
-        _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER)
+        _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER, pruner)
         cv_metrics.append(best)
-        # if trial:
-        #     trial.report(best[MATTHEWS_CORRELATION_COEFFICIENT], i)
-        #     if trial.should_prune():
-        #         raise optuna.TrialPruned()
     log_cv_metrics(cv_metrics)
     return cv_metrics
 
