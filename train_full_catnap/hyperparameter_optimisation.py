@@ -52,7 +52,7 @@ def get_objective_train_hold_out_one_cluster():
         conf = propose(trial)
         try:
             start = time.time()
-            cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, trial, cvp)
+            cv_metrics = train_hold_out_one_cluster(splits, catnap, conf, cvp)
             end = time.time()
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
