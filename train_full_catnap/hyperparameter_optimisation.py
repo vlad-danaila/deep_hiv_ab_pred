@@ -142,7 +142,7 @@ def optimize_hyperparameters():
         study.enqueue_trial(initial_conf)
     objective = get_objective_train_hold_out_one_cluster()
     # objective = get_objective_train_on_uniform_splits()
-    study.optimize(objective, n_trials=1000)
+    study.optimize(objective, n_trials=10000)
     logging.info(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
 
