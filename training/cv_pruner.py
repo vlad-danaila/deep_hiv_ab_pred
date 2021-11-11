@@ -11,11 +11,12 @@ class CrossValidationPruner:
         self.history = None
         self.reset()
 
-    def report(self, metric, time, step, cv_fold):
+    def report_time(self, time):
         if time > self.time_treshold:
             self.reset()
             raise optuna.TrialPruned()
 
+    def report(self, metric, step, cv_fold):
         if self.history is not None:
             percentiles = np.percentile(self.history, self.percentile, axis = 0)
             if len(percentiles) and percentiles[step] > metric:
@@ -44,9 +45,12 @@ if __name__ == '__main__':
     # Trial 1
     try:
         for cv_fold in range(5):
-            cvp.report(.32, 6, 0, cv_fold)
-            cvp.report(.32, 4, 1, cv_fold)
-            cvp.report(.35, 4, 2, cv_fold)
+            cvp.report_time(6)
+            cvp.report(.32, 0, cv_fold)
+            cvp.report(.32, 1, cv_fold)
+            cvp.report_time(4)
+            cvp.report(.35, 2, cv_fold)
+            cvp.report_time(4)
     except optuna.TrialPruned as e:
         print('trial 1 pruned')
 
@@ -54,7 +58,8 @@ if __name__ == '__main__':
     try:
         for cv_fold in range(5):
             for step in range(3):
-                cvp.report(.32 + step * .2, 4, step, cv_fold)
+                cvp.report(.32 + step * .2, step, cv_fold)
+                cvp.report_time(4)
     except optuna.TrialPruned as e:
         print('trial 2 pruned')
 
@@ -62,7 +67,8 @@ if __name__ == '__main__':
     try:
         for cv_fold in range(5):
             for step in range(3):
-                cvp.report(.32 + step * .3, 4, step, cv_fold)
+                cvp.report(.32 + step * .3, step, cv_fold)
+                cvp.report_time(4)
     except optuna.TrialPruned as e:
         print('trial 3 pruned')
 
@@ -70,7 +76,8 @@ if __name__ == '__main__':
     try:
         for cv_fold in range(5):
             for step in range(3):
-                cvp.report(.32 + step * .2, 4, step, cv_fold)
+                cvp.report(.32 + step * .2, step, cv_fold)
+                cvp.report_time(4)
     except optuna.TrialPruned as e:
         print('trial 4 pruned')
 
@@ -78,6 +85,7 @@ if __name__ == '__main__':
     try:
         for cv_fold in range(5):
             for step in range(3):
-                cvp.report(.1 + step * .5, 4, step, cv_fold)
+                cvp.report(.1 + step * .5, step, cv_fold)
+                cvp.report_time(4)
     except optuna.TrialPruned as e:
         print('trial 5 pruned')

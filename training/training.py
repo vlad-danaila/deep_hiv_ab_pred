@@ -224,7 +224,8 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             model.train()
             start = time.time()
             train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
-            minutes = (time.time() - start) / 60
+            if pruner:
+                pruner.report_time(epochs * (time.time() - start) / 60)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, loader_val)
@@ -236,7 +237,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
             if epoch in milestones and pruner is not None:
                 cv_fold = cross_validation_round if cross_validation_round is not None else 0
                 # This throws a pruning exception if the trial needs to be pruned
-                pruner.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], minutes, step_counter, cv_fold)
+                pruner.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], step_counter, cv_fold)
                 step_counter += 1
         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
         last = test_metrics if loader_val else train_metrics
