@@ -1,3 +1,5 @@
+import mlflow
+
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 import numpy as np
 import optuna
@@ -46,6 +48,7 @@ def propose(trial: optuna.trial.Trial):
 #     return np.array([[random.random(), random.random(), random.random()]])
 
 def get_objective_train_hold_out_one_cluster():
+    mlflow.set_tag('hyperparam opt', 'hold out one cluster')
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     cvp = CrossValidationPruner(20, 3, 5, 90)
@@ -75,6 +78,7 @@ def get_objective_train_hold_out_one_cluster():
     return objective
 
 def get_objective_train_on_uniform_splits():
+    mlflow.set_tag('hyperparam opt', 'uniform splits')
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
     cvp = CrossValidationPruner(20, 3, 1, 90)
