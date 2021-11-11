@@ -11,13 +11,14 @@ from deep_hiv_ab_pred.util.tools import to_numpy
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 
-def run_network_for_training(model, conf, loader, loss_fn, optimizer):
+def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = None, pruner = None):
     metrics = np.zeros(3)
     # we calculate a weighted average by the number of samples in each batch,
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
+        start = time.time()
         pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
         loss = loss_fn(pred, ground_truth)
         loss.backward()
@@ -29,6 +30,9 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer):
         weight = len(ground_truth) / conf['BATCH_SIZE']
         total_weight += weight
         metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
+        if epochs and pruner:
+            estimated_time = epochs * len(loader) * (time.time() - start) / 60
+            pruner.report_time(estimated_time)
     return metrics / total_weight
 
 def eval_network(model, loader):
@@ -222,10 +226,7 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
     try:
         for epoch in range(epochs):
             model.train()
-            start = time.time()
-            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
-            if pruner:
-                pruner.report_time(epochs * (time.time() - start) / 60)
+            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer, epochs, pruner)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, loader_val)
