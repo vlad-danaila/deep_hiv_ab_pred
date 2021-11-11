@@ -11,6 +11,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import test
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 import logging
+from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 
 def log_metrics(metrics):
     logging.info(f'Acc {metrics[ACCURACY]}')
