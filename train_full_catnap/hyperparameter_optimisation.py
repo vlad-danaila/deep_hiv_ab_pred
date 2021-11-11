@@ -15,6 +15,7 @@ import os
 import time
 from deep_hiv_ab_pred.train_full_catnap.analyze_optuna_trials import get_best_trials_from_study
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
+import torch as t
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
@@ -89,11 +90,11 @@ def get_objective_train_on_uniform_splits():
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = True)
-                # t.cuda.empty_cache()
+                t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
-                # t.cuda.empty_cache()
+                t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
