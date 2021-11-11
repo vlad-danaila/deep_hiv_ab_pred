@@ -22,7 +22,7 @@ def log_metrics(metrics):
         f'auc': metrics[AUC]
     })
 
-def train_on_uniform_splits(splits, catnap, conf, trial = None):
+def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner = None):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
     )
@@ -34,7 +34,7 @@ def train_on_uniform_splits(splits, catnap, conf, trial = None):
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_ICERI_v2_model(conf)
-    _, _, metrics = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, trial)
+    _, _, metrics = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
     log_metrics(metrics)
     return metrics
 

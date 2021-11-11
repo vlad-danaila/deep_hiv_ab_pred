@@ -77,11 +77,12 @@ def get_objective_train_hold_out_one_cluster():
 def get_objective_train_on_uniform_splits():
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
+    cvp = CrossValidationPruner(5, 3, 1, 90)
     def objective(trial):
         conf = propose(trial)
         try:
             start = time.time()
-            metrics = train_on_uniform_splits(splits, catnap, conf, trial)
+            metrics = train_on_uniform_splits(splits, catnap, conf, cvp)
             end = time.time()
             metrics = np.array(metrics)
             return metrics[MATTHEWS_CORRELATION_COEFFICIENT], end - start
