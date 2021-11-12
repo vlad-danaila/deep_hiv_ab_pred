@@ -7,7 +7,6 @@ from deep_hiv_ab_pred.util.tools import read_json_file, dump_json, get_experimen
 import os
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
     HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
-from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import CrossValidationPruner
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate_antibody
 from os.path import join
@@ -17,6 +16,8 @@ from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody
 import copy
 from deep_hiv_ab_pred.util.logging import setup_logging
 import logging
+from optuna.pruners import BasePruner
+from optuna.trial._state import TrialState
 
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -37,6 +38,29 @@ def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_
         'NB_LAYERS': base_conf['NB_LAYERS'],
         'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
     }
+
+class CrossValidationPruner(BasePruner):
+    def __init__(self, treshold):
+        self.treshold = treshold
+
+    def prune(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> bool:
+        step = trial.last_step
+        completed_trials = study.get_trials(deepcopy=False, states=(TrialState.COMPLETE,))
+        if not completed_trials:
+            return False
+        score_matrix = np.array([
+            [ t.intermediate_values[i] for i in range(len(t.intermediate_values)) ]
+            for t in completed_trials
+        ])
+        global_average = np.zeros(len(score_matrix))
+        trail_average = 0
+        for i in range(step + 1):
+            global_average = global_average + score_matrix[:, i]
+            trail_average = trail_average + trial.intermediate_values[i]
+        global_average = global_average / (step + 1)
+        trail_average = trail_average / (step + 1)
+        maximum = max(global_average)
+        return trail_average < maximum - self.treshold
 
 def propose_conf_for_frozen_net_without_last_layer(trial: optuna.trial.Trial, base_conf: dict):
     conf = copy.deepcopy(base_conf)
