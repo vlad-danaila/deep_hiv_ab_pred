@@ -3,12 +3,12 @@ import numpy as np
 
 class CrossValidationPruner:
 
-    def __init__(self, time_treshold, len_steps, cv_folds, percentile):
+    def __init__(self, time_treshold, len_steps, cv_folds, treshold):
         self.time_treshold = time_treshold
         self.len_steps = len_steps
         self.cv_folds = cv_folds
-        self.percentile = percentile
-        self.history = None
+        self.treshold = treshold
+        self.best = np.zeros(len_steps * cv_folds)
         self.reset()
 
     def report_time(self, time):
@@ -17,20 +17,14 @@ class CrossValidationPruner:
             raise optuna.TrialPruned()
 
     def report(self, metric, step, cv_fold):
-        if self.history is not None:
-            percentiles = np.percentile(self.history, self.percentile, axis = 0)
-            if len(percentiles) and percentiles[step] > metric:
-                self.reset()
-                raise optuna.TrialPruned()
+        if self.best[cv_fold * self.len_steps + step] - self.treshold > metric:
+            self.reset()
+            raise optuna.TrialPruned()
 
         self.current[cv_fold * self.len_steps + step] = metric
 
-        if self.current.prod() > 0:
-            reshaped = self.current.reshape((1, -1))
-            if self.history is None:
-                self.history = reshaped
-            else:
-                self.history = np.append(self.history, reshaped, axis = 0)
+        if self.current.prod() > 0 and self.current[-1] > self.best[-1]:
+            self.best = self.current
             self.reset()
 
     def reset(self):
@@ -40,7 +34,7 @@ if __name__ == '__main__':
 
     # Should prune trials 1, 4, 5
 
-    cvp = CrossValidationPruner(5, 3, 5, 90)
+    cvp = CrossValidationPruner(5, 3, 5, .05)
 
     # Trial 1
     try:
