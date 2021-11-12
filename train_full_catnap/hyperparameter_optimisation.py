@@ -80,7 +80,7 @@ def get_objective_train_hold_out_one_cluster():
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
             raise optuna.TrialPruned()
-        return cv_mean_mcc, end - start
+        return cv_mean_mcc
     return objective
 
 def get_objective_train_on_uniform_splits():
@@ -95,7 +95,7 @@ def get_objective_train_on_uniform_splits():
             metrics = train_on_uniform_splits(splits, catnap, conf, cvp)
             end = time.time()
             metrics = np.array(metrics)
-            return metrics[MATTHEWS_CORRELATION_COEFFICIENT], end - start
+            return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
         except optuna.TrialPruned as pruneError:
             raise pruneError
         except Exception as e:
@@ -141,7 +141,7 @@ def optimize_hyperparameters():
     # pruner = CrossValidationPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
-    study = optuna.create_study(study_name = study_name, directions=['maximize', "minimize"],
+    study = optuna.create_study(study_name = study_name, direction='maximize',
         storage = f'sqlite:///{study_name}.db', load_if_exists = True)
     initial_conf = read_yaml(CONF_ICERI_V2)
     if not study_exists:
