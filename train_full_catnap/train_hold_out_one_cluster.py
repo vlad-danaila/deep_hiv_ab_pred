@@ -14,6 +14,7 @@ import mlflow
 from os.path import join
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
 import logging
+from deep_hiv_ab_pred.util.logging import setup_logging
 
 def log_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
@@ -83,6 +84,7 @@ def test(splits, catnap, conf):
     return test_metrics
 
 def main_train():
+    setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
     conf = read_json_file(HYPERPARAM_PRETRAIN)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
@@ -90,6 +92,7 @@ def main_train():
     metrics = train_hold_out_one_cluster(splits, catnap, conf)
 
 def main_test():
+    setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
     conf = read_json_file(HYPERPARAM_PRETRAIN)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)

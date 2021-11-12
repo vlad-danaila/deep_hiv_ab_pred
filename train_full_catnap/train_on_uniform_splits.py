@@ -12,6 +12,7 @@ from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import test
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
+from deep_hiv_ab_pred.util.logging import setup_logging
 
 def log_metrics(metrics):
     logging.info(f'Acc {metrics[ACCURACY]}')
@@ -40,6 +41,7 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     return metrics
 
 def main_train():
+    setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
     conf = read_json_file(HYPERPARAM_PRETRAIN)
     splits = read_json_file(SPLITS_UNIFORM)
@@ -47,6 +49,7 @@ def main_train():
     metrics = train_on_uniform_splits(splits, catnap, conf)
 
 def main_test():
+    setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
     conf = read_json_file(HYPERPARAM_PRETRAIN)
     splits = read_json_file(SPLITS_UNIFORM)
