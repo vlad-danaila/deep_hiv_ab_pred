@@ -57,7 +57,7 @@ def get_objective_train_hold_out_one_cluster():
     mlflow.set_tag('hyperparam opt', 'hold out one cluster')
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(20, 3, 5, 80)
+    cvp = CrossValidationPruner(20, 3, 5, .05)
     def objective(trial):
         conf = propose(trial)
         try:
@@ -87,7 +87,7 @@ def get_objective_train_on_uniform_splits():
     mlflow.set_tag('hyperparam opt', 'uniform splits')
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(20, 3, 1, 80)
+    cvp = CrossValidationPruner(20, 3, 1, .05)
     def objective(trial):
         conf = propose(trial)
         try:
