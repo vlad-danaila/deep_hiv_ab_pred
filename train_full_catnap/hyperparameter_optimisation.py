@@ -51,7 +51,7 @@ def get_objective_train_hold_out_one_cluster():
     mlflow.set_tag('hyperparam opt', 'hold out one cluster')
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(20, 3, 5, 90)
+    cvp = CrossValidationPruner(20, 3, 5, 80)
     def objective(trial):
         conf = propose(trial)
         try:
@@ -65,11 +65,11 @@ def get_objective_train_hold_out_one_cluster():
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = True)
-                t.cuda.empty_cache()
+                # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
-                t.cuda.empty_cache()
+                # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
@@ -81,7 +81,7 @@ def get_objective_train_on_uniform_splits():
     mlflow.set_tag('hyperparam opt', 'uniform splits')
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(20, 3, 1, 90)
+    cvp = CrossValidationPruner(20, 3, 1, 80)
     def objective(trial):
         conf = propose(trial)
         try:
@@ -95,11 +95,11 @@ def get_objective_train_on_uniform_splits():
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = True)
-                t.cuda.empty_cache()
+                # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
-                t.cuda.empty_cache()
+                # t.cuda.empty_cache()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
