@@ -47,6 +47,12 @@ def propose(trial: optuna.trial.Trial):
 #             raise optuna.TrialPruned()
 #     return np.array([[random.random(), random.random(), random.random()]])
 
+def empty_cuda_cahce():
+    try:
+        t.cuda.empty_cache()
+    except Exception as e:
+        logging.exception(str(e), exc_info = True)
+
 def get_objective_train_hold_out_one_cluster():
     mlflow.set_tag('hyperparam opt', 'hold out one cluster')
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
@@ -65,11 +71,11 @@ def get_objective_train_hold_out_one_cluster():
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = True)
-                # t.cuda.empty_cache()
+                empty_cuda_cahce()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
-                # t.cuda.empty_cache()
+                empty_cuda_cahce()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
@@ -95,11 +101,11 @@ def get_objective_train_on_uniform_splits():
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = True)
-                # t.cuda.empty_cache()
+                empty_cuda_cahce()
                 raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
-                # t.cuda.empty_cache()
+                empty_cuda_cahce()
                 raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
