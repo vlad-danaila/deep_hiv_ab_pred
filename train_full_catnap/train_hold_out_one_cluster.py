@@ -15,6 +15,7 @@ from os.path import join
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
 import logging
 from deep_hiv_ab_pred.util.logging import setup_logging
+from deep_hiv_ab_pred.util.metrics import log_test_metrics
 
 def log_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
@@ -57,11 +58,6 @@ def train_hold_out_one_cluster(splits, catnap, conf, pruner: CrossValidationPrun
         cv_metrics.append(best)
     log_cv_metrics(cv_metrics)
     return cv_metrics
-
-def log_test_metrics(test_metrics):
-    logging.info(f'Test Acc {test_metrics[ACCURACY]}')
-    logging.info(f'Test MCC {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}')
-    mlflow.log_metrics({ 'test acc': test_metrics[ACCURACY], 'test mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] })
 
 def test(splits, catnap, conf):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(

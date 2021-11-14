@@ -27,6 +27,11 @@ def log_metrics_per_cv_antibody(cv_metrics, antibody):
     })
     return cv_mean_acc, cv_mean_mcc, cv_mean_auc
 
+def log_test_metrics(test_metrics):
+    logging.info(f'Test Acc {test_metrics[ACCURACY]}')
+    logging.info(f'Test MCC {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}')
+    mlflow.log_metrics({ 'test acc': test_metrics[ACCURACY], 'test mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] })
+
 def compute_metrics(ground_truth, pred, include_AUC = False):
     metrics = np.zeros(4 if include_AUC else 3)
     if include_AUC:
