@@ -3,15 +3,15 @@ from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import RAWI_DATA, COMPARE_SPLITS_FOR_RAWI
 import random
-from sklearn.model_selection import RepeatedKFold
+from sklearn.model_selection import RepeatedStratifiedKFold
 
-def cross_validation_splits(cv_data, folds = 10, repeats = 10):
+def cross_validation_splits(cv_data, ground_truths, folds = 10, repeats = 10):
     random.shuffle(cv_data)
     cv_data = np.array(cv_data)
-    rkf = RepeatedKFold(n_splits = folds, n_repeats = repeats)
+    rkf = RepeatedStratifiedKFold(n_splits = folds, n_repeats = repeats)
     return [
         { 'train': cv_data[train].tolist(), 'test': cv_data[test].tolist() }
-        for train, test in rkf.split(cv_data)
+        for train, test in rkf.split(cv_data, ground_truths)
     ]
 
 def create_splits_to_compare_with_rawi(catnap):
@@ -22,10 +22,12 @@ def create_splits_to_compare_with_rawi(catnap):
         pretrain_data = [ data[0] for data in catnap if data[1] != antibody ]
         cv_tuples = [(antibody, virus) for virus in virus_ids]
         cv_data = [data[0] for data in catnap if (data[1], data[2]) in cv_tuples]
+        ground_truths = [data[3] for data in catnap if (data[1], data[2]) in cv_tuples]
         if len(cv_data) != len(cv_tuples):
             print('Skipping', antibody)
             continue
-        cv_splits = cross_validation_splits(cv_data)
+        print(antibody)
+        cv_splits = cross_validation_splits(cv_data, ground_truths)
         splits[antibody] = { 'pretraining': pretrain_data, 'cross_validation': cv_splits }
     return splits
 
