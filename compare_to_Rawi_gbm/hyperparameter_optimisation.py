@@ -171,6 +171,7 @@ if __name__ == '__main__':
         'freeze': 'antb and embed',
         'trial': '330',
         'validation': 'uniform',
-        'prune': 'treshold 0.05'
+        'prune': 'treshold 0.05',
+        'pretrain_epochs': 10
     }
     test_optimized_antibodies('ICERI V2', tags = tags, model_trial_name = 'uniform_330', pretrain_epochs = 10)
