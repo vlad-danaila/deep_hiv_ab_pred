@@ -7,7 +7,7 @@ CATNAP_DATA = join(COMPARE_RAWI_FOLDER, 'catnap_classification.json')
 MODELS_FOLDER = join(COMPARE_RAWI_FOLDER, 'models')
 
 HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
-HYPERPARAM_PRETRAIN = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_uniform_trail_171.json')
+HYPERPARAM_PRETRAIN = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json')
 HYPERPARAM_FOLDER_ANTIBODIES = join(HYPERPARAM_FOLDER, 'specific_antibodies', 'ICERI_v2')
 
 # Need to clone https://github.com/RedaRawi/bNAb-ReP.git
