@@ -167,9 +167,10 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
     dump_json({'finished': 'true'}, 'finished.json')
 
 if __name__ == '__main__':
-    test_optimized_antibodies('ICERI V2',
-        tags = {'note1': 'embeddings & antibodies nets are freezed, dropout set to 0, no grad computed'},
-        model_trial_name = 'trial_409',
-        freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS,
-        pretrain_epochs = None
-    )
+    tags = {
+        'freeze': 'antb and embed',
+        'trial': '330',
+        'validation': 'uniform',
+        'prune': 'treshold 0.05'
+    }
+    test_optimized_antibodies('ICERI V2', tags = tags, model_trial_name = 'uniform_330', pretrain_epochs = 10)
