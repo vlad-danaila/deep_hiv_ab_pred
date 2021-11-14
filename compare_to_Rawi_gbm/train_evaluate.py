@@ -20,7 +20,7 @@ CV = 'cross_validation'
 TRAIN = 'train'
 TEST = 'test'
 
-def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq):
+def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs):
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
     pretrain_set = AssayDataset(
@@ -30,8 +30,9 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
         pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0
     )
     model = get_ICERI_v2_model(conf)
+    epochs = pretrain_epochs if pretrain_epochs else conf['EPOCHS']
     _, _, best = train_network(
-        model, conf, loader_pretrain, None, None, conf['EPOCHS'], f'model_{antibody}_pretrain', MODELS_FOLDER
+        model, conf, loader_pretrain, None, None, epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
     )
 
 def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq,
