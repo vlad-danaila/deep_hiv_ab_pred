@@ -160,9 +160,9 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
         global_acc = statistics.mean(acc)
         global_mcc = statistics.mean(mcc)
         global_auc = statistics.mean(auc)
-        logging.info('Global ACC ' + global_acc)
-        logging.info('Global MCC ' + global_mcc)
-        logging.info('Global AUC ' + global_auc)
+        logging.info(f'Global ACC {global_acc}')
+        logging.info(f'Global MCC {global_mcc}')
+        logging.info(f'Global AUC {global_auc}')
         mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc, 'global_auc': global_auc })
     dump_json({'finished': 'true'}, 'finished.json')
 

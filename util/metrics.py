@@ -33,7 +33,7 @@ def log_test_metrics(test_metrics):
     mlflow.log_metrics({ 'test acc': test_metrics[ACCURACY], 'test mcc': test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] })
 
 def compute_metrics(ground_truth, pred, include_AUC = False):
-    metrics = np.zeros(4 if include_AUC else 3)
+    metrics = np.zeros(3)
     if include_AUC:
         metrics[AUC] = sk.metrics.roc_auc_score(ground_truth, pred)
     pred_bin = pred > .5
