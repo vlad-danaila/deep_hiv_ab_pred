@@ -4,7 +4,6 @@ import time
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import torch as t
-import math
 from deep_hiv_ab_pred.util.metrics import compute_metrics
 import optuna
 from deep_hiv_ab_pred.util.tools import to_numpy
@@ -52,7 +51,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
-    best = [math.inf, 0, -math.inf]
+    best = np.zeros(3)
     try:
         for epoch in range(epochs):
             model.train()
@@ -123,7 +122,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
-    best = [math.inf, 0, -math.inf]
+    best = np.zeros(3)
     try:
         for epoch in range(epochs):
             model.module.aminoacid_embedding.eval()
@@ -192,7 +191,7 @@ def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
-    best = [math.inf, 0, -math.inf]
+    best = np.zeros(3)
     try:
         for epoch in range(epochs):
             model.eval()
