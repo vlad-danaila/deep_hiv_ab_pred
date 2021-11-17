@@ -12,7 +12,7 @@ def plot_train_test(train, test, title, y_title, show = True):
     if show:
         plt.show()
 
-def plot_epochs(train_metrics_list, test_metrics_list, show = True):
+def plot_epochs(train_metrics_list, test_metrics_list, show = True, title = 'Correlation'):
     test_correlation = list(map(lambda m: m[MATTHEWS_CORRELATION_COEFFICIENT], test_metrics_list))
     train_corellation = list(map(lambda m: m[MATTHEWS_CORRELATION_COEFFICIENT], train_metrics_list))
-    plot_train_test(train_corellation, test_correlation, 'Correlation', 'Correlation', show)
+    plot_train_test(train_corellation, test_correlation, title, 'Correlation', show)

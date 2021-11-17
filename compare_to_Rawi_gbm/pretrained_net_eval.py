@@ -21,7 +21,7 @@ def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
             logging.info(f'{i}. Antibody {antibody}')
             metrics_train_per_epochs, metrics_test_per_epochs, best = pretrain_net(
                 antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, proposed_epochs)
-            plot_epochs(metrics_train_per_epochs, metrics_test_per_epochs, show = False)
+            plot_epochs(metrics_train_per_epochs, metrics_test_per_epochs, title = antibody)
             acc.append(best[ACCURACY])
             mcc.append(best[MATTHEWS_CORRELATION_COEFFICIENT])
             auc.append(best[AUC])
