@@ -19,6 +19,8 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
     for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
         start = time.time()
         pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
+        if pred.shape != ground_truth.shape:
+            pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
         loss.backward()
         t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
@@ -64,7 +66,10 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                 if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
                     best = test_metrics
                     if save_model:
-                        t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title} cv {cross_validation_round + 1}.tar'))
+                        if cross_validation_round is not None:
+                            t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title} cv {cross_validation_round + 1}.tar'))
+                        else:
+                            t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
                 if log_every_epoch:
                     logging.info(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
             else:
@@ -92,6 +97,8 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
             ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
             ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy, batch_size)
         pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
+        if pred.shape != ground_truth.shape:
+            pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
         if isTrain:
             assert optimizer != None
@@ -165,6 +172,8 @@ def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, o
             virus_output = virus_ab_all_output[:, -1]
         virus_output = model.module.fc_dropout(virus_output)
         pred = model.module.sigmoid(model.module.fully_connected(virus_output).squeeze())
+        if pred.shape != ground_truth.shape:
+            pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
         if isTrain:
             assert optimizer != None

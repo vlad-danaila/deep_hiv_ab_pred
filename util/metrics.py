@@ -5,6 +5,7 @@ import sklearn.metrics
 import sklearn as sk
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import logging
+import statistics
 
 def log_metrics_per_cv_antibody(cv_metrics, antibody):
     cv_metrics = np.array(cv_metrics)
@@ -40,3 +41,12 @@ def compute_metrics(ground_truth, pred, include_AUC = False):
     metrics[ACCURACY] = sk.metrics.accuracy_score(ground_truth, pred_bin)
     metrics[MATTHEWS_CORRELATION_COEFFICIENT] = sk.metrics.matthews_corrcoef(ground_truth, pred_bin)
     return metrics
+
+def log_metrics_from_lists(acc, mcc, auc):
+    global_acc = statistics.mean(acc)
+    global_mcc = statistics.mean(mcc)
+    global_auc = statistics.mean(auc)
+    logging.info(f'Global ACC {global_acc}')
+    logging.info(f'Global MCC {global_mcc}')
+    logging.info(f'Global AUC {global_auc}')
+    mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc, 'global_auc': global_auc })

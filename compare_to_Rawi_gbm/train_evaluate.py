@@ -22,18 +22,18 @@ TEST = 'test'
 
 def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs):
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
+    rest_assays = [a for a in catnap if a[0] not in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
-    pretrain_set = AssayDataset(
-        pretraining_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask
-    )
-    loader_pretrain = t.utils.data.DataLoader(
-        pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0
-    )
+    pretrain_set = AssayDataset(pretraining_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    val_set = AssayDataset(rest_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
+    loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     model = get_ICERI_v2_model(conf)
     epochs = pretrain_epochs if pretrain_epochs else conf['EPOCHS']
-    _, _, best = train_network(
-        model, conf, loader_pretrain, None, None, epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
+    metrics_train_per_epochs, metrics_test_per_epochs, best = train_network(
+        model, conf, loader_pretrain, loader_val, None, epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
     )
+    return metrics_train_per_epochs, metrics_test_per_epochs, best
 
 def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq,
     antibody_heavy_seq, trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
