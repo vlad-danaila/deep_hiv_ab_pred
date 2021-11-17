@@ -22,7 +22,7 @@ def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
             metrics_train_per_epochs, metrics_test_per_epochs, best = pretrain_net(
                 antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, proposed_epochs)
             ideal_nb_epochs = [
-                m for m in metrics_test_per_epochs
+                i + 1 for (i, m) in enumerate(metrics_test_per_epochs)
                 if m[MATTHEWS_CORRELATION_COEFFICIENT] == best[MATTHEWS_CORRELATION_COEFFICIENT]
             ][-1]
             plot_epochs(metrics_train_per_epochs, metrics_test_per_epochs, title = antibody, save_file = f'plot_{antibody} ({ideal_nb_epochs})')
