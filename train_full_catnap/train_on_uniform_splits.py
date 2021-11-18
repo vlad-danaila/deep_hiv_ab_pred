@@ -62,6 +62,10 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
     epochs = nb_epochs if nb_epochs else conf['EPOCHS']
     train_metrics_list, test_metrics_list, last = train_network_n_times(
         model, conf, loader_train, loader_test, None, epochs, model_name, MODELS_FOLDER)
+    mccs = [m[MATTHEWS_CORRELATION_COEFFICIENT] for m in test_metrics_list]
+    best_mcc = max(mccs)
+    ideal_epoch = mccs.index(best_mcc) + 1
+    logging.info(f'Best MCC {best_mcc} at epoch {ideal_epoch}')
     plot_epochs(train_metrics_list, test_metrics_list)
 
 def main_train():
