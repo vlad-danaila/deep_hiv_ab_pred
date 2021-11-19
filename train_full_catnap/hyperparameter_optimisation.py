@@ -146,8 +146,8 @@ def optimize_hyperparameters():
     initial_conf = read_yaml(CONF_ICERI_V2)
     if not study_exists:
         study.enqueue_trial(initial_conf)
-    objective = get_objective_train_hold_out_one_cluster()
-    # objective = get_objective_train_on_uniform_splits()
+    #objective = get_objective_train_hold_out_one_cluster()
+    objective = get_objective_train_on_uniform_splits()
     study.optimize(objective, n_trials=10000)
     logging.info(study.best_params)
     dump_json(study.best_params, BEST_PARAMS)
