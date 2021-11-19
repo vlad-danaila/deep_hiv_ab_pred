@@ -88,6 +88,8 @@ def get_ICERI_v2_model(conf, embeding_type = 'LEARNED'):
         embedding_matrix = None
     elif embeding_type == 'ONE-HOT':
         embedding_matrix = t.eye(aminoacids_len)
+    else:
+        raise 'The embedding type must have a valid value.'
     model = ICERI2021Net_V2(conf, embedding_matrix).to(device)
     model = t.nn.DataParallel(model)
     return model
