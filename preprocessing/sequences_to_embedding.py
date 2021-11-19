@@ -1,12 +1,9 @@
 import torch as t
+from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 from deep_hiv_ab_pred.util.tools import device
 from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE
 from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
-
-aminoacids = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'X', '-']
-amino_to_index = { aa: i for (i, aa) in enumerate(aminoacids) }
-aminoacids_len = len(aminoacids)
 
 def sequence_to_indexes(seq, kmer_len, kmer_stride):
     return t.tensor([

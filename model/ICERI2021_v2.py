@@ -1,7 +1,8 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
-from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import aminoacids_len
+from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, amino_props, amino_props_and_one_hot
 from deep_hiv_ab_pred.global_constants import EMBEDDING
+from deep_hiv_ab_pred.util.tools import to_torch
 
 class ICERI2021Net_V2(t.nn.Module):
 
@@ -91,6 +92,10 @@ def get_ICERI_v2_model(conf, embeding_type = EMBEDDING):
         embedding_matrix = None
     elif embeding_type == 'ONE-HOT':
         embedding_matrix = t.eye(aminoacids_len)
+    elif embeding_type == 'ONE-HOT-AND-PROPS':
+        embedding_matrix = to_torch(amino_props_and_one_hot().values)
+    elif embeding_type == 'PROPS-ONLY':
+        embedding_matrix = to_torch(amino_props().values)
     else:
         raise 'The embedding type must have a valid value.'
     model = ICERI2021Net_V2(conf, embedding_matrix).to(device)

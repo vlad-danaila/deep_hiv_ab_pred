@@ -1,6 +1,5 @@
 import torch as t
 from deep_hiv_ab_pred.util.tools import device
-from deep_hiv_ab_pred.preprocessing.sequences_to_one_hot import kmers_tensor_from_coordinates
 
 class AssayDataset(t.utils.data.Dataset):
 
@@ -22,29 +21,6 @@ class AssayDataset(t.utils.data.Dataset):
 
     def __len__(self):
         return len(self.assays)
-
-class AssayDatasetOneHot(t.utils.data.Dataset):
-
-    def __init__(self, assays, antibody_light_seq, antibody_heavy_seq, virus_seq, pngs_mask_to_kemr_tensor, conf):
-        super().__init__()
-        self.assays = assays
-        self.antibody_light_seq = antibody_light_seq
-        self.antibody_heavy_seq = antibody_heavy_seq
-        self.virus_seq = virus_seq
-        self.pngs_mask_to_kemr_tensor = pngs_mask_to_kemr_tensor
-        self.kmer_len_antb = conf['KMER_LEN_ANTB']
-        self.kmer_len_virus = conf['KMER_LEN_VIRUS']
-
-    def __getitem__(self, i):
-        id, antibody, virus, ground_truth = self.assays[i]
-        kmer_count_al, indexes_al = self.antibody_light_seq[antibody]
-        antibody_light_tensor = kmers_tensor_from_coordinates(kmer_count_al, indexes_al, self.kmer_len_antb)
-        kmer_count_ah, indexes_ah = self.antibody_heavy_seq[antibody]
-        antibody_heavy_tensor = kmers_tensor_from_coordinates(kmer_count_ah, indexes_ah, self.kmer_len_antb)
-        kmer_count_virus, indexes_virus = self.virus_seq[virus]
-        virus_tensor = kmers_tensor_from_coordinates(kmer_count_virus, indexes_virus, self.kmer_len_virus)
-        pngs_mask_tensor = self.pngs_mask_to_kemr_tensor[virus]
-        return antibody_light_tensor, antibody_heavy_tensor, virus_tensor, pngs_mask_tensor, ground_truth
 
 def __len__(self):
     return len(self.assays)
