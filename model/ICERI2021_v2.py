@@ -8,7 +8,7 @@ class ICERI2021Net_V2(t.nn.Module):
     def __init__(self, conf, embeddings_matrix = None):
         super().__init__()
         self.conf = conf
-        if not embeddings_matrix:
+        if embeddings_matrix is None:
             self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = conf['EMBEDDING_SIZE'])
         else:
             self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = embeddings_matrix.shape[1])
