@@ -12,7 +12,7 @@ import numpy as np
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
 from os.path import join
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
+from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import logging
 from deep_hiv_ab_pred.util.logging import setup_logging
 from deep_hiv_ab_pred.util.metrics import log_test_metrics
@@ -82,7 +82,7 @@ def test(splits, catnap, conf):
 def main_train():
     setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
-    conf = read_json_file(HYPERPARAM_PRETRAIN)
+    conf = read_json_file(DEFAULT_CONF)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = train_hold_out_one_cluster(splits, catnap, conf)
@@ -90,7 +90,7 @@ def main_train():
 def main_test():
     setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
-    conf = read_json_file(HYPERPARAM_PRETRAIN)
+    conf = read_json_file(DEFAULT_CONF)
     splits = read_json_file(SPLITS_HOLD_OUT_ONE_CLUSTER)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = test(splits, catnap, conf)

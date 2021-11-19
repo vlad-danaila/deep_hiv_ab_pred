@@ -1,6 +1,7 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import aminoacids_len
+from deep_hiv_ab_pred.global_constants import EMBEDDING
 
 class ICERI2021Net_V2(t.nn.Module):
 
@@ -83,7 +84,7 @@ class ICERI2021Net_V2(t.nn.Module):
         ab_hidden = self.forward_antibodyes(ab_light, ab_heavy, batch_size)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
-def get_ICERI_v2_model(conf, embeding_type = 'LEARNED'):
+def get_ICERI_v2_model(conf, embeding_type = EMBEDDING):
     if embeding_type == 'LEARNED':
         embedding_matrix = None
     elif embeding_type == 'ONE-HOT':

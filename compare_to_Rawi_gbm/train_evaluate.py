@@ -1,7 +1,8 @@
 import statistics
 from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_experiment
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
-    FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER, FREEZE_ALL, HYPERPARAM_PRETRAIN
+    FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER, FREEZE_ALL
+from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
@@ -73,8 +74,8 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
 def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
-        conf = read_json_file(HYPERPARAM_PRETRAIN)
-        mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
+        conf = read_json_file(DEFAULT_CONF)
+        mlflow.log_artifact(DEFAULT_CONF, 'base_conf.json')
         all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
         # mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
         catnap = read_json_file(CATNAP_FLAT)

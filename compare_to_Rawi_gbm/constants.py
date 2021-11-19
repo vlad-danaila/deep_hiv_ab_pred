@@ -1,15 +1,12 @@
 from os.path import join
 
+from deep_hiv_ab_pred.global_constants import HYPERPARAM_FOLDER
+
 COMPARE_RAWI_FOLDER = join('deep_hiv_ab_pred', 'compare_to_Rawi_gbm')
 RAWI_DATA = join(COMPARE_RAWI_FOLDER, 'Rawi_data.json')
 COMPARE_SPLITS_FOR_RAWI = join(COMPARE_RAWI_FOLDER, 'splits_Rawi_comparison.json')
 CATNAP_DATA = join(COMPARE_RAWI_FOLDER, 'catnap_classification.json')
 MODELS_FOLDER = join(COMPARE_RAWI_FOLDER, 'models')
-
-HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
-
-HYPERPARAM_PRETRAIN = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json')
-# HYPERPARAM_PRETRAIN = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_hold_out_prune_treshold_01_trial_162.json')
 
 HYPERPARAM_FOLDER_ANTIBODIES = join(HYPERPARAM_FOLDER, 'specific_antibodies', 'ICERI_v2')
 

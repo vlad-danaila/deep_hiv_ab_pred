@@ -7,7 +7,7 @@ from deep_hiv_ab_pred.util.tools import read_json_file
 import torch as t
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT, AUC
 import mlflow
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN, HYPERPARAM_FOLDER
+from deep_hiv_ab_pred.global_constants import DEFAULT_CONF, HYPERPARAM_FOLDER
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import test
 from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
 import logging
@@ -71,7 +71,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
 def main_train():
     setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
-    conf = read_json_file(HYPERPARAM_PRETRAIN)
+    conf = read_json_file(DEFAULT_CONF)
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = train_on_uniform_splits(splits, catnap, conf)
@@ -79,7 +79,7 @@ def main_train():
 def main_test():
     setup_logging()
     # conf = read_yaml(CONF_ICERI_V2)
-    conf = read_json_file(HYPERPARAM_PRETRAIN)
+    conf = read_json_file(DEFAULT_CONF)
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
     metrics = test(splits, catnap, conf)

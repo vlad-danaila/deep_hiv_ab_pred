@@ -1,5 +1,5 @@
 from deep_hiv_ab_pred.util.tools import get_experiment
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_PRETRAIN
+from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import mlflow
 import logging
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.hyperparameter_optimisation import get_data
@@ -15,7 +15,7 @@ def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
         all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
-        mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'conf.json')
+        mlflow.log_artifact(DEFAULT_CONF, 'conf.json')
         acc, mcc, auc = [], [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
             logging.info(f'{i}. Antibody {antibody}')

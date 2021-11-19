@@ -6,7 +6,8 @@ from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json, get_experiment
 import os
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
-    HYPERPARAM_PRETRAIN, CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
+    CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
+from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate_antibody
 from os.path import join
@@ -120,7 +121,7 @@ def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000,
 def get_data():
     all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
     catnap = read_json_file(CATNAP_FLAT)
-    base_conf = read_json_file(HYPERPARAM_PRETRAIN)
+    base_conf = read_json_file(DEFAULT_CONF)
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
         base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS'], base_conf['KMER_LEN_ANTB'], base_conf['KMER_STRIDE_ANTB']
     )
@@ -137,7 +138,7 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS,
         prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name, freeze_mode = freeze_mode, pretrain_epochs = pretrain_epochs)
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
-    mlflow.log_artifact(HYPERPARAM_PRETRAIN, 'base_conf.json')
+    mlflow.log_artifact(DEFAULT_CONF, 'base_conf.json')
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')
     conf = add_properties_from_base_config(conf, base_conf)
