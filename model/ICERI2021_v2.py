@@ -4,10 +4,15 @@ from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import aminoacids_len
 
 class ICERI2021Net_V2(t.nn.Module):
 
-    def __init__(self, conf):
+    def __init__(self, conf, embeddings_matrix = None):
         super().__init__()
         self.conf = conf
-        self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = conf['EMBEDDING_SIZE'])
+        if not embeddings_matrix:
+            self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = conf['EMBEDDING_SIZE'])
+        else:
+            self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = embeddings_matrix.shape[1])
+            self.aminoacid_embedding.load_state_dict({'weight': embeddings_matrix})
+            self.aminoacid_embedding.weight.requires_grad = False
         self.light_ab_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_ANTB'] * conf['EMBEDDING_SIZE'],
             hidden_size = conf['RNN_HIDDEN_SIZE'],
@@ -78,7 +83,11 @@ class ICERI2021Net_V2(t.nn.Module):
         ab_hidden = self.forward_antibodyes(ab_light, ab_heavy, batch_size)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
-def get_ICERI_v2_model(conf):
-    model = ICERI2021Net_V2(conf).to(device)
+def get_ICERI_v2_model(conf, embeding_type = 'LEARNED'):
+    if embeding_type == 'LEARNED':
+        embedding_matrix = None
+    elif embeding_type == 'ONE-HOT':
+        embedding_matrix = t.eye(aminoacids_len)
+    model = ICERI2021Net_V2(conf, embedding_matrix).to(device)
     model = t.nn.DataParallel(model)
     return model

@@ -35,7 +35,7 @@ def compute_amino_props():
     amino_props_np = preprocessing.StandardScaler().fit_transform(amino_props_np)
     amino_props_df = pd.DataFrame(amino_props_np, index=amino_props.index)
     return amino_props_df # to get a value: amino_props.loc['C'].values
-    
+
 def kmers_tensor_seq(seq: str, kmer_len: int, kmer_stride: int):
     kmer_size = kmer_len * aminoacids_len
     kmer_count = int((len(seq) - kmer_len) / kmer_stride) + 1
