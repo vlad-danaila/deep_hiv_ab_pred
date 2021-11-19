@@ -95,7 +95,7 @@ def get_ICERI_v2_model(conf, embeding_type = EMBEDDING):
     elif embeding_type == 'ONE-HOT-AND-PROPS':
         embedding_matrix = to_torch(amino_props_and_one_hot().values)
     elif embeding_type == 'PROPS-ONLY':
-        embedding_matrix = to_torch(amino_props().values)
+        embedding_matrix = to_torch(amino_props.values)
     else:
         raise 'The embedding type must have a valid value.'
     model = ICERI2021Net_V2(conf, embedding_matrix).to(device)
