@@ -42,7 +42,7 @@ def read_antibody_fasta_sequences(fasta_file_path, antibody_trim, kmer_len, kmer
             # print(f'>{seq_record.id}')
             # print(seq_record.seq)
             seq = seq[:antibody_trim]
-        antibody_seq_dict[antibody_id] = sequence_to_indexes(seq, kmer_len, kmer_stride)
+        antibody_seq_dict[antibody_id] = t.tensor([amino_to_index[s] for s in seq], dtype=t.long, device = device)
     return antibody_seq_dict
 
 def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
