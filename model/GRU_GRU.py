@@ -4,7 +4,7 @@ from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, amino_prop
 from deep_hiv_ab_pred.global_constants import EMBEDDING
 from deep_hiv_ab_pred.util.tools import to_torch
 
-class ICERI2021Net_V2(t.nn.Module):
+class GRU_GRU(t.nn.Module):
 
     def __init__(self, conf, embeddings_matrix = None):
         super().__init__()
@@ -87,7 +87,7 @@ class ICERI2021Net_V2(t.nn.Module):
         ab_hidden = self.forward_antibodyes(ab_light, ab_heavy, batch_size)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
-def get_ICERI_v2_model(conf, embeding_type = EMBEDDING):
+def get_GRU_GRU_model(conf, embeding_type = EMBEDDING):
     if embeding_type == 'LEARNED':
         embedding_matrix = None
     elif embeding_type == 'ONE-HOT':
@@ -98,6 +98,6 @@ def get_ICERI_v2_model(conf, embeding_type = EMBEDDING):
         embedding_matrix = to_torch(amino_props.values)
     else:
         raise 'The embedding type must have a valid value.'
-    model = ICERI2021Net_V2(conf, embedding_matrix).to(device)
+    model = GRU_GRU(conf, embedding_matrix).to(device)
     model = t.nn.DataParallel(model)
     return model

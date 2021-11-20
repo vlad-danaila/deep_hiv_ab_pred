@@ -7,7 +7,7 @@ import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
-from deep_hiv_ab_pred.model.ICERI2021_v2 import get_ICERI_v2_model
+from deep_hiv_ab_pred.model.GRU_GRU import get_GRU_GRU_model
 from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
 from os.path import join
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
@@ -29,7 +29,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     val_set = AssayDataset(rest_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
     loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
-    model = get_ICERI_v2_model(conf)
+    model = get_GRU_GRU_model(conf)
     epochs = pretrain_epochs if pretrain_epochs else conf['EPOCHS']
     metrics_train_per_epochs, metrics_test_per_epochs, best = train_network(
         model, conf, loader_pretrain, loader_val, None, epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
@@ -49,7 +49,7 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
         loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
         loader_test = t.utils.data.DataLoader(test_set, len(test_set), shuffle = False, collate_fn = zero_padding, num_workers = 0)
-        model = get_ICERI_v2_model(conf)
+        model = get_GRU_GRU_model(conf)
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
