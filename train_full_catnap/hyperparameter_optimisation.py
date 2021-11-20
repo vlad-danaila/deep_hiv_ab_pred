@@ -20,12 +20,8 @@ from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 import torch as t
 
 def propose(trial: optuna.trial.Trial):
-    # kmer_len_antb = trial.suggest_int('KMER_LEN_ANTB', 3, 110)
     kmer_len_virus = trial.suggest_int('KMER_LEN_VIRUS', 3, 110)
     return {
-        # 'EMBEDDING_SIZE': trial.suggest_int('EMBEDDING_SIZE', 2, 64),
-        # 'KMER_LEN_ANTB': kmer_len_antb,
-        # 'KMER_STRIDE_ANTB': trial.suggest_int('KMER_STRIDE_ANTB', max(1, kmer_len_antb // 10), kmer_len_antb),
         'KMER_LEN_VIRUS': kmer_len_virus,
         'KMER_STRIDE_VIRUS': trial.suggest_int('KMER_STRIDE_VIRUS', max(1, kmer_len_virus // 10), kmer_len_virus),
         'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
@@ -36,7 +32,6 @@ def propose(trial: optuna.trial.Trial):
         'NB_LAYERS': trial.suggest_int('NB_LAYERS', 1, 10),
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_RNN_DROPOUT', 0, .5),
-        'VIRUS_RNN_DROPOUT': trial.suggest_float('VIRUS_RNN_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
     }
 
