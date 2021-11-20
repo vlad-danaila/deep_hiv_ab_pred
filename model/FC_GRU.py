@@ -50,8 +50,8 @@ class FC_GRU(t.nn.Module):
     def forward_antibodyes(self, ab_light, ab_heavy):
         # self.light_ab_fc.flatten_parameters()
         light_ab_hidden = self.light_ab_fc(ab_light)
-        # self.heavy_ab_gru.flatten_parameters()
-        heavy_ab_hidden = self.heavy_ab_gru(ab_heavy)
+        # self.heavy_ab_fc.flatten_parameters()
+        heavy_ab_hidden = self.heavy_ab_fc(ab_heavy)
         ab_hidden = t.cat([light_ab_hidden, heavy_ab_hidden], axis = 1)
         return ab_hidden
 
