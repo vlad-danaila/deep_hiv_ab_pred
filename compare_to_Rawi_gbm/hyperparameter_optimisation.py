@@ -36,7 +36,6 @@ def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_
         'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
         'KMER_STRIDE_ANTB': base_conf['KMER_STRIDE_ANTB'],
         'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
-        'NB_LAYERS': base_conf['NB_LAYERS'],
         'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
     }
 

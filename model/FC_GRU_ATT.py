@@ -40,7 +40,7 @@ class FC_GRU_ATT(t.nn.Module):
         self.sigmoid = t.nn.Sigmoid()
 
     def virus_state_init(self, batch_size):
-        return t.zeros(self.conf['NB_LAYERS'] * 2, batch_size, self.VIRUS_RNN_HIDDEN_SIZE, device=device)
+        return t.zeros(2, batch_size, self.VIRUS_RNN_HIDDEN_SIZE, device=device)
 
     def forward_embeddings(self, ab_light, ab_heavy, virus, batch_size):
         ab_light = self.aminoacid_embedding(ab_light).reshape(batch_size, -1)
