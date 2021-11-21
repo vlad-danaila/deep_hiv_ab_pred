@@ -15,6 +15,7 @@ from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 from deep_hiv_ab_pred.util.logging import setup_logging
 from deep_hiv_ab_pred.util.plotting import plot_epochs
 from os.path import join
+from deep_hiv_ab_pred.catnap.download_dataset import download_catnap
 
 def log_metrics(metrics):
     logging.info(f'Acc {metrics[ACCURACY]}')
@@ -85,5 +86,6 @@ def main_test():
     metrics = test(splits, catnap, conf)
 
 if __name__ == '__main__':
-    main_train()
-    main_test()
+    inspect_performance_per_epocs("hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json", 100)
+    # main_train()
+    # main_test()

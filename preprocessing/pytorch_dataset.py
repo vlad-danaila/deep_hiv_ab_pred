@@ -1,5 +1,7 @@
 import torch as t
 from deep_hiv_ab_pred.util.tools import device
+from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
+from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 
 class AssayDataset(t.utils.data.Dataset):
 
@@ -26,13 +28,13 @@ def __len__(self):
     return len(self.assays)
 
 def zero_padding(batch):
-    ab_light     = [b[0] for b in batch]
-    ab_heavy     = [b[1] for b in batch]
+    ab_light     = [t.nn.functional.pad(b[0], (0, LIGHT_ANTIBODY_TRIM - len(b[0])), value = amino_to_index['-']) for b in batch]
+    ab_heavy     = [t.nn.functional.pad(b[1], (0, HEAVY_ANTIBODY_TRIM - len(b[1])), value = amino_to_index['-']) for b in batch]
     virus        = [b[2] for b in batch]
     pngs_mask    = [b[3] for b in batch]
     ground_truth = [b[4] for b in batch]
-    batched_ab_light = t.nn.utils.rnn.pad_sequence(ab_light, batch_first=True, padding_value=0)
-    batched_ab_heavy = t.nn.utils.rnn.pad_sequence(ab_heavy, batch_first=True, padding_value=0)
+    batched_ab_light = t.stack(ab_light)
+    batched_ab_heavy = t.stack(ab_heavy)
     batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value=0)
     #batched_virus = t.stack(virus)
     batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value=0)
