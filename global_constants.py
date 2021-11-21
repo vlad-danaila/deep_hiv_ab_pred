@@ -12,3 +12,5 @@ DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_uniform_prune_tresho
 
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_gru_gru_props_onlu_trial_367.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_gru_gru_props_onlu_trial_151.json')
+
+#DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_gru_gru_one_hot_trial_356.json')
