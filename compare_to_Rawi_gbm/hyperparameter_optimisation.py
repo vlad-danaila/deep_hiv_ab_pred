@@ -122,7 +122,7 @@ def get_data():
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(DEFAULT_CONF)
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
-        base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS'], base_conf['KMER_LEN_ANTB'], base_conf['KMER_STRIDE_ANTB']
+        base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS']
     )
     return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
 

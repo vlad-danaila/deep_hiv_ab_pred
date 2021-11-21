@@ -39,7 +39,7 @@ def log_cv_metrics(cv_metrics):
 
 def train_hold_out_one_cluster(splits, catnap, conf, pruner: CrossValidationPruner = None):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
-        conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
+        conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS']
     )
     cv_metrics = []
     cv_folds = list(range(len(splits['cv'])))
@@ -61,7 +61,7 @@ def train_hold_out_one_cluster(splits, catnap, conf, pruner: CrossValidationPrun
 
 def test(splits, catnap, conf):
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
-        conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS'], conf['KMER_LEN_ANTB'], conf['KMER_STRIDE_ANTB']
+        conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS']
     )
     test_ids = splits['test']
     train_assays = [a for a in catnap if a[0] not in test_ids]
