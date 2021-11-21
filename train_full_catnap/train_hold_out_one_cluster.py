@@ -6,7 +6,7 @@ from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.util.tools import read_json_file
-from deep_hiv_ab_pred.model.FC_GRU import get_FC_GRU_model
+from deep_hiv_ab_pred.model.FC_GRU_ATT import get_FC_GRU_ATT_model
 import torch as t
 import numpy as np
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
@@ -53,7 +53,7 @@ def train_hold_out_one_cluster(splits, catnap, conf, pruner: CrossValidationPrun
         val_set = AssayDataset(val_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
         loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
         loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
-        model = get_FC_GRU_model(conf)
+        model = get_FC_GRU_ATT_model(conf)
         _, _, best = train_network_n_times(model, conf, loader_train, loader_val, i, conf['EPOCHS'], f'model_cv_{i}', MODELS_FOLDER, pruner)
         cv_metrics.append(best)
     log_cv_metrics(cv_metrics)
@@ -70,7 +70,7 @@ def test(splits, catnap, conf):
     test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
-    model = get_FC_GRU_model(conf)
+    model = get_FC_GRU_ATT_model(conf)
     model_name = 'model_test'
     _, _, best = train_network_n_times(model, conf, loader_train, None, None, conf['EPOCHS'], model_name, MODELS_FOLDER)
     checkpoint = t.load(join(MODELS_FOLDER, f'{model_name}.tar'))
