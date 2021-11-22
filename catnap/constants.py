@@ -1,4 +1,5 @@
 import os
+from os.path import join
 
 # Folder to download the dataset
 CATNAP_FOLDER = os.path.join('deep_hiv_ab_pred', 'catnap', 'catnap_data')
@@ -30,3 +31,8 @@ ANTIBODIES_DETAILS_FILE = os.path.join(CATNAP_FOLDER, 'antibodies_details.text')
 
 CATNAP_FLAT = os.path.join('deep_hiv_ab_pred', 'catnap', 'catnap_flat.json')
 IC50_TRESHOLD = 50
+
+# CDR
+CDR_FOLDER = os.path.join('deep_hiv_ab_pred', 'catnap', 'cdr_data')
+AB_LIGHT_CDR = join(CDR_FOLDER, 'ab_light_cdr.txt')
+AB_HEAVY_CDR = join(CDR_FOLDER, 'ab_heavy_cdr.txt')
