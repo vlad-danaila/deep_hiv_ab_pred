@@ -34,5 +34,5 @@ IC50_TRESHOLD = 50
 
 # CDR
 CDR_FOLDER = os.path.join('deep_hiv_ab_pred', 'catnap', 'cdr_data')
-AB_LIGHT_CDR = join(CDR_FOLDER, 'ab_light_cdr.txt')
-AB_HEAVY_CDR = join(CDR_FOLDER, 'ab_heavy_cdr.txt')
+AB_LIGHT_CDR = join(CDR_FOLDER, 'Paratome output ab light.txt')
+AB_HEAVY_CDR = join(CDR_FOLDER, 'Paratome output ab heavy.txt')
