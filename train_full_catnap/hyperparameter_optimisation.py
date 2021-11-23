@@ -24,7 +24,7 @@ def propose(trial: optuna.trial.Trial):
     virus_layers = trial.suggest_int('VIRUS_LAYERS', 1, 10)
     ab_layers = trial.suggest_int('AB_LAYERS', 1, 10)
     return {
-        'AB_HIDDEN': trial.suggest_int('AB_HIDDEN', 16, 1024) if ab_layers > 2 else None,
+        'AB_HIDDEN': trial.suggest_int('AB_HIDDEN', 16, 1024) if ab_layers > 1 else None,
         'AB_LAYERS': ab_layers,
         'VIRUS_LAYERS': virus_layers,
         'KMER_LEN_VIRUS': kmer_len_virus,
