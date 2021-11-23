@@ -66,8 +66,8 @@ class FC_GRU_ATT(t.nn.Module):
     def forward_virus(self, virus, pngs_mask, ab_hidden):
         virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
         self.virus_gru.flatten_parameters()
-        ab_hidden_clone = t.clone(ab_hidden)
-        ab_hidden_bidirectional = t.stack((ab_hidden, ab_hidden_clone), axis = 0)
+        ab_hidden_clones = [t.clone(ab_hidden) for _ in range(2 * self.conf['VIRUS_LAYERS'])]
+        ab_hidden_bidirectional = t.stack(ab_hidden_clones, axis = 0)
         virus_ab_all_output, _ = self.virus_gru(virus_and_pngs, ab_hidden_bidirectional)
         virus_output = virus_ab_all_output[:, -1]
         virus_output = self.fc_dropout(virus_output)
