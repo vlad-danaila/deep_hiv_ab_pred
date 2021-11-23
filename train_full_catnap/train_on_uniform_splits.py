@@ -42,6 +42,7 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     model = get_FC_GRU_ATT_model(conf)
     _, test_metrics, last = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
+    logging.info(f'Best epoch is {epoch_index + 1}')
     log_metrics(best_metrics)
     return best_metrics
 
