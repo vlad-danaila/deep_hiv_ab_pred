@@ -34,7 +34,7 @@ class FullyConnectedWithSelfAttention(t.nn.Module):
         else:
             att_hiddenen = t.relu(self.dropout(self.att_in(x)))
             fc_hidden = t.relu(self.dropout(self.fc_in(x)))
-            for i in self.num_layers:
+            for i in range(self.num_layers):
                 att_hiddenen = att_hiddenen + t.relu(self.dropout(self.att_hidden[i](att_hiddenen)))
                 fc_hidden = fc_hidden + t.relu(self.dropout(self.fc_hidden[i](fc_hidden)))
             att_out = t.sigmoid(self.dropout(self.att_out(att_hiddenen)))
