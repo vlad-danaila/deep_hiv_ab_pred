@@ -21,7 +21,11 @@ import torch as t
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_virus = trial.suggest_int('KMER_LEN_VIRUS', 3, 110)
+    virus_layers = trial.suggest_int('VIRUS_LAYERS', 1, 10)
     return {
+        'AB_HIDDEN': trial.suggest_int('AB_HIDDEN', 16, 1024),
+        'AB_LAYERS': trial.suggest_int('AB_LAYERS', 1, 10),
+        'VIRUS_LAYERS': virus_layers,
         'KMER_LEN_VIRUS': kmer_len_virus,
         'KMER_STRIDE_VIRUS': trial.suggest_int('KMER_STRIDE_VIRUS', max(1, kmer_len_virus // 10), kmer_len_virus),
         'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
@@ -30,8 +34,9 @@ def propose(trial: optuna.trial.Trial):
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
         'RNN_HIDDEN_SIZE': trial.suggest_int('RNN_HIDDEN_SIZE', 16, 1024),
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
-        'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_RNN_DROPOUT', 0, .5),
-        'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
+        'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_DROPOUT', 0, .5),
+        'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
+        'VIRUS_DROPOUT': trial.suggest_float('VIRUS_DROPOUT', 0, .5) if virus_layers > 1 else 0
     }
 
 # def train_hold_out_one_cluster(splits, catnap, conf, trial):

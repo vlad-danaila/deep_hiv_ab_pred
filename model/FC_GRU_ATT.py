@@ -4,6 +4,7 @@ from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, amino_prop
 from deep_hiv_ab_pred.global_constants import EMBEDDING
 from deep_hiv_ab_pred.util.tools import to_torch
 from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
+from deep_hiv_ab_pred.model.multi_layer_fc_att import FullyConnectedWithSelfAttention
 
 class FC_GRU_ATT(t.nn.Module):
 
@@ -18,21 +19,26 @@ class FC_GRU_ATT(t.nn.Module):
             self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = self.embeding_size)
             self.aminoacid_embedding.load_state_dict({'weight': embeddings_matrix})
             self.aminoacid_embedding.weight.requires_grad = False
-        self.light_ab_fc = t.nn.Linear(LIGHT_ANTIBODY_TRIM * self.embeding_size, conf['RNN_HIDDEN_SIZE'])
-        self.light_ab_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
-        self.light_ab_att = t.nn.Linear(LIGHT_ANTIBODY_TRIM * self.embeding_size, conf['RNN_HIDDEN_SIZE'])
-        self.light_ab_att_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
-        self.heavy_ab_fc = t.nn.Linear(HEAVY_ANTIBODY_TRIM * self.embeding_size, conf['RNN_HIDDEN_SIZE'])
-        self.heavy_ab_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
-        self.heavy_ab_att = t.nn.Linear(HEAVY_ANTIBODY_TRIM * self.embeding_size, conf['RNN_HIDDEN_SIZE'])
-        self.heavy_ab_att_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
+        self.light_ab = FullyConnectedWithSelfAttention(
+            in_size = LIGHT_ANTIBODY_TRIM * self.embeding_size,
+            hidden_size = conf['AB_HIDDEN'],
+            out_size = conf['RNN_HIDDEN_SIZE'],
+            num_layers = conf['AB_LAYERS'],
+            dropout = conf['ANTIBODIES_DROPOUT'])
+        self.heavy_ab = FullyConnectedWithSelfAttention(
+            in_size = HEAVY_ANTIBODY_TRIM * self.embeding_size,
+            hidden_size = conf['AB_HIDDEN'],
+            out_size = conf['RNN_HIDDEN_SIZE'],
+            num_layers = conf['AB_LAYERS'],
+            dropout = conf['ANTIBODIES_DROPOUT'])
         self.VIRUS_RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] * 2
         self.virus_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_VIRUS'] * self.embeding_size + conf['KMER_LEN_VIRUS'],
             hidden_size = self.VIRUS_RNN_HIDDEN_SIZE,
-            num_layers = 1,
+            num_layers = conf['VIRUS_LAYERS'],
             batch_first = True,
-            bidirectional = True
+            bidirectional = True,
+            dropout = conf['VIRUS_DROPOUT']
         )
         self.embedding_dropout = t.nn.Dropout(conf['EMBEDDING_DROPOUT'])
         self.fc_dropout = t.nn.Dropout(conf['FULLY_CONNECTED_DROPOUT'])
@@ -52,10 +58,8 @@ class FC_GRU_ATT(t.nn.Module):
         return ab_light, ab_heavy, virus
 
     def forward_antibodyes(self, ab_light, ab_heavy):
-        light_ab_att = t.sigmoid(self.light_ab_att_dropout(self.light_ab_att(ab_light)))
-        light_ab_hidden = light_ab_att * self.light_ab_dropout(self.light_ab_fc(ab_light))
-        heavy_ab_att = t.sigmoid(self.heavy_ab_att_dropout(self.heavy_ab_att(ab_heavy)))
-        heavy_ab_hidden = heavy_ab_att * self.heavy_ab_dropout(self.heavy_ab_fc(ab_heavy))
+        light_ab_hidden = self.light_ab(ab_light)
+        heavy_ab_hidden = self.heavy_ab(ab_heavy)
         ab_hidden = t.cat([light_ab_hidden, heavy_ab_hidden], axis = 1)
         return ab_hidden
 
