@@ -22,9 +22,10 @@ import torch as t
 def propose(trial: optuna.trial.Trial):
     kmer_len_virus = trial.suggest_int('KMER_LEN_VIRUS', 3, 110)
     virus_layers = trial.suggest_int('VIRUS_LAYERS', 1, 10)
+    ab_layers = trial.suggest_int('AB_LAYERS', 1, 10)
     return {
-        'AB_HIDDEN': trial.suggest_int('AB_HIDDEN', 16, 1024),
-        'AB_LAYERS': trial.suggest_int('AB_LAYERS', 1, 10),
+        'AB_HIDDEN': trial.suggest_int('AB_HIDDEN', 16, 1024) if ab_layers > 2 else None,
+        'AB_LAYERS': ab_layers,
         'VIRUS_LAYERS': virus_layers,
         'KMER_LEN_VIRUS': kmer_len_virus,
         'KMER_STRIDE_VIRUS': trial.suggest_int('KMER_STRIDE_VIRUS', max(1, kmer_len_virus // 10), kmer_len_virus),
