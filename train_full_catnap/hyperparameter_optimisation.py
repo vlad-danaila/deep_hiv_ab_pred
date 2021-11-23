@@ -1,6 +1,6 @@
 import mlflow
 
-from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
+from deep_hiv_ab_pred.hyperparameters.constants import CONF_FC_ATT_MULTI_GRU
 import numpy as np
 import optuna
 from optuna.pruners import BasePruner
@@ -142,7 +142,7 @@ def optimize_hyperparameters():
     study_exists = os.path.isfile(study_name + '.db')
     study = optuna.create_study(study_name = study_name, direction='maximize',
         storage = f'sqlite:///{study_name}.db', load_if_exists = True)
-    initial_conf = read_yaml(CONF_ICERI_V2)
+    initial_conf = read_yaml(CONF_FC_ATT_MULTI_GRU)
     if not study_exists:
         study.enqueue_trial(initial_conf)
     #objective = get_objective_train_hold_out_one_cluster()
