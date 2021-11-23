@@ -25,7 +25,7 @@ def propose(trial: optuna.trial.Trial):
         'KMER_LEN_VIRUS': kmer_len_virus,
         'KMER_STRIDE_VIRUS': trial.suggest_int('KMER_STRIDE_VIRUS', max(1, kmer_len_virus // 10), kmer_len_virus),
         'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
-        'EPOCHS': trial.suggest_int('EPOCHS', 3, 100),
+        'EPOCHS': 100,
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
         'RNN_HIDDEN_SIZE': trial.suggest_int('RNN_HIDDEN_SIZE', 16, 1024),
