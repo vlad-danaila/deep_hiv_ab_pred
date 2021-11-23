@@ -50,3 +50,11 @@ def log_metrics_from_lists(acc, mcc, auc):
     logging.info(f'Global MCC {global_mcc}')
     logging.info(f'Global AUC {global_auc}')
     mlflow.log_metrics({ 'global_acc': global_acc, 'global_mcc': global_mcc, 'global_auc': global_auc })
+
+def find_ideal_epoch(metrics_per_epochs):
+    best = max(( m[MATTHEWS_CORRELATION_COEFFICIENT] for m in metrics_per_epochs ))
+    epoch_index, metrics = [
+        (i, m) for (i, m) in enumerate(metrics_per_epochs)
+        if m[MATTHEWS_CORRELATION_COEFFICIENT] == best
+    ][-1]
+    return epoch_index, metrics

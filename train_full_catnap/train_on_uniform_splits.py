@@ -16,6 +16,7 @@ from deep_hiv_ab_pred.util.logging import setup_logging
 from deep_hiv_ab_pred.util.plotting import plot_epochs
 from os.path import join
 from deep_hiv_ab_pred.catnap.download_dataset import download_catnap
+from deep_hiv_ab_pred.util.metrics import find_ideal_epoch
 
 def log_metrics(metrics):
     logging.info(f'Acc {metrics[ACCURACY]}')
@@ -39,9 +40,10 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
-    _, _, metrics = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
-    log_metrics(metrics)
-    return metrics
+    _, test_metrics, last = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
+    epoch_index, best_metrics = find_ideal_epoch(test_metrics)
+    log_metrics(best_metrics)
+    return best_metrics
 
 def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
     setup_logging()
