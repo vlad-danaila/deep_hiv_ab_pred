@@ -51,14 +51,25 @@ def get_ab_ids_to_cdrs_from_paratome(paratome_report_file, antibodies_fasta_file
     antibodies_in_assayes = { c[1] for c in catnap }
     ids_to_seq = get_id_to_seq_mapping_from_fasta_file(antibodies_fasta_file)
     seq_to_cdr = parse_paratome_report(paratome_report_file)
-    ab_ids_to_cdrs = { id : seq_to_cdr[seq] for (id, seq) in ids_to_seq.items() if id in antibodies_in_assayes }
+    ab_ids_to_cdrs = {}
+    for id, seq in ids_to_seq.items():
+        if id not in antibodies_in_assayes:
+            continue
+        if seq not in seq_to_cdr:
+            ab_ids_to_cdrs[id] = []
+            continue
+        ab_ids_to_cdrs[id] = seq_to_cdr[seq]
     return ab_ids_to_cdrs
 
+def ab_light_cdrs_from_paratome():
+    return get_ab_ids_to_cdrs_from_paratome(AB_LIGHT_CDR, ANTIBODIES_LIGHT_FILE)
 
+def ab_heavy_cdrs_from_paratome():
+    return get_ab_ids_to_cdrs_from_paratome(AB_HEAVY_CDR, ANTIBODIES_HEAVY_FILE)
 
 if __name__ == '__main__':
-    # ab_light_cdrs = get_ab_ids_to_cdrs_from_paratome(AB_LIGHT_CDR, ANTIBODIES_LIGHT_FILE)
-    ab_heavy_cdrs = get_ab_ids_to_cdrs_from_paratome(AB_HEAVY_CDR, ANTIBODIES_HEAVY_FILE)
+    ab_light_cdrs = ab_light_cdrs_from_paratome()
+    ab_heavy_cdrs = ab_heavy_cdrs_from_paratome()
 
     # TODO handle missing sequences from paratome report
     # TODO vezi unde nu sunt toate 3 cdr si ia-le de la celalat tool sau pune un default
