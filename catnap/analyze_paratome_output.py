@@ -33,4 +33,16 @@ def parse_paratome_report(report_file):
     return cdrs_in_seq
 
 if __name__ == '__main__':
-    cdrs_by_seq = parse_paratome_report(AB_LIGHT_CDR)
+    print('Ab Light')
+    ab_light_cdrs_by_seq = parse_paratome_report(AB_LIGHT_CDR)
+    for seq, cdrs in ab_light_cdrs_by_seq.items():
+        if len(cdrs) != 3:
+            print(seq, len(cdrs))
+    print('-' * 50)
+
+    print('Ab Heavy')
+    ab_heavy_cdrs_by_seq = parse_paratome_report(AB_HEAVY_CDR)
+    for seq, cdrs in ab_heavy_cdrs_by_seq.items():
+        if len(cdrs) != 3:
+            print(seq, len(cdrs))
+    print('-' * 50)
