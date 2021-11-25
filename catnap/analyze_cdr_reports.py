@@ -3,6 +3,7 @@ from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.util.tools import read_json_file
+import numpy as np
 
 SEQ_PARSE = 'SEQ_PARSE'
 CDR_PARSE = 'CDR_PARSE'
@@ -89,12 +90,32 @@ def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict):
             cdrs_from_abrsa = abrsa_cdrs[ab_id.upper()]
             if len(cdrs_from_abrsa) == 3:
                 combined[ab_id] = cdrs_from_abrsa
+            elif ab_id == 'F105':
+                # Verified (only one amino acid differs between the sequence from CATNAP and PDB)
+                # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/1U6A
+                # QVQLQESGPGLVKPSETLSLTCTVSGGSISSHYWSWIRQSPGKGLQWIGYIYYSGSTNYSPSLKSRVTISVETAKNQFSLKLTSMTAADTAVYYCARGPVPAVFYGDYRLDPWGQGTLVTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPK
+                combined[ab_id] = ['GSISSHYWS', 'WIGYIYYSGSTNY', 'RGPVPAVFYGDYRLDP']
+            elif ab_id == '1F7':
+                # Verified (no differences)
+                # Reparsed with Paratome using antibody fragment with larger sequence from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3753353/
+                # QVQLQESGPGLVKPSETLSLTCSVSGGSLSNFYWSWIRQFPGKRLEWIAYINFNNEKSNQNPSLKGRLTVSGDPSKNHLSMRLTSVTAADTAVYFCARGRFDYFRGGHRLIFDSWGRGTLVAVSS
+                combined[ab_id] = ['GSLSNFYWS', 'WIAYINFNNEKSNQ', 'RGRFDYFRGGHRLIFDS']
             else:
                 print(ab_id, 'abrsa', cdrs_from_abrsa, 'paratome', cdrs_from_paratome )
-                combined[ab_id] = []
+                # combined[ab_id] = []
         else:
             combined[ab_id] = [cdr[1] for cdr in cdrs_from_paratome]
     return combined
+
+def get_cdr_indexes(ab_cdrs_paratome):
+    id_to_cdr_indexes = {}
+    for id, cdrs in ab_cdrs_paratome.items():
+        if len(cdrs) == 3:
+            cdr_indexes = np.stack([  np.array(cdr[2]) for cdr in cdrs ]).reshape(-1)
+            id_to_cdr_indexes[id] = cdr_indexes
+    return id_to_cdr_indexes
+
+
 
 if __name__ == '__main__':
     ab_light_cdrs_paratome = ab_light_cdrs_from_paratome()
@@ -105,6 +126,10 @@ if __name__ == '__main__':
 
     ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa)
     ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa)
+
+    ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
+
+    all_indexes = np.stack(list(ab_heavy_id_to_indexes.values()))
 
     # TODO handle missing sequences from paratome report
     # TODO vezi unde nu sunt toate 3 cdr si ia-le de la celalat tool sau pune un default
