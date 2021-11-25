@@ -1,4 +1,4 @@
-from deep_hiv_ab_pred.catnap.constants import AB_LIGHT_CDR, AB_HEAVY_CDR
+from deep_hiv_ab_pred.catnap.constants import PARATOME_AB_LIGHT_CDR, PARATOME_AB_HEAVY_CDR, ABRSA_AB_LIGHT_CDR, ABRSA_AB_HEAVY_CDR
 from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
@@ -62,14 +62,49 @@ def get_ab_ids_to_cdrs_from_paratome(paratome_report_file, antibodies_fasta_file
     return ab_ids_to_cdrs
 
 def ab_light_cdrs_from_paratome():
-    return get_ab_ids_to_cdrs_from_paratome(AB_LIGHT_CDR, ANTIBODIES_LIGHT_FILE)
+    return get_ab_ids_to_cdrs_from_paratome(PARATOME_AB_LIGHT_CDR, ANTIBODIES_LIGHT_FILE)
 
 def ab_heavy_cdrs_from_paratome():
-    return get_ab_ids_to_cdrs_from_paratome(AB_HEAVY_CDR, ANTIBODIES_HEAVY_FILE)
+    return get_ab_ids_to_cdrs_from_paratome(PARATOME_AB_HEAVY_CDR, ANTIBODIES_HEAVY_FILE)
+
+def ab_light_cdrs_from_AbRSA():
+    return parse_AbRSA_report(ABRSA_AB_LIGHT_CDR)
+
+def ab_heavy_cdrs_from_AbRSA():
+    return parse_AbRSA_report(ABRSA_AB_HEAVY_CDR)
+
+def parse_AbRSA_report(report_file):
+    id_to_cdr = {}
+    with open(report_file) as file:
+        for line in file:
+            line_split = line.split()
+            antibody_id = line_split[0].split('_')[0]
+            id_to_cdr[antibody_id] = line_split[2:]
+    return id_to_cdr
+
+def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict):
+    combined = {}
+    for ab_id, cdrs_from_paratome in paratome_cdrs.items():
+        if len(cdrs_from_paratome) < 3:
+            cdrs_from_abrsa = abrsa_cdrs[ab_id.upper()]
+            if len(cdrs_from_abrsa) == 3:
+                combined[ab_id] = cdrs_from_abrsa
+            else:
+                print(ab_id, 'abrsa', cdrs_from_abrsa, 'paratome', cdrs_from_paratome )
+                combined[ab_id] = []
+        else:
+            combined[ab_id] = [cdr[1] for cdr in cdrs_from_paratome]
+    return combined
 
 if __name__ == '__main__':
-    ab_light_cdrs = ab_light_cdrs_from_paratome()
-    ab_heavy_cdrs = ab_heavy_cdrs_from_paratome()
+    ab_light_cdrs_paratome = ab_light_cdrs_from_paratome()
+    ab_heavy_cdrs_paratome = ab_heavy_cdrs_from_paratome()
+
+    ab_light_cdrs_abrsa = ab_light_cdrs_from_AbRSA()
+    ab_heavy_cdrs_abrsa = ab_heavy_cdrs_from_AbRSA()
+
+    ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa)
+    ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa)
 
     # TODO handle missing sequences from paratome report
     # TODO vezi unde nu sunt toate 3 cdr si ia-le de la celalat tool sau pune un default

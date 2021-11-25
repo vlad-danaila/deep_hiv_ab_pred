@@ -1,4 +1,4 @@
-from deep_hiv_ab_pred.catnap.constants import AB_LIGHT_CDR, AB_HEAVY_CDR, VIRUS_FILE, VIRUS_WITH_PNGS_FILE
+from deep_hiv_ab_pred.catnap.constants import PARATOME_AB_LIGHT_CDR, PARATOME_AB_HEAVY_CDR, VIRUS_FILE, VIRUS_WITH_PNGS_FILE
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 import torch as t
 from deep_hiv_ab_pred.util.tools import device
@@ -21,8 +21,8 @@ def read_cdr_data(file_path):
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE, virus_kmer_len, virus_kmer_stride)
-    antibody_light_seq = read_cdr_data(AB_LIGHT_CDR)
-    antibody_heavy_seq = read_cdr_data(AB_HEAVY_CDR)
+    antibody_light_seq = read_cdr_data(PARATOME_AB_LIGHT_CDR)
+    antibody_heavy_seq = read_cdr_data(PARATOME_AB_HEAVY_CDR)
     return virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
 
 if __name__ == '__main__':
