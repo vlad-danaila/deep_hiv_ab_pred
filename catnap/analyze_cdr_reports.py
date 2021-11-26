@@ -143,6 +143,12 @@ def get_cdr_indexes(ab_cdrs_paratome):
             id_to_cdr_indexes[id] = cdr_indexes
     return id_to_cdr_indexes
 
+def verify_cdr_data(id_to_cds):
+    for ab, cdrs in ab_light_combined.items():
+        assert len(cdrs) == 3
+        for cdr in cdrs:
+            assert len(cdr) == 2
+
 if __name__ == '__main__':
     ab_light_cdrs_paratome = ab_light_cdrs_from_paratome()
     ab_heavy_cdrs_paratome = ab_heavy_cdrs_from_paratome()
@@ -151,7 +157,10 @@ if __name__ == '__main__':
     ab_heavy_cdrs_abrsa = ab_heavy_cdrs_from_AbRSA()
 
     ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa, AB_TYPE_LIGHT)
-    # ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa, AB_TYPE_HEAVY)
+    ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa, AB_TYPE_HEAVY)
+
+    verify_cdr_data(ab_light_combined)
+    verify_cdr_data(ab_heavy_combined)
 
     # ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
     # all_indexes = np.stack(list(ab_heavy_id_to_indexes.values()))
