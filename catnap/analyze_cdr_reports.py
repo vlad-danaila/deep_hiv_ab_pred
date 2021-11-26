@@ -1,12 +1,15 @@
 from deep_hiv_ab_pred.catnap.constants import PARATOME_AB_LIGHT_CDR, PARATOME_AB_HEAVY_CDR, ABRSA_AB_LIGHT_CDR, ABRSA_AB_HEAVY_CDR
 from Bio import SeqIO
-from deep_hiv_ab_pred.catnap.constants import ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE
+from deep_hiv_ab_pred.catnap.constants import ANTIBODIES_LIGHT_FASTA_FILE, ANTIBODIES_HEAVY_FASTA_FILE
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.util.tools import read_json_file
 import numpy as np
+import re
 
 SEQ_PARSE = 'SEQ_PARSE'
 CDR_PARSE = 'CDR_PARSE'
+AB_TYPE_LIGHT = 'AB_TYPE_LIGHT'
+AB_TYPE_HEAVY = 'AB_TYPE_HEAVY'
 
 def extract_cdr_data(line):
     cdr_num, cdr_seq, indexes = tuple(line.split(' '))
@@ -63,60 +66,72 @@ def get_ab_ids_to_cdrs_from_paratome(paratome_report_file, antibodies_fasta_file
     return ab_ids_to_cdrs
 
 def ab_light_cdrs_from_paratome():
-    return get_ab_ids_to_cdrs_from_paratome(PARATOME_AB_LIGHT_CDR, ANTIBODIES_LIGHT_FILE)
+    return get_ab_ids_to_cdrs_from_paratome(PARATOME_AB_LIGHT_CDR, ANTIBODIES_LIGHT_FASTA_FILE)
 
 def ab_heavy_cdrs_from_paratome():
-    return get_ab_ids_to_cdrs_from_paratome(PARATOME_AB_HEAVY_CDR, ANTIBODIES_HEAVY_FILE)
+    return get_ab_ids_to_cdrs_from_paratome(PARATOME_AB_HEAVY_CDR, ANTIBODIES_HEAVY_FASTA_FILE)
 
 def ab_light_cdrs_from_AbRSA():
-    return parse_AbRSA_report(ABRSA_AB_LIGHT_CDR)
+    return parse_AbRSA_report(ABRSA_AB_LIGHT_CDR, ANTIBODIES_LIGHT_FASTA_FILE)
 
 def ab_heavy_cdrs_from_AbRSA():
-    return parse_AbRSA_report(ABRSA_AB_HEAVY_CDR)
+    return parse_AbRSA_report(ABRSA_AB_HEAVY_CDR, ANTIBODIES_HEAVY_FASTA_FILE)
 
-def parse_AbRSA_report(report_file):
+def parse_AbRSA_report(report_file, antibodies_fasta_file):
     id_to_cdr = {}
+    ids_to_seq = get_id_to_seq_mapping_from_fasta_file(antibodies_fasta_file)
+    ids_to_seq = { k.upper() : v for k, v in ids_to_seq.items() }
     with open(report_file) as file:
         for line in file:
             line_split = line.split()
             antibody_id = line_split[0].split('_')[0]
-            id_to_cdr[antibody_id] = line_split[2:]
+            cdrs = line_split[2:]
+            seq = ids_to_seq[antibody_id]
+            try:
+                if antibody_id == 'GVRC-H1DC38-VRC01L':
+                    print('debug')
+                id_to_cdr[antibody_id] = [(c, find_indexes_of_subsequence(c, seq)) for c in cdrs]
+            except AttributeError as e:
+                print(antibody_id, cdrs)
     return id_to_cdr
 
-def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict):
+def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
     combined = {}
     for ab_id, cdrs_from_paratome in paratome_cdrs.items():
         if len(cdrs_from_paratome) < 3:
             cdrs_from_abrsa = abrsa_cdrs[ab_id.upper()]
             if len(cdrs_from_abrsa) == 3:
+                # cdrs_from_abrsa = [ (cdr, ) for cdr in cdrs_from_abrsa ]
                 combined[ab_id] = cdrs_from_abrsa
             # CORRECTIONS:
-            elif ab_id == 'F105':
+            elif ab_type == AB_TYPE_HEAVY and ab_id == 'F105':
                 # Verified (only one amino acid differs between the sequence from CATNAP and PDB)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/1U6A
                 # QVQLQESGPGLVKPSETLSLTCTVSGGSISSHYWSWIRQSPGKGLQWIGYIYYSGSTNYSPSLKSRVTISVETAKNQFSLKLTSMTAADTAVYYCARGPVPAVFYGDYRLDPWGQGTLVTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPK
                 combined[ab_id] = ['GSISSHYWS', 'WIGYIYYSGSTNY', 'RGPVPAVFYGDYRLDP']
-            elif ab_id == '1F7':
+            elif ab_type == AB_TYPE_HEAVY and ab_id == '1F7':
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3753353/
                 # QVQLQESGPGLVKPSETLSLTCSVSGGSLSNFYWSWIRQFPGKRLEWIAYINFNNEKSNQNPSLKGRLTVSGDPSKNHLSMRLTSVTAADTAVYFCARGRFDYFRGGHRLIFDSWGRGTLVAVSS
                 combined[ab_id] = ['GSLSNFYWS', 'WIAYINFNNEKSNQ', 'RGRFDYFRGGHRLIFDS']
-            elif ab_id == '2F5':
+            elif ab_type == AB_TYPE_HEAVY and ab_id == '2F5':
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/3LEV
                 # RITLKESGPPLVKPTQTLTLTCSFSGFSLSDFGVGVGWIRQPPGKALEWLAIIYSDDDKRYSPSLNTRLTITKDTSKNQVVLVMTRVSPVDTATYFCAHRRGPTTLFGVPIARGPVNAMDVWGQGITVTISSTSTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSCDK
                 combined[ab_id] = ['FSLSDFGVGVG', 'WLAIIYSDDDKRY', 'HRRGPTTLFGVPIARGPVNAMDV']
-            elif ab_id == '2G12':
+            elif ab_type == AB_TYPE_HEAVY and ab_id == '2G12':
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/2OQJ
                 # EVQLVESGGGLVKAGGSLILSCGVSNFRISAHTMNWVRRVPGGGLEWVASISTSSTYRDYADAVKGRFTVSRDDLEDFVYLQMHKMRVEDTAIYYCARKGSDRLSDNDPFDAWGPGTVVTVSPASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPK
                 combined[ab_id] = ['FRISAHTMN', 'WVASISTSSTYRDY', 'RKGSDRLSDNDPFDA']
             else:
                 print(ab_id, 'abrsa', cdrs_from_abrsa, 'paratome', cdrs_from_paratome )
-                # combined[ab_id] = []
         else:
-            combined[ab_id] = [cdr[1] for cdr in cdrs_from_paratome]
+            combined[ab_id] = [(cdr[1], cdr[2]) for cdr in cdrs_from_paratome]
     return combined
+
+def find_indexes_of_subsequence(subseq, seq):
+    return re.search(subseq, seq).span()
 
 def get_cdr_indexes(ab_cdrs_paratome):
     id_to_cdr_indexes = {}
@@ -133,10 +148,9 @@ if __name__ == '__main__':
     ab_light_cdrs_abrsa = ab_light_cdrs_from_AbRSA()
     ab_heavy_cdrs_abrsa = ab_heavy_cdrs_from_AbRSA()
 
-    ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa)
-    ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa)
+    ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa, AB_TYPE_LIGHT)
+    ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa, AB_TYPE_HEAVY)
 
     ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
-
     all_indexes = np.stack(list(ab_heavy_id_to_indexes.values()))
 

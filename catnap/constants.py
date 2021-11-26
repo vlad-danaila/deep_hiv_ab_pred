@@ -10,11 +10,11 @@ ASSAY_FILE = os.path.join(CATNAP_FOLDER, 'assay.text')
 
 # Download file containing the aminoacid sequences of the heavy chain of the antibodies.
 ANTIBODIES_HEAVY_DOWNLOAD = 'https://www.hiv.lanl.gov/cgi-bin/common_code/download.cgi?/scratch/NEUTRALIZATION/heavy_seqs_aa.fasta'
-ANTIBODIES_HEAVY_FILE = os.path.join(CATNAP_FOLDER, 'heavy_seqs_aa.fasta' )
+ANTIBODIES_HEAVY_FASTA_FILE = os.path.join(CATNAP_FOLDER, 'heavy_seqs_aa.fasta')
 
 # Download file containing the aminoacid sequences of the light chain of the antibodies.
 ANTIBODIES_LIGHT_DOWNLOAD = 'https://www.hiv.lanl.gov/cgi-bin/common_code/download.cgi?/scratch/NEUTRALIZATION/light_seqs_aa.fasta'
-ANTIBODIES_LIGHT_FILE = os.path.join(CATNAP_FOLDER, 'light_seqs_aa.fasta')
+ANTIBODIES_LIGHT_FASTA_FILE = os.path.join(CATNAP_FOLDER, 'light_seqs_aa.fasta')
 
 # Download file containing the aminoacid sequences of the virus envelope.
 VIRUS_DOWNLOAD = 'https://www.hiv.lanl.gov/cgi-bin/common_code/download.cgi?/scratch/NEUTRALIZATION/virseqs_aa.fasta'
