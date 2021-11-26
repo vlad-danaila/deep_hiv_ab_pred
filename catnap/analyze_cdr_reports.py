@@ -101,7 +101,7 @@ def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
     combined = {}
     for ab_id, cdrs_from_paratome in paratome_cdrs.items():
         if len(cdrs_from_paratome) < 3:
-            cdrs_from_abrsa = abrsa_cdrs[ab_id]
+            cdrs_from_abrsa = abrsa_cdrs[ab_id.upper()]
             if len(cdrs_from_abrsa) == 3:
                 # cdrs_from_abrsa = [ (cdr, ) for cdr in cdrs_from_abrsa ]
                 combined[ab_id] = cdrs_from_abrsa
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     ab_light_cdrs_abrsa = ab_light_cdrs_from_AbRSA()
     ab_heavy_cdrs_abrsa = ab_heavy_cdrs_from_AbRSA()
 
-    # ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa, AB_TYPE_LIGHT)
+    ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa, AB_TYPE_LIGHT)
     # ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa, AB_TYPE_HEAVY)
 
     # ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
