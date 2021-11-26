@@ -82,7 +82,7 @@ def ab_heavy_cdrs_from_AbRSA():
     return parse_AbRSA_report(ABRSA_AB_HEAVY_CDR, ANTIBODIES_HEAVY_FASTA_FILE)
 
 def parse_AbRSA_report(report_file, antibodies_fasta_file):
-    abs_in_assays = assays_abs()
+    abs_in_assays = [a.upper() for a in assays_abs()]
     id_to_cdr = {}
     ids_to_seq = get_id_to_seq_mapping_from_fasta_file(antibodies_fasta_file)
     ids_to_seq = { k.upper() : v for k, v in ids_to_seq.items() }
@@ -101,7 +101,7 @@ def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
     combined = {}
     for ab_id, cdrs_from_paratome in paratome_cdrs.items():
         if len(cdrs_from_paratome) < 3:
-            cdrs_from_abrsa = abrsa_cdrs[ab_id.upper()]
+            cdrs_from_abrsa = abrsa_cdrs[ab_id]
             if len(cdrs_from_abrsa) == 3:
                 # cdrs_from_abrsa = [ (cdr, ) for cdr in cdrs_from_abrsa ]
                 combined[ab_id] = cdrs_from_abrsa
