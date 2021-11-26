@@ -11,6 +11,10 @@ CDR_PARSE = 'CDR_PARSE'
 AB_TYPE_LIGHT = 'AB_TYPE_LIGHT'
 AB_TYPE_HEAVY = 'AB_TYPE_HEAVY'
 
+def assays_abs():
+    catnap_assays = read_json_file(CATNAP_FLAT)
+    return { a[1] for a in catnap_assays }
+
 def extract_cdr_data(line):
     cdr_num, cdr_seq, indexes = tuple(line.split(' '))
     cdr_num = int(cdr_num[3]) # It has the form "ABR1:" "ABR2:" "ABR3:"
@@ -78,6 +82,7 @@ def ab_heavy_cdrs_from_AbRSA():
     return parse_AbRSA_report(ABRSA_AB_HEAVY_CDR, ANTIBODIES_HEAVY_FASTA_FILE)
 
 def parse_AbRSA_report(report_file, antibodies_fasta_file):
+    abs_in_assays = assays_abs()
     id_to_cdr = {}
     ids_to_seq = get_id_to_seq_mapping_from_fasta_file(antibodies_fasta_file)
     ids_to_seq = { k.upper() : v for k, v in ids_to_seq.items() }
@@ -85,14 +90,11 @@ def parse_AbRSA_report(report_file, antibodies_fasta_file):
         for line in file:
             line_split = line.split()
             antibody_id = line_split[0].split('_')[0]
+            if antibody_id not in abs_in_assays:
+                continue
             cdrs = line_split[2:]
             seq = ids_to_seq[antibody_id]
-            try:
-                if antibody_id == 'GVRC-H1DC38-VRC01L':
-                    print('debug')
-                id_to_cdr[antibody_id] = [(c, find_indexes_of_subsequence(c, seq)) for c in cdrs]
-            except AttributeError as e:
-                print(antibody_id, cdrs)
+            id_to_cdr[antibody_id] = [(c, find_indexes_of_subsequence(c, seq)) for c in cdrs]
     return id_to_cdr
 
 def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
@@ -148,9 +150,9 @@ if __name__ == '__main__':
     ab_light_cdrs_abrsa = ab_light_cdrs_from_AbRSA()
     ab_heavy_cdrs_abrsa = ab_heavy_cdrs_from_AbRSA()
 
-    ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa, AB_TYPE_LIGHT)
-    ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa, AB_TYPE_HEAVY)
+    # ab_light_combined = combine_paratome_and_abrsa(ab_light_cdrs_paratome, ab_light_cdrs_abrsa, AB_TYPE_LIGHT)
+    # ab_heavy_combined = combine_paratome_and_abrsa(ab_heavy_cdrs_paratome, ab_heavy_cdrs_abrsa, AB_TYPE_HEAVY)
 
-    ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
-    all_indexes = np.stack(list(ab_heavy_id_to_indexes.values()))
+    # ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
+    # all_indexes = np.stack(list(ab_heavy_id_to_indexes.values()))
 
