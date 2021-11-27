@@ -109,7 +109,7 @@ def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
                 # Verified (only one amino acid differs between the sequence from CATNAP and PDB)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/1U6A
                 # QVQLQESGPGLVKPSETLSLTCTVSGGSISSHYWSWIRQSPGKGLQWIGYIYYSGSTNYSPSLKSRVTISVETAKNQFSLKLTSMTAADTAVYYCARGPVPAVFYGDYRLDPWGQGTLVTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPK
-                combined[ab_id] = ['GSISSHYWS', 'WIGYIYYSGSTNY', 'RGPVPAVFYGDYRLDP']
+                combined[ab_id] = [('GSISSHYWS', (27, 35)), ('WIGYIYYSGSTNY', (47, 59)), ('RGPVPAVFYGDYRLDP', (97, 112))]
             elif ab_type == AB_TYPE_HEAVY and ab_id == '1F7':
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3753353/
