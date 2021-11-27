@@ -54,7 +54,7 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         model.load_state_dict(checkpoint['model'])
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
             _, _, metrics = train_with_frozen_antibody_and_embedding(
-                model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
+                model, conf, loader_train, loader_test, i, 100, f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
             )
         # deprecated
         elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
