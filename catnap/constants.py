@@ -38,4 +38,4 @@ PARATOME_AB_LIGHT_CDR = join(CDR_FOLDER, 'Paratome output ab light.txt')
 PARATOME_AB_HEAVY_CDR = join(CDR_FOLDER, 'Paratome output ab heavy.txt')
 ABRSA_AB_LIGHT_CDR = join(CDR_FOLDER, 'AbRSA output ab light.txt')
 ABRSA_AB_HEAVY_CDR = join(CDR_FOLDER, 'AbRSA output ab heavy.txt')
-
+AB_CDRS = join(CDR_FOLDER, 'CDRs.json')

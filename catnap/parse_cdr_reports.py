@@ -1,9 +1,8 @@
 from deep_hiv_ab_pred.catnap.constants import PARATOME_AB_LIGHT_CDR, PARATOME_AB_HEAVY_CDR, ABRSA_AB_LIGHT_CDR, ABRSA_AB_HEAVY_CDR
 from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import ANTIBODIES_LIGHT_FASTA_FILE, ANTIBODIES_HEAVY_FASTA_FILE
-from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
-from deep_hiv_ab_pred.util.tools import read_json_file
-import numpy as np
+from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT, AB_CDRS
+from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
 import re
 
 SEQ_PARSE = 'SEQ_PARSE'
@@ -135,14 +134,6 @@ def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
 def find_indexes_of_subsequence(subseq, seq):
     return re.search(subseq, seq).span()
 
-def get_cdr_indexes(ab_cdrs_paratome):
-    id_to_cdr_indexes = {}
-    for id, cdrs in ab_cdrs_paratome.items():
-        if len(cdrs) == 3:
-            cdr_indexes = np.stack([  np.array(cdr[2]) for cdr in cdrs ]).reshape(-1)
-            id_to_cdr_indexes[id] = cdr_indexes
-    return id_to_cdr_indexes
-
 def verify_cdr_data(id_to_cds):
     for ab, cdrs in ab_light_combined.items():
         assert len(cdrs) == 3
@@ -162,6 +153,10 @@ if __name__ == '__main__':
     verify_cdr_data(ab_light_combined)
     verify_cdr_data(ab_heavy_combined)
 
-    # ab_heavy_id_to_indexes = get_cdr_indexes(ab_heavy_cdrs_paratome)
-    # all_indexes = np.stack(list(ab_heavy_id_to_indexes.values()))
+    cdr_data = {}
+    for ab in ab_light_combined:
+        ab_light = ab_light_combined[ab]
+        ab_heavy = ab_heavy_combined[ab]
+        cdr_data[ab] = { 'ab_light': ab_light, 'ab_heavy': ab_heavy }
 
+    dump_json(cdr_data, AB_CDRS)
