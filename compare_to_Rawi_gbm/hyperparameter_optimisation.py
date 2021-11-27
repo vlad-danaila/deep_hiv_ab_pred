@@ -23,7 +23,6 @@ from optuna.trial._state import TrialState
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
         'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
-        'EPOCHS': trial.suggest_int('EPOCHS', 1, 100),
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),

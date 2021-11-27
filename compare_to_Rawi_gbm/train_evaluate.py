@@ -29,10 +29,10 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     val_set = AssayDataset(rest_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
     loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
-    model = get_FC_GRU_model(conf)
-    epochs = pretrain_epochs if pretrain_epochs else conf['EPOCHS']
+    model = get_FC_GRU_ATT_model(conf)
+    assert pretrain_epochs
     metrics_train_per_epochs, metrics_test_per_epochs, best = train_network(
-        model, conf, loader_pretrain, loader_val, None, epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
+        model, conf, loader_pretrain, loader_val, None, pretrain_epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
     )
     return metrics_train_per_epochs, metrics_test_per_epochs, best
 
