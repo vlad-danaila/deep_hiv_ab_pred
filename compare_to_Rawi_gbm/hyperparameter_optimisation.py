@@ -29,7 +29,8 @@ def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_
         'EMBEDDING_DROPOUT': base_conf['EMBEDDING_DROPOUT'],
         'KMER_LEN_VIRUS': base_conf['KMER_LEN_VIRUS'],
         'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
-        'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE']
+        'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
+        'EPOCHS': 100
     }
 
 class CrossValidationPruner(BasePruner):
@@ -72,6 +73,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
     def objective(trial):
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
             conf = propose_conf_for_frozen_antb_and_embeddings(trial, base_conf)
+        # deprecated
         elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
             conf = propose_conf_for_frozen_net_without_last_layer(trial, base_conf)
         else:

@@ -118,13 +118,25 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     model.module.embedding_dropout = t.nn.Dropout(p = 0)
     model.module.embedding_dropout.requires_grad = False
 
-    for param in model.module.light_ab_gru.parameters():
+    for param in model.module.light_ab_fc.parameters():
         param.requires_grad = False
-    model.module.light_ab_gru.dropout = 0
+    model.module.light_ab_dropout.dropout = 0
+    model.module.light_ab_dropout.requires_grad = False
 
-    for param in model.module.heavy_ab_gru.parameters():
+    for param in model.module.light_ab_att.parameters():
         param.requires_grad = False
-    model.module.heavy_ab_gru.dropout = 0
+    model.module.light_ab_att_dropout.dropout = 0
+    model.module.light_ab_att_dropout.requires_grad = False
+
+    for param in model.module.heavy_ab_fc.parameters():
+        param.requires_grad = False
+    model.module.heavy_ab_dropout.dropout = 0
+    model.module.heavy_ab_dropout.requires_grad = False
+
+    for param in model.module.heavy_ab_att.parameters():
+        param.requires_grad = False
+    model.module.heavy_ab_att_dropout.dropout = 0
+    model.module.heavy_ab_att_dropout.requires_grad = False
 
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
