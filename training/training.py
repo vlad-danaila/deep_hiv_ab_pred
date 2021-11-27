@@ -95,7 +95,7 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
         batch_size = len(ab_light)
         with t.no_grad():
             ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
-            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy, batch_size)
+            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy)
         pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
