@@ -26,17 +26,11 @@ def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_
         'EPOCHS': trial.suggest_int('EPOCHS', 1, 100),
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'VIRUS_RNN_DROPOUT': trial.suggest_float('VIRUS_RNN_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
-
         'EMBEDDING_DROPOUT': base_conf['EMBEDDING_DROPOUT'],
-        'EMBEDDING_SIZE': base_conf['EMBEDDING_SIZE'],
-        'KMER_LEN_ANTB': base_conf['KMER_LEN_ANTB'],
         'KMER_LEN_VIRUS': base_conf['KMER_LEN_VIRUS'],
         'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
-        'KMER_STRIDE_ANTB': base_conf['KMER_STRIDE_ANTB'],
-        'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
-        'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
+        'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE']
     }
 
 class CrossValidationPruner(BasePruner):
