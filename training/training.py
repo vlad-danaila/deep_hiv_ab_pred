@@ -95,7 +95,7 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
         batch_size = len(ab_light)
         with t.no_grad():
             ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
-            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy, batch_size)
+            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy)
         pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
@@ -118,13 +118,25 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     model.module.embedding_dropout = t.nn.Dropout(p = 0)
     model.module.embedding_dropout.requires_grad = False
 
-    for param in model.module.light_ab_gru.parameters():
+    for param in model.module.light_ab_fc.parameters():
         param.requires_grad = False
-    model.module.light_ab_gru.dropout = 0
+    model.module.light_ab_dropout.dropout = 0
+    model.module.light_ab_dropout.requires_grad = False
 
-    for param in model.module.heavy_ab_gru.parameters():
+    for param in model.module.light_ab_att.parameters():
         param.requires_grad = False
-    model.module.heavy_ab_gru.dropout = 0
+    model.module.light_ab_att_dropout.dropout = 0
+    model.module.light_ab_att_dropout.requires_grad = False
+
+    for param in model.module.heavy_ab_fc.parameters():
+        param.requires_grad = False
+    model.module.heavy_ab_dropout.dropout = 0
+    model.module.heavy_ab_dropout.requires_grad = False
+
+    for param in model.module.heavy_ab_att.parameters():
+        param.requires_grad = False
+    model.module.heavy_ab_att_dropout.dropout = 0
+    model.module.heavy_ab_att_dropout.requires_grad = False
 
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
@@ -133,10 +145,17 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     try:
         for epoch in range(epochs):
             model.module.aminoacid_embedding.eval()
-            model.module.light_ab_gru.eval()
-            model.module.heavy_ab_gru.eval()
-            model.module.virus_gru.train()
             model.module.embedding_dropout.eval()
+            model.module.light_ab_fc.eval()
+            model.module.light_ab_dropout.eval()
+            model.module.light_ab_att.eval()
+            model.module.light_ab_att_dropout.eval()
+            model.module.heavy_ab_fc.eval()
+            model.module.heavy_ab_dropout.eval()
+            model.module.heavy_ab_att.eval()
+            model.module.heavy_ab_att_dropout.eval()
+
+            model.module.virus_gru.train()
             model.module.fc_dropout.train()
             model.module.fully_connected.train()
 

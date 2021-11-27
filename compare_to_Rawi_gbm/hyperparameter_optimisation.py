@@ -23,20 +23,15 @@ from optuna.trial._state import TrialState
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
         'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
-        'EPOCHS': trial.suggest_int('EPOCHS', 1, 100),
         'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
         'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'VIRUS_RNN_DROPOUT': trial.suggest_float('VIRUS_RNN_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
-
         'EMBEDDING_DROPOUT': base_conf['EMBEDDING_DROPOUT'],
-        'EMBEDDING_SIZE': base_conf['EMBEDDING_SIZE'],
-        'KMER_LEN_ANTB': base_conf['KMER_LEN_ANTB'],
         'KMER_LEN_VIRUS': base_conf['KMER_LEN_VIRUS'],
         'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
-        'KMER_STRIDE_ANTB': base_conf['KMER_STRIDE_ANTB'],
         'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
-        'ANTIBODIES_RNN_DROPOUT': base_conf['ANTIBODIES_RNN_DROPOUT']
+        'ANTIBODIES_DROPOUT': base_conf['ANTIBODIES_DROPOUT'],
+        'EPOCHS': 100
     }
 
 class CrossValidationPruner(BasePruner):
@@ -79,6 +74,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
     def objective(trial):
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
             conf = propose_conf_for_frozen_antb_and_embeddings(trial, base_conf)
+        # deprecated
         elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
             conf = propose_conf_for_frozen_net_without_last_layer(trial, base_conf)
         else:
