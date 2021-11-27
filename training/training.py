@@ -145,10 +145,17 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     try:
         for epoch in range(epochs):
             model.module.aminoacid_embedding.eval()
-            model.module.light_ab_gru.eval()
-            model.module.heavy_ab_gru.eval()
-            model.module.virus_gru.train()
             model.module.embedding_dropout.eval()
+            model.module.light_ab_fc.eval()
+            model.module.light_ab_dropout.eval()
+            model.module.light_ab_att.eval()
+            model.module.light_ab_att_dropout.eval()
+            model.module.heavy_ab_fc.eval()
+            model.module.heavy_ab_dropout.eval()
+            model.module.heavy_ab_att.eval()
+            model.module.heavy_ab_att_dropout.eval()
+
+            model.module.virus_gru.train()
             model.module.fc_dropout.train()
             model.module.fully_connected.train()
 
