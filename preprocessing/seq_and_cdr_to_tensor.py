@@ -1,7 +1,6 @@
 import math
 from deep_hiv_ab_pred.util.tools import normalize, to_torch
 import numpy as np
-import torch as t
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 from deep_hiv_ab_pred.util.tools import device, read_json_file
 from Bio import SeqIO
@@ -10,44 +9,41 @@ from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import read_virus_fasta_sequences, read_virus_pngs_mask
 from deep_hiv_ab_pred.catnap.constants import AB_CDRS
 from itertools import chain
-import numpy as np
-from torch.nn.functional import pad
 
 AB_LIGHT = 'ab_light'
 AB_HEAVY = 'ab_heavy'
 
 def read_cdrs(include_position_features = True):
     cdr_dict = read_json_file(AB_CDRS)
-    cdr_tensors = {}
+    cdr_arrays = {}
     tensor_sizes = find_cdr_lengths()
     cdr_positions = find_cdr_centers()
     cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
-        ab_light_cdrs = cdr_data[AB_LIGHT]
-        ab_heavy_cdrs = cdr_data[AB_HEAVY]
-        # TODO concateneaza ab light & heavy si cheama o singura metoda
-        ab_cdrs_to_tensor(ab_light_cdrs, tensor_sizes[:3], cdr_positions[:3], cdr_positions_std[:3], include_position_features)
-        ab_cdrs_to_tensor(ab_heavy_cdrs, tensor_sizes[3:], cdr_positions[3:], cdr_positions_std[3:], include_position_features)
+        abs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
+        cdr_arrays[ab] = ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features)
+    return cdr_arrays
 
-# TODO nu mai folosi tensori torch pt ca pastra memoria GPU
-def ab_cdrs_to_tensor(cdrs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features):
-    sequences = [c[0] for c in cdrs]
+def ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features):
+    sequences = [c[0] for c in abs]
+    sequences_index = [ [amino_to_index[s] for s in seq] for seq in sequences ]
     sequences_index = [
-        t.tensor([amino_to_index[s] for s in seq], dtype=t.long, device = device)
-        for seq in sequences
-    ]
-    sequences_index = [
-        pad(s, ((tensor_sizes[i] - len(s)) // 2, math.ceil((tensor_sizes[i] - len(s)) / 2)), value = amino_to_index['?'])
+        np.pad(
+            s,
+            ((tensor_sizes[i] - len(s)) // 2, math.ceil((tensor_sizes[i] - len(s)) / 2)),
+            'constant',
+            constant_values = (amino_to_index['?'], amino_to_index['?'])
+        )
         for (i, s) in enumerate(sequences_index)
     ]
-    sequences_index = t.cat(sequences_index)
+    sequences_index = np.concatenate(sequences_index)
     if include_position_features:
         assert cdr_positions and cdr_positions_std
         positions = [
             normalize(c[1][0] + (c[1][1] - c[1][0])/2, cdr_positions[i], cdr_positions_std[i])
-            for (i, c) in enumerate(cdrs)
+            for (i, c) in enumerate(abs)
         ]
-        return sequences_index, to_torch(positions)
+        return sequences_index, np.array(positions)
     return sequences_index
 
 def cdr_indexes():
@@ -101,6 +97,6 @@ def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     return virus_seq, virus_pngs_mask, antibody_cdrs
 
 if __name__ == '__main__':
-    find_cdr_lengths()
+    cdr_dict = read_cdrs()
 
     # virus_seq, virus_pngs_mask, antibody_cdrs = parse_catnap_sequences_to_embeddings(51, 25)
