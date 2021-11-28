@@ -1,3 +1,5 @@
+import math
+from deep_hiv_ab_pred.util.tools import normalize
 import numpy as np
 import torch as t
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
@@ -9,29 +11,42 @@ from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import read_virus_fas
 from deep_hiv_ab_pred.catnap.constants import AB_CDRS
 from itertools import chain
 import numpy as np
+from torch.nn.functional import pad
 
 AB_LIGHT = 'ab_light'
 AB_HEAVY = 'ab_heavy'
 
-def read_cdrs():
+def read_cdrs(include_position_features = True):
     cdr_dict = read_json_file(AB_CDRS)
     cdr_tensors = {}
-    tensor_sizes = find_cdr_tensor_sizes()
+    tensor_sizes = find_cdr_lengths()
+    cdr_positions = find_cdr_centers()
+    cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
         ab_light_cdrs = cdr_data[AB_LIGHT]
         ab_heavy_cdrs = cdr_data[AB_HEAVY]
-        ab_cdrs_to_tensor(ab_light_cdrs, tensor_sizes[:3])
-        ab_cdrs_to_tensor(ab_heavy_cdrs, tensor_sizes[3:])
+        ab_cdrs_to_tensor(ab_light_cdrs, tensor_sizes[:3], cdr_positions[:3], cdr_positions_std[:3], include_position_features)
+        ab_cdrs_to_tensor(ab_heavy_cdrs, tensor_sizes[3:], cdr_positions[3:], cdr_positions_std[3:], include_position_features)
 
-def ab_cdrs_to_tensor(cdrs, tensor_sizes):
+def ab_cdrs_to_tensor(cdrs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features):
     sequences = [c[0] for c in cdrs]
     sequences_index = [
         t.tensor([amino_to_index[s] for s in seq], dtype=t.long, device = device)
         for seq in sequences
     ]
-    pass
+    sequences_index = [
+        pad(s, ((tensor_sizes[i] - len(s)) // 2, math.ceil((tensor_sizes[i] - len(s)) / 2)), value = amino_to_index['?'])
+        for (i, s) in enumerate(sequences_index)
+    ]
+    sequences_index = t.cat(sequences_index)
+    if include_position_features:
+        assert cdr_positions and cdr_positions_std
+        positions = [
+            normalize(c[1][0] + (c[1][1] - c[1][0])/2, cdr_positions[i], cdr_positions_std[i])
+            for (i, c) in enumerate(cdrs)
+        ]
 
-def find_cdr_tensor_sizes():
+def cdr_indexes():
     cdr_dict = read_json_file(AB_CDRS)
     cdrs = []
     for ab, cdr_data in cdr_dict.items():
@@ -43,6 +58,10 @@ def find_cdr_tensor_sizes():
         all_cdr_indexes = list(chain(*all_cdr_indexes))
         cdrs.append(all_cdr_indexes)
     cdrs = np.array(cdrs)
+    return cdrs
+
+def find_cdr_lengths():
+    cdrs = cdr_indexes()
     len_light_cdr1 = cdrs[:, 1] - cdrs[:, 0]
     len_light_cdr2 = cdrs[:, 3] - cdrs[:, 2]
     len_light_cdr3 = cdrs[:, 5] - cdrs[:, 4]
@@ -51,6 +70,26 @@ def find_cdr_tensor_sizes():
     len_heavy_cdr3 = cdrs[:, 11] - cdrs[:, 10]
     return max(len_light_cdr1), max(len_light_cdr2), max(len_light_cdr3), max(len_heavy_cdr1), max(len_heavy_cdr2), max(len_heavy_cdr3)
 
+def find_cdr_centers():
+    cdrs = cdr_indexes()
+    center_light_cdr1 = np.mean(cdrs[:, 0] + (cdrs[:, 1] - cdrs[:, 0]) / 2)
+    center_light_cdr2 = np.mean(cdrs[:, 2] + (cdrs[:, 3] - cdrs[:, 2]) / 2)
+    center_light_cdr3 = np.mean(cdrs[:, 4] + (cdrs[:, 5] - cdrs[:, 4]) / 2)
+    center_heavy_cdr1 = np.mean(cdrs[:, 6] + (cdrs[:, 7] - cdrs[:, 6]) / 2)
+    center_heavy_cdr2 = np.mean(cdrs[:, 8] + (cdrs[:, 9] - cdrs[:, 8]) / 2)
+    center_heavy_cdr3 = np.mean(cdrs[:, 10] + (cdrs[:, 11] - cdrs[:, 10]) / 2)
+    return center_light_cdr1, center_light_cdr2, center_light_cdr3, center_heavy_cdr1, center_heavy_cdr2, center_heavy_cdr3
+
+def find_cdr_position_std():
+    cdrs = cdr_indexes()
+    std_light_cdr1 = np.std(cdrs[:, 0] + (cdrs[:, 1] - cdrs[:, 0]) / 2)
+    std_light_cdr2 = np.std(cdrs[:, 2] + (cdrs[:, 3] - cdrs[:, 2]) / 2)
+    std_light_cdr3 = np.std(cdrs[:, 4] + (cdrs[:, 5] - cdrs[:, 4]) / 2)
+    std_heavy_cdr1 = np.std(cdrs[:, 6] + (cdrs[:, 7] - cdrs[:, 6]) / 2)
+    std_heavy_cdr2 = np.std(cdrs[:, 8] + (cdrs[:, 9] - cdrs[:, 8]) / 2)
+    std_heavy_cdr3 = np.std(cdrs[:, 10] + (cdrs[:, 11] - cdrs[:, 10]) / 2)
+    return std_light_cdr1, std_light_cdr2, std_light_cdr3, std_heavy_cdr1, std_heavy_cdr2, std_heavy_cdr3
+
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE, virus_kmer_len, virus_kmer_stride)
@@ -58,6 +97,6 @@ def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     return virus_seq, virus_pngs_mask, antibody_cdrs
 
 if __name__ == '__main__':
-    find_cdr_tensor_sizes()
+    find_cdr_lengths()
 
     # virus_seq, virus_pngs_mask, antibody_cdrs = parse_catnap_sequences_to_embeddings(51, 25)
