@@ -24,7 +24,8 @@ def compute_amino_props():
         'M': [2.35, 0.22, 4.43, 1.23, 5.71, 0.38, 0.32],
         'P': [2.67, 0.00, 2.72, 0.72, 6.80, 0.13, 0.34],
         'C': [1.77, 0.13, 2.43, 1.54, 6.35, 0.17, 0.41],
-        '-': [0, 0, 0, 0, 0, 0, 0]
+        '-': [0, 0, 0, 0, 0, 0, 0],
+        '?': [0, 0, 0, 0, 0, 0, 0] # padding symbol
     }, orient='index')
     amino_props_np = amino_props.values
     amino_props_np = preprocessing.StandardScaler().fit_transform(amino_props_np)
