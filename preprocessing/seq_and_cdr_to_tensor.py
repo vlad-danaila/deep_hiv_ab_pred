@@ -37,7 +37,12 @@ def find_cdr_tensor_sizes():
         all_cdr_indexes = list(chain(*all_cdr_indexes))
         cdrs.append(all_cdr_indexes)
     cdrs = np.array(cdrs)
-    # TODO continue
+    len_light_cdr1 = cdrs[:, 1] - cdrs[:, 0]
+    len_light_cdr2 = cdrs[:, 3] - cdrs[:, 2]
+    len_light_cdr3 = cdrs[:, 5] - cdrs[:, 4]
+    len_heavy_cdr1 = cdrs[:, 7] - cdrs[:, 6]
+    len_heavy_cdr2 = cdrs[:, 9] - cdrs[:, 8]
+    len_heavy_cdr3 = cdrs[:, 11] - cdrs[:, 10]
 
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
