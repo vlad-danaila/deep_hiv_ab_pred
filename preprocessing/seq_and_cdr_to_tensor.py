@@ -1,5 +1,5 @@
 import math
-from deep_hiv_ab_pred.util.tools import normalize
+from deep_hiv_ab_pred.util.tools import normalize, to_torch
 import numpy as np
 import torch as t
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
@@ -45,6 +45,8 @@ def ab_cdrs_to_tensor(cdrs, tensor_sizes, cdr_positions, cdr_positions_std, incl
             normalize(c[1][0] + (c[1][1] - c[1][0])/2, cdr_positions[i], cdr_positions_std[i])
             for (i, c) in enumerate(cdrs)
         ]
+        return sequences_index, to_torch(positions)
+    return sequences_index
 
 def cdr_indexes():
     cdr_dict = read_json_file(AB_CDRS)
