@@ -25,7 +25,6 @@ def ab_cdrs_to_tensor(cdr_1_size, cdr_2_size, cdr_3_size):
     # TODO
     pass
 
-# TODO rezolva bug, ai uitat sa pui indexi la corecti
 def find_cdr_tensor_sizes():
     cdr_dict = read_json_file(AB_CDRS)
     cdrs = []
@@ -38,6 +37,7 @@ def find_cdr_tensor_sizes():
         all_cdr_indexes = list(chain(*all_cdr_indexes))
         cdrs.append(all_cdr_indexes)
     cdrs = np.array(cdrs)
+    # TODO continue
 
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
