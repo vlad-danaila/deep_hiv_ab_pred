@@ -16,13 +16,19 @@ AB_HEAVY = 'ab_heavy'
 def read_cdrs():
     cdr_dict = read_json_file(AB_CDRS)
     cdr_tensors = {}
+    tensor_sizes = find_cdr_tensor_sizes()
     for ab, cdr_data in cdr_dict.items():
         ab_light_cdrs = cdr_data[AB_LIGHT]
         ab_heavy_cdrs = cdr_data[AB_HEAVY]
-        # TODO call ab_cdrs_to_tensor
+        ab_cdrs_to_tensor(ab_light_cdrs, tensor_sizes[:3])
+        ab_cdrs_to_tensor(ab_heavy_cdrs, tensor_sizes[3:])
 
-def ab_cdrs_to_tensor(cdr_1_size, cdr_2_size, cdr_3_size):
-    # TODO
+def ab_cdrs_to_tensor(cdrs, tensor_sizes):
+    sequences = [c[0] for c in cdrs]
+    sequences_index = [
+        t.tensor([amino_to_index[s] for s in seq], dtype=t.long, device = device)
+        for seq in sequences
+    ]
     pass
 
 def find_cdr_tensor_sizes():
