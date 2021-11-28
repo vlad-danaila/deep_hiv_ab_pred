@@ -25,9 +25,11 @@ def read_cdrs(include_position_features = True):
     for ab, cdr_data in cdr_dict.items():
         ab_light_cdrs = cdr_data[AB_LIGHT]
         ab_heavy_cdrs = cdr_data[AB_HEAVY]
+        # TODO concateneaza ab light & heavy si cheama o singura metoda
         ab_cdrs_to_tensor(ab_light_cdrs, tensor_sizes[:3], cdr_positions[:3], cdr_positions_std[:3], include_position_features)
         ab_cdrs_to_tensor(ab_heavy_cdrs, tensor_sizes[3:], cdr_positions[3:], cdr_positions_std[3:], include_position_features)
 
+# TODO nu mai folosi tensori torch pt ca pastra memoria GPU
 def ab_cdrs_to_tensor(cdrs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features):
     sequences = [c[0] for c in cdrs]
     sequences_index = [
