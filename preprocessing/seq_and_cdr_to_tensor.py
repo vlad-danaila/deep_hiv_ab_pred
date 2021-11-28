@@ -20,6 +20,9 @@ def read_cdrs(include_position_features = True):
     cdr_positions = find_cdr_centers()
     cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
+        print(ab)
+        if ab == '447-52D':
+            print('debug')
         abs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
         cdr_arrays[ab] = ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features)
     return cdr_arrays
@@ -68,7 +71,8 @@ def find_cdr_lengths():
     len_heavy_cdr1 = cdrs[:, 7] - cdrs[:, 6]
     len_heavy_cdr2 = cdrs[:, 9] - cdrs[:, 8]
     len_heavy_cdr3 = cdrs[:, 11] - cdrs[:, 10]
-    return max(len_light_cdr1), max(len_light_cdr2), max(len_light_cdr3), max(len_heavy_cdr1), max(len_heavy_cdr2), max(len_heavy_cdr3)
+    return max(len_light_cdr1) + 1, max(len_light_cdr2) + 1, max(len_light_cdr3) + 1,\
+           max(len_heavy_cdr1) + 1, max(len_heavy_cdr2) + 1, max(len_heavy_cdr3) + 1
 
 def find_cdr_centers():
     cdrs = cdr_indexes()
@@ -98,5 +102,6 @@ def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
 
 if __name__ == '__main__':
     cdr_dict = read_cdrs()
+    print('done')
 
     # virus_seq, virus_pngs_mask, antibody_cdrs = parse_catnap_sequences_to_embeddings(51, 25)
