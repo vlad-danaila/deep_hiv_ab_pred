@@ -79,7 +79,9 @@ def get_FC_GRU_ATT_model(conf, embeding_type = EMBEDDING):
     if embeding_type == 'LEARNED':
         embedding_matrix = None
     elif embeding_type == 'ONE-HOT':
-        embedding_matrix = t.eye(aminoacids_len)
+        embedding_matrix = t.eye(aminoacids_len - 1)
+        none_element = t.zeros(aminoacids_len - 1).reshape(1, -1)
+        embedding_matrix = t.cat((embedding_matrix, none_element))
     elif embeding_type == 'ONE-HOT-AND-PROPS':
         embedding_matrix = to_torch(amino_props_and_one_hot().values)
     elif embeding_type == 'PROPS-ONLY':

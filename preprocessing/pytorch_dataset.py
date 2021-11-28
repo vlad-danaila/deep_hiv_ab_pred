@@ -28,8 +28,8 @@ def __len__(self):
     return len(self.assays)
 
 def zero_padding(batch):
-    ab_light     = [t.nn.functional.pad(b[0], (0, LIGHT_ANTIBODY_TRIM - len(b[0])), value = amino_to_index['-']) for b in batch]
-    ab_heavy     = [t.nn.functional.pad(b[1], (0, HEAVY_ANTIBODY_TRIM - len(b[1])), value = amino_to_index['-']) for b in batch]
+    ab_light     = [t.nn.functional.pad(b[0], (0, LIGHT_ANTIBODY_TRIM - len(b[0])), value = amino_to_index['?']) for b in batch]
+    ab_heavy     = [t.nn.functional.pad(b[1], (0, HEAVY_ANTIBODY_TRIM - len(b[1])), value = amino_to_index['?']) for b in batch]
     virus        = [b[2] for b in batch]
     pngs_mask    = [b[3] for b in batch]
     ground_truth = [b[4] for b in batch]
