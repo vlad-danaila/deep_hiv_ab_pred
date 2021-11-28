@@ -114,17 +114,17 @@ def combine_paratome_and_abrsa(paratome_cdrs: dict, abrsa_cdrs: dict, ab_type):
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3753353/
                 # QVQLQESGPGLVKPSETLSLTCSVSGGSLSNFYWSWIRQFPGKRLEWIAYINFNNEKSNQNPSLKGRLTVSGDPSKNHLSMRLTSVTAADTAVYFCARGRFDYFRGGHRLIFDSWGRGTLVAVSS
-                combined[ab_id] = ['GSLSNFYWS', 'WIAYINFNNEKSNQ', 'RGRFDYFRGGHRLIFDS']
+                combined[ab_id] = [('GSLSNFYWS', (27, 35)), ('WIAYINFNNEKSNQ', (47, 60)), ('RGRFDYFRGGHRLIFDS', (98, 114))]
             elif ab_type == AB_TYPE_HEAVY and ab_id == '2F5':
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/3LEV
                 # RITLKESGPPLVKPTQTLTLTCSFSGFSLSDFGVGVGWIRQPPGKALEWLAIIYSDDDKRYSPSLNTRLTITKDTSKNQVVLVMTRVSPVDTATYFCAHRRGPTTLFGVPIARGPVNAMDVWGQGITVTISSTSTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSCDK
-                combined[ab_id] = ['FSLSDFGVGVG', 'WLAIIYSDDDKRY', 'HRRGPTTLFGVPIARGPVNAMDV']
+                combined[ab_id] = [('FSLSDFGVGVG', (27, 37)), ('WLAIIYSDDDKRY', (49, 61)), ('HRRGPTTLFGVPIARGPVNAMDV', (99, 121))]
             elif ab_type == AB_TYPE_HEAVY and ab_id == '2G12':
                 # Verified (no differences)
                 # Reparsed with Paratome using antibody fragment with larger sequence from https://www.rcsb.org/structure/2OQJ
                 # EVQLVESGGGLVKAGGSLILSCGVSNFRISAHTMNWVRRVPGGGLEWVASISTSSTYRDYADAVKGRFTVSRDDLEDFVYLQMHKMRVEDTAIYYCARKGSDRLSDNDPFDAWGPGTVVTVSPASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPK
-                combined[ab_id] = ['FRISAHTMN', 'WVASISTSSTYRDY', 'RKGSDRLSDNDPFDA']
+                combined[ab_id] = [('FRISAHTMN', (27, 35)), ('WVASISTSSTYRDY', (47, 60)), ('RKGSDRLSDNDPFDA', (98, 112))]
             else:
                 print(ab_id, 'abrsa', cdrs_from_abrsa, 'paratome', cdrs_from_paratome )
         else:
