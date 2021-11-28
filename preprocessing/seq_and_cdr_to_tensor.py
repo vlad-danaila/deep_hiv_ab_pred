@@ -43,6 +43,7 @@ def find_cdr_tensor_sizes():
     len_heavy_cdr1 = cdrs[:, 7] - cdrs[:, 6]
     len_heavy_cdr2 = cdrs[:, 9] - cdrs[:, 8]
     len_heavy_cdr3 = cdrs[:, 11] - cdrs[:, 10]
+    return max(len_light_cdr1), max(len_light_cdr2), max(len_light_cdr3), max(len_heavy_cdr1), max(len_heavy_cdr2), max(len_heavy_cdr3)
 
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
