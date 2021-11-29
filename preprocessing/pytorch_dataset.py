@@ -25,16 +25,11 @@ class AssayDataset(t.utils.data.Dataset):
 def __len__(self):
     return len(self.assays)
 
-    return t.tensor([
-        [amino_to_index[seq[i + j]] for j in range(kmer_len)]
-        for i in range(0, len(seq) - kmer_len + 1, kmer_stride)
-    ], dtype=t.long, device = device)
-
 def zero_padding(batch):
-    ab_cdr     = to_torch([b[0] for b in batch], type = t.long)
+    ab_cdr     = to_torch([b[0] for b in batch], type = t.int)
     ab_cdr_pos = to_torch([b[1] for b in batch])
-    virus        = t.tensor([b[2] for b in batch], dtype=t.long, device = device)
-    pngs_mask    = t.tensor([b[3] for b in batch], dtype=t.long, device = device)
+    virus        = [t.tensor(b[2], dtype=t.int, device = device) for b in batch]
+    pngs_mask    = [t.tensor(b[3], dtype=t.float32, device = device) for b in batch]
     batched_ground_truth = t.tensor([b[4] for b in batch], dtype=t.float32, device=device)
     batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value = amino_to_index['?'])
     batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value = amino_to_index['?'])
