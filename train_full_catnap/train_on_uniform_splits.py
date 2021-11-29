@@ -2,7 +2,7 @@ from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_UNIFORM, MODELS_
 from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.seq_and_cdr_to_tensor import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.util.tools import read_json_file
 import torch as t
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT, AUC
@@ -88,6 +88,6 @@ def main_test():
     metrics = test(splits, catnap, conf)
 
 if __name__ == '__main__':
-    inspect_performance_per_epocs("hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json", 100)
+    inspect_performance_per_epocs("hyperparam_fc_att_gru_uniform_one_hot_1_layer_trial_159.json", 100)
     # main_train()
     # main_test()
