@@ -46,7 +46,7 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     log_metrics(best_metrics)
     return best_metrics
 
-def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
+def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     setup_logging()
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
     splits = read_json_file(SPLITS_UNIFORM)
@@ -63,9 +63,8 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
     model_name = 'model_test'
-    epochs = nb_epochs if nb_epochs else conf['EPOCHS']
     train_metrics_list, test_metrics_list, last = train_network_n_times(
-        model, conf, loader_train, loader_test, None, epochs, model_name, MODELS_FOLDER)
+        model, conf, loader_train, loader_test, None, nb_epochs, model_name, MODELS_FOLDER)
     mccs = [m[MATTHEWS_CORRELATION_COEFFICIENT] for m in test_metrics_list]
     best_mcc = max(mccs)
     ideal_epoch = mccs.index(best_mcc) + 1

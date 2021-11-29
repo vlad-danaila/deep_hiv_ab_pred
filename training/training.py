@@ -16,9 +16,9 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab_cdr, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
         start = time.time()
-        pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
+        pred = model.forward(ab_cdr, ab_cdr_pos, virus, pngs_mask)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
