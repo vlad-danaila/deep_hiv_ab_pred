@@ -6,10 +6,10 @@ from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, 
 from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
 
 def sequence_to_indexes(seq, kmer_len, kmer_stride):
-    return t.tensor([
+    return [
         [amino_to_index[seq[i + j]] for j in range(kmer_len)]
         for i in range(0, len(seq) - kmer_len + 1, kmer_stride)
-    ], dtype=t.long, device = device)
+    ]
 
 def kmers(seq, kmer_len, stride):
     return [
@@ -18,8 +18,7 @@ def kmers(seq, kmer_len, stride):
     ]
 
 def pngs_mask_to_kemr_tensor(pngs_mask, kmer_len, kmer_stride):
-    kmer_list = kmers(pngs_mask, kmer_len, kmer_stride)
-    return t.tensor(kmer_list, dtype=t.float32, device=device)
+    return kmers(pngs_mask, kmer_len, kmer_stride)
 
 def read_virus_fasta_sequences(fasta_file_path, kmer_len, kmer_stride):
     virus_seq_dict = {}

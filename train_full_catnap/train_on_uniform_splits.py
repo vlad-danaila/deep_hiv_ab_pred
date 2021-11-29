@@ -51,14 +51,14 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+    virus_seq, virus_pngs_mask, antibody_cdrs = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS']
     )
     test_ids = splits['test']
     train_assays = [a for a in catnap if a[0] not in test_ids]
     test_assays = [a for a in catnap if a[0] in test_ids]
-    train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-    test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    train_set = AssayDataset(train_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
+    test_set = AssayDataset(test_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
