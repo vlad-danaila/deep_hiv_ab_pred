@@ -22,7 +22,7 @@ class FC_GRU_ATT(t.nn.Module):
         self.ab_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
         self.ab_att = t.nn.Linear(AB_CDRS_SEQ_LEN * self.embeding_size + AB_CDRS_POS_LEN, conf['RNN_HIDDEN_SIZE'])
         self.ab_att_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
-        self.VIRUS_RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] * 2
+        self.VIRUS_RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE']
         self.virus_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_VIRUS'] * self.embeding_size + conf['KMER_LEN_VIRUS'],
             hidden_size = self.VIRUS_RNN_HIDDEN_SIZE,
