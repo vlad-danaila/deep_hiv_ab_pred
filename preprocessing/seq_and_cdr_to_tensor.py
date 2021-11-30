@@ -20,9 +20,6 @@ def read_cdrs(include_position_features = True):
     cdr_positions = find_cdr_centers()
     cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
-        print(ab)
-        if ab == '447-52D':
-            print('debug')
         abs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
         cdr_arrays[ab] = ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features)
     return cdr_arrays
