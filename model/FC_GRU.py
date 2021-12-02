@@ -8,7 +8,7 @@ from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
 class FC_GRU(t.nn.Module):
 
     def __init__(self, conf, embeddings_matrix = None, include_position_features = False):
-        conf['RNN_HIDDEN_SIZE'] = conf['RNN_HIDDEN_SIZE'] // 6
+        RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] // 6
         super().__init__()
         self.conf = conf
         self.include_position_features = include_position_features
@@ -21,11 +21,11 @@ class FC_GRU(t.nn.Module):
             self.aminoacid_embedding.load_state_dict({'weight': embeddings_matrix})
             self.aminoacid_embedding.weight.requires_grad = False
         self.cdr_fc = t.nn.ModuleList([
-            t.nn.Linear(CDR_LENGHTS[i] * self.embeding_size + (1 if include_position_features else 0), conf['RNN_HIDDEN_SIZE'])
+            t.nn.Linear(CDR_LENGHTS[i] * self.embeding_size + (1 if include_position_features else 0), RNN_HIDDEN_SIZE)
             for i in range(len(CDR_LENGHTS))
         ])
         self.ab_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
-        self.VIRUS_RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] * 6
+        self.VIRUS_RNN_HIDDEN_SIZE = RNN_HIDDEN_SIZE * 6
         self.virus_gru = t.nn.GRU(
             input_size = conf['KMER_LEN_VIRUS'] * self.embeding_size + conf['KMER_LEN_VIRUS'],
             hidden_size = self.VIRUS_RNN_HIDDEN_SIZE,
