@@ -9,6 +9,7 @@ import optuna
 from deep_hiv_ab_pred.util.tools import to_numpy
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
 
 def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = None, pruner = None):
     metrics = np.zeros(3)
@@ -91,11 +92,14 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
-        batch_size = len(ab_light)
+    for i, (ab_cdr, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
+        batch_size = len(ab_cdr)
         with t.no_grad():
-            ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
-            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy)
+            ab_cdr, virus = model.module.forward_embeddings(ab_cdr, virus, batch_size)
+            if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos:
+                ab_hidden = model.module.forward_antibodyes(ab_cdr, ab_cdr_pos)
+            else:
+                ab_hidden = model.module.forward_antibodyes(ab_cdr)
         pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
