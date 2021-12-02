@@ -14,13 +14,13 @@ PRETRAINING = 'pretraining'
 def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
-        all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+        all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs = get_data()
         mlflow.log_artifact(DEFAULT_CONF, 'conf.json')
         acc, mcc, auc = [], [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
             logging.info(f'{i}. Antibody {antibody}')
             metrics_train_per_epochs, metrics_test_per_epochs, best = pretrain_net(
-                antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, proposed_epochs)
+                antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs, proposed_epochs)
             ideal_nb_epochs = [
                 i + 1 for (i, m) in enumerate(metrics_test_per_epochs)
                 if m[MATTHEWS_CORRELATION_COEFFICIENT] == best[MATTHEWS_CORRELATION_COEFFICIENT]
