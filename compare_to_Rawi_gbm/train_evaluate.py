@@ -6,7 +6,7 @@ from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.seq_and_cdr_to_tensor import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.model.FC_GRU import get_FC_GRU_model
 from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
 from os.path import join
@@ -21,12 +21,12 @@ CV = 'cross_validation'
 TRAIN = 'train'
 TEST = 'test'
 
-def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs):
+def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs, pretrain_epochs):
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
     rest_assays = [a for a in catnap if a[0] not in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
-    pretrain_set = AssayDataset(pretraining_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-    val_set = AssayDataset(rest_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    pretrain_set = AssayDataset(pretraining_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
+    val_set = AssayDataset(rest_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
     loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_model(conf)
@@ -36,8 +36,8 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     )
     return metrics_train_per_epochs, metrics_test_per_epochs, best
 
-def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq,
-    antibody_heavy_seq, trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
+def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs,
+                            trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
 
     cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv[:cv_folds_trim]):
@@ -45,8 +45,8 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         train_assays = [a for a in catnap if a[0] in train_ids]
         test_assays = [a for a in catnap if a[0] in test_ids]
         assert len(train_assays) == len(train_ids) and len(test_assays) == len(test_ids)
-        train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-        test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+        train_set = AssayDataset(train_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
+        test_set = AssayDataset(test_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
         loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
         loader_test = t.utils.data.DataLoader(test_set, len(test_set), shuffle = False, collate_fn = zero_padding, num_workers = 0)
         model = get_FC_GRU_model(conf)
@@ -81,15 +81,15 @@ def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EM
         # mlflow.log_artifact(COMPARE_SPLITS_FOR_RAWI)
         catnap = read_json_file(CATNAP_FLAT)
         # mlflow.log_artifact(CATNAP_FLAT)
-        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+        virus_seq, virus_pngs_mask, antibody_cdrs = parse_catnap_sequences_to_embeddings(
             conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS']
         )
         acc, mcc = [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
             logging.info(f'{i}. Antibody {antibody}')
-            pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs)
             cv_metrics = cross_validate_antibody(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask,
-                antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
+                                                 antibody_cdrs, freeze_mode = freeze_mode)
             cv_mean_acc, cv_mean_mcc = log_metrics_per_cv_antibody(cv_metrics, antibody)
             acc.append(cv_mean_acc)
             mcc.append(cv_mean_mcc)
