@@ -81,7 +81,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
             raise 'Must provide a proper freeze mode.'
         try:
             cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf, virus_seq,
-                virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim, freeze_mode)
+                virus_pngs_mask, antibody_cdrs, trial, cv_folds_trim, freeze_mode)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             return cv_mean_mcc
