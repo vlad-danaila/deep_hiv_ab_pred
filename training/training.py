@@ -9,6 +9,7 @@ import optuna
 from deep_hiv_ab_pred.util.tools import to_numpy
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
 
 def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = None, pruner = None):
     metrics = np.zeros(3)

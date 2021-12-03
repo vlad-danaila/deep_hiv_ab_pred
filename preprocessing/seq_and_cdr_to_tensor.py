@@ -32,7 +32,7 @@ def ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, inclu
             s,
             ((tensor_sizes[i] - len(s)) // 2, math.ceil((tensor_sizes[i] - len(s)) / 2)),
             'constant',
-            constant_values = (amino_to_index['?'], amino_to_index['?'])
+            constant_values = (amino_to_index['X'], amino_to_index['X'])
         )
         for (i, s) in enumerate(sequences_index)
     ]
