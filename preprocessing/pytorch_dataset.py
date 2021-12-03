@@ -28,16 +28,16 @@ def __len__(self):
     return len(self.assays)
 
 def zero_padding(batch):
-    ab_light     = [t.nn.functional.pad(b[0], (0, LIGHT_ANTIBODY_TRIM - len(b[0])), value = amino_to_index['?']) for b in batch]
-    ab_heavy     = [t.nn.functional.pad(b[1], (0, HEAVY_ANTIBODY_TRIM - len(b[1])), value = amino_to_index['?']) for b in batch]
+    ab_light     = [t.nn.functional.pad(b[0], (0, LIGHT_ANTIBODY_TRIM - len(b[0])), value = amino_to_index['X']) for b in batch]
+    ab_heavy     = [t.nn.functional.pad(b[1], (0, HEAVY_ANTIBODY_TRIM - len(b[1])), value = amino_to_index['X']) for b in batch]
     virus        = [b[2] for b in batch]
     pngs_mask    = [b[3] for b in batch]
     ground_truth = [b[4] for b in batch]
     batched_ab_light = t.stack(ab_light)
     batched_ab_heavy = t.stack(ab_heavy)
-    batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value = amino_to_index['?'])
+    batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value = amino_to_index['X'])
     #batched_virus = t.stack(virus)
-    batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value = amino_to_index['?'])
+    batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value = 0)
     #batched_pngs_mask = t.stack(pngs_mask)
     batched_ground_truth = t.tensor(ground_truth, dtype=t.float32, device=device)
     # print(batched_ab_light.shape, batched_ab_heavy.shape, batched_virus.shape, batched_ground_truth.shape)
