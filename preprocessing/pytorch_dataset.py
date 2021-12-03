@@ -31,6 +31,6 @@ def zero_padding(batch):
     virus        = [t.tensor(b[2], dtype=t.int, device = device) for b in batch]
     pngs_mask    = [t.tensor(b[3], dtype=t.float32, device = device) for b in batch]
     batched_ground_truth = t.tensor([b[4] for b in batch], dtype=t.float32, device=device)
-    batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value = amino_to_index['?'])
-    batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value = amino_to_index['?'])
+    batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value = amino_to_index['X'])
+    batched_pngs_mask = t.nn.utils.rnn.pad_sequence(pngs_mask, batch_first=True, padding_value = 0)
     return ab_cdr, ab_cdr_pos, batched_virus, batched_pngs_mask, batched_ground_truth
