@@ -96,7 +96,7 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
         batch_size = len(ab_cdr)
         with t.no_grad():
             ab_cdr, virus = model.module.forward_embeddings(ab_cdr, virus, batch_size)
-            if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos:
+            if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos is not None:
                 ab_hidden = model.module.forward_antibodyes(ab_cdr, ab_cdr_pos)
             else:
                 ab_hidden = model.module.forward_antibodyes(ab_cdr)
