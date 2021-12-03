@@ -1,8 +1,7 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
+from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
 from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
-from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
-from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
 
 class FC_GRU(t.nn.Module):
 
@@ -71,6 +70,6 @@ class FC_GRU(t.nn.Module):
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
 def get_FC_GRU_model(conf):
-    model = FC_GRU(conf, get_embeding_matrix(), INCLUDE_CDR_POSITION_FEATURES).to(device)
+    model = FC_GRU(conf, get_embeding_matrix()).to(device)
     model = t.nn.DataParallel(model)
     return model

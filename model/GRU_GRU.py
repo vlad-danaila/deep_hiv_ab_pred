@@ -1,8 +1,6 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
-from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, amino_props, amino_props_and_one_hot
-from deep_hiv_ab_pred.global_constants import EMBEDDING
-from deep_hiv_ab_pred.util.tools import to_torch
+from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
 
 class GRU_GRU(t.nn.Module):
 
@@ -87,17 +85,7 @@ class GRU_GRU(t.nn.Module):
         ab_hidden = self.forward_antibodyes(ab_light, ab_heavy, batch_size)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
-def get_GRU_GRU_model(conf, embeding_type = EMBEDDING):
-    if embeding_type == 'LEARNED':
-        embedding_matrix = None
-    elif embeding_type == 'ONE-HOT':
-        embedding_matrix = t.eye(aminoacids_len)
-    elif embeding_type == 'ONE-HOT-AND-PROPS':
-        embedding_matrix = to_torch(amino_props_and_one_hot().values)
-    elif embeding_type == 'PROPS-ONLY':
-        embedding_matrix = to_torch(amino_props.values)
-    else:
-        raise 'The embedding type must have a valid value.'
-    model = GRU_GRU(conf, embedding_matrix).to(device)
+def get_GRU_GRU_model(conf):
+    model = GRU_GRU(conf, get_embeding_matrix()).to(device)
     model = t.nn.DataParallel(model)
     return model
