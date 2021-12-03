@@ -29,7 +29,7 @@ def compute_amino_props():
     }, orient='index')
     amino_props_np = amino_props.values
     amino_props_np = preprocessing.StandardScaler().fit_transform(amino_props_np)
-    mean = amino_props_np.mean(axis = 0)
+    # mean = amino_props_np.mean(axis = 0)
     amino_props_df = pd.DataFrame(amino_props_np, index=amino_props.index)
     amino_props_df.loc['-'] = [0] * 7
     amino_props_df.loc['X'] = [0] * 7
