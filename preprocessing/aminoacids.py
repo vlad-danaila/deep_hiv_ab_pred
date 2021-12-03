@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn import preprocessing
 import numpy as np
+from deep_hiv_ab_pred.util.tools import to_torch
+from deep_hiv_ab_pred.global_constants import EMBEDDING
 
 def compute_amino_props():
     amino_props = pd.DataFrame.from_dict({
@@ -23,15 +25,14 @@ def compute_amino_props():
         'Q': [1.56, 0.18, 3.95, -0.22, 5.65, 0.36, 0.25],
         'M': [2.35, 0.22, 4.43, 1.23, 5.71, 0.38, 0.32],
         'P': [2.67, 0.00, 2.72, 0.72, 6.80, 0.13, 0.34],
-        'C': [1.77, 0.13, 2.43, 1.54, 6.35, 0.17, 0.41],
-        '-': [0, 0, 0, 0, 0, 0, 0],
-        '?': [0, 0, 0, 0, 0, 0, 0] # padding symbol
+        'C': [1.77, 0.13, 2.43, 1.54, 6.35, 0.17, 0.41]
     }, orient='index')
     amino_props_np = amino_props.values
     amino_props_np = preprocessing.StandardScaler().fit_transform(amino_props_np)
     mean = amino_props_np.mean(axis = 0)
     amino_props_df = pd.DataFrame(amino_props_np, index=amino_props.index)
-    amino_props_df.loc['X'] = mean
+    amino_props_df.loc['-'] = [0] * 7
+    amino_props_df.loc['X'] = [0] * 7
     return amino_props_df # to get a value: amino_props.loc['C'].values
 
 amino_props = compute_amino_props()
@@ -39,10 +40,24 @@ aminoacids = list(amino_props.index)
 amino_to_index = { aa: i for (i, aa) in enumerate(aminoacids) }
 aminoacids_len = len(aminoacids)
 
+def one_hot():
+    one_hot = np.eye(aminoacids_len - 1)
+    none_element = np.zeros((1, aminoacids_len - 1))
+    result = np.concatenate((one_hot, none_element))
+    return result
+
 def amino_props_and_one_hot():
-    amino_props = compute_amino_props()
-    amino_props_np = amino_props.values
-    one_hot = np.eye(aminoacids_len)
-    props_and_one_hot = np.concatenate((amino_props_np, one_hot), axis = 1)
+    props_and_one_hot = np.concatenate((amino_props.values, one_hot()), axis = 1)
     return pd.DataFrame(props_and_one_hot, index=amino_props.index)
 
+def get_embeding_matrix():
+    if EMBEDDING == 'LEARNED':
+        return None
+    elif EMBEDDING == 'ONE-HOT':
+        return to_torch(one_hot())
+    elif EMBEDDING == 'ONE-HOT-AND-PROPS':
+        return to_torch(amino_props_and_one_hot().values)
+    elif EMBEDDING == 'PROPS-ONLY':
+        return to_torch(amino_props.values)
+    else:
+        raise 'The embedding type must have a valid value.'

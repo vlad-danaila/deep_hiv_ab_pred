@@ -1,9 +1,8 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
-from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, amino_props, amino_props_and_one_hot
-from deep_hiv_ab_pred.global_constants import EMBEDDING
-from deep_hiv_ab_pred.util.tools import to_torch
-from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
+from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
+from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
 
 class FC_GRU(t.nn.Module):
 
@@ -71,17 +70,7 @@ class FC_GRU(t.nn.Module):
         ab_hidden = self.forward_antibodyes(ab_light, ab_heavy)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
-def get_FC_GRU_model(conf, embeding_type = EMBEDDING):
-    if embeding_type == 'LEARNED':
-        embedding_matrix = None
-    elif embeding_type == 'ONE-HOT':
-        embedding_matrix = t.eye(aminoacids_len)
-    elif embeding_type == 'ONE-HOT-AND-PROPS':
-        embedding_matrix = to_torch(amino_props_and_one_hot().values)
-    elif embeding_type == 'PROPS-ONLY':
-        embedding_matrix = to_torch(amino_props.values)
-    else:
-        raise 'The embedding type must have a valid value.'
-    model = FC_GRU(conf, embedding_matrix).to(device)
+def get_FC_GRU_model(conf):
+    model = FC_GRU(conf, get_embeding_matrix(), INCLUDE_CDR_POSITION_FEATURES).to(device)
     model = t.nn.DataParallel(model)
     return model
