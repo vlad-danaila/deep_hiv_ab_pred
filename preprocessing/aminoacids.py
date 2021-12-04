@@ -41,8 +41,8 @@ amino_to_index = { aa: i for (i, aa) in enumerate(aminoacids) }
 aminoacids_len = len(aminoacids)
 
 def one_hot():
-    one_hot = np.eye(aminoacids_len - 1)
-    none_element = np.zeros((1, aminoacids_len - 1))
+    one_hot = np.eye(aminoacids_len - 2)
+    none_element = np.zeros((2, aminoacids_len - 2))
     result = np.concatenate((one_hot, none_element))
     return result
 
