@@ -28,10 +28,12 @@ def read_cdrs(include_position_features = True, include_cdr_mask = True):
     return cdr_arrays
 
 def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features, include_cdr_mask):
-    cdr_lens = [ab[1][1] - ab[1][0] for ab in abs]
-    diff = (np.array(tensor_sizes) - np.array(cdr_lens)) // 2
-    cdr_light_indexes = [ (abs[i][1][0] - diff[i], abs[i][1][1] + diff[i]) for i in range(3) ]
-    cdr_heavy_indexes = [ (abs[i][1][0] - diff[i], abs[i][1][1] + diff[i]) for i in range(3, 6) ]
+    cdr_lens = np.array([ab[1][1] - ab[1][0] for ab in abs])
+    tensor_sizes = np.array(tensor_sizes)
+    diff_low  = (tensor_sizes - cdr_lens) // 2
+    diff_high = np.ceil((tensor_sizes - cdr_lens) / 2)
+    cdr_light_indexes = [ (abs[i][1][0] - diff_low[i], abs[i][1][1] + diff_high[i]) for i in range(3) ]
+    cdr_heavy_indexes = [ (abs[i][1][0] - diff_low[i], abs[i][1][1] + diff_high[i]) for i in range(3, 6) ]
     cdr_light_seq = [ab_light_seq[max(0, idx[0]) : idx[1]] for idx in cdr_light_indexes]
     cdr_heavy_seq = [ab_heavy_seq[max(0, idx[0]) : idx[1]] for idx in cdr_heavy_indexes]
     cdrs = cdr_light_seq + cdr_heavy_seq
@@ -41,8 +43,8 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
         masks = []
         for i in range(6):
             mask = np.ones(len(cdrs[i]))
-            mask[:diff[i]] = 0
-            mask[-diff[i]:] = 0
+            mask[:diff_low[i]] = 0
+            mask[-diff_high[i]:] = 0
             masks.append(mask)
     if include_position_features:
         assert cdr_positions and cdr_positions_std
