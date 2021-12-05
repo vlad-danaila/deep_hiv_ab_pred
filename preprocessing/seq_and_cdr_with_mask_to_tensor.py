@@ -20,7 +20,7 @@ def read_cdrs():
     ab_seq_light = ab_to_seq(ANTIBODIES_LIGHT_FASTA_FILE)
     ab_seq_heavy = ab_to_seq(ANTIBODIES_HEAVY_FASTA_FILE)
     cdr_arrays = {}
-    tensor_sizes = find_cdr_lengths()
+    tensor_sizes = np.array(find_cdr_lengths())
     cdr_positions = find_cdr_centers()
     cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
@@ -28,16 +28,17 @@ def read_cdrs():
         cdr_arrays[ab] = ab_cdrs_to_tensor(abs, ab_seq_light[ab], ab_seq_heavy[ab], tensor_sizes, cdr_positions, cdr_positions_std)
     return cdr_arrays
 
+# TODO tot trebuie sa faci padding
 def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positions, cdr_positions_std):
-    cdr_lens = np.array([ab[1][1] - ab[1][0] for ab in abs])
-    tensor_sizes = np.array(tensor_sizes)
+    cdr_lens = np.array([ab[1][1] - ab[1][0] + 1 for ab in abs])
     diff_low  = (tensor_sizes - cdr_lens) // 2
     diff_high = np.ceil((tensor_sizes - cdr_lens) / 2).astype(np.int)
     cdr_light_indexes = [ (abs[i][1][0] - diff_low[i], abs[i][1][1] + diff_high[i]) for i in range(3) ]
     cdr_heavy_indexes = [ (abs[i][1][0] - diff_low[i], abs[i][1][1] + diff_high[i]) for i in range(3, 6) ]
-    cdr_light_seq = [ab_light_seq[max(0, idx[0]) : idx[1]] for idx in cdr_light_indexes]
-    cdr_heavy_seq = [ab_heavy_seq[max(0, idx[0]) : idx[1]] for idx in cdr_heavy_indexes]
+    cdr_light_seq = [ab_light_seq[max(0, idx[0]) : idx[1] + 1] for idx in cdr_light_indexes]
+    cdr_heavy_seq = [ab_heavy_seq[max(0, idx[0]) : idx[1] + 1] for idx in cdr_heavy_indexes]
     cdrs = cdr_light_seq + cdr_heavy_seq
+    assert (np.array([len(c) for c in cdrs]) == tensor_sizes).all()
     cdr_indexes = np.concatenate([ np.array([amino_to_index[s] for s in seq]) for seq in cdrs ])
     masks, positions = None, None
     if INCLUDE_CDR_MASK_FEATURES:

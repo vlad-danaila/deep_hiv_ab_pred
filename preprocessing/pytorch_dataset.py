@@ -27,6 +27,7 @@ def __len__(self):
 
 def zero_padding(batch):
     ab_cdr     = to_torch([b[0] for b in batch], type = t.int)
+    # TODO add ab_cdr_mask, return in result and increment indexes
     ab_cdr_pos = to_torch([b[1] for b in batch])
     virus        = [t.tensor(b[2], dtype=t.int, device = device) for b in batch]
     pngs_mask    = [t.tensor(b[3], dtype=t.float32, device = device) for b in batch]
