@@ -31,7 +31,7 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
     cdr_lens = np.array([ab[1][1] - ab[1][0] for ab in abs])
     tensor_sizes = np.array(tensor_sizes)
     diff_low  = (tensor_sizes - cdr_lens) // 2
-    diff_high = np.ceil((tensor_sizes - cdr_lens) / 2)
+    diff_high = np.ceil((tensor_sizes - cdr_lens) / 2).astype(np.int)
     cdr_light_indexes = [ (abs[i][1][0] - diff_low[i], abs[i][1][1] + diff_high[i]) for i in range(3) ]
     cdr_heavy_indexes = [ (abs[i][1][0] - diff_low[i], abs[i][1][1] + diff_high[i]) for i in range(3, 6) ]
     cdr_light_seq = [ab_light_seq[max(0, idx[0]) : idx[1]] for idx in cdr_light_indexes]
