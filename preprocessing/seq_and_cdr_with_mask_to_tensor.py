@@ -10,11 +10,12 @@ from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import read_virus_fas
 from deep_hiv_ab_pred.catnap.constants import AB_CDRS
 from itertools import chain
 from deep_hiv_ab_pred.catnap.parse_cdr_reports import get_id_to_seq_mapping_from_fasta_file as ab_to_seq
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES, INCLUDE_CDR_MASK_FEATURES
 
 AB_LIGHT = 'ab_light'
 AB_HEAVY = 'ab_heavy'
 
-def read_cdrs(include_position_features = True, include_cdr_mask = True):
+def read_cdrs():
     cdr_dict = read_json_file(AB_CDRS)
     ab_seq_light = ab_to_seq(ANTIBODIES_LIGHT_FASTA_FILE)
     ab_seq_heavy = ab_to_seq(ANTIBODIES_HEAVY_FASTA_FILE)
@@ -24,10 +25,10 @@ def read_cdrs(include_position_features = True, include_cdr_mask = True):
     cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
         abs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
-        cdr_arrays[ab] = ab_cdrs_to_tensor(abs, ab_seq_light[ab], ab_seq_heavy[ab], tensor_sizes, cdr_positions, cdr_positions_std, include_position_features, include_cdr_mask)
+        cdr_arrays[ab] = ab_cdrs_to_tensor(abs, ab_seq_light[ab], ab_seq_heavy[ab], tensor_sizes, cdr_positions, cdr_positions_std)
     return cdr_arrays
 
-def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features, include_cdr_mask):
+def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positions, cdr_positions_std):
     cdr_lens = np.array([ab[1][1] - ab[1][0] for ab in abs])
     tensor_sizes = np.array(tensor_sizes)
     diff_low  = (tensor_sizes - cdr_lens) // 2
@@ -39,14 +40,14 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
     cdrs = cdr_light_seq + cdr_heavy_seq
     cdr_indexes = [ np.array([amino_to_index[s] for s in seq]) for seq in cdrs ]
     masks, positions = None, None
-    if include_cdr_mask:
+    if INCLUDE_CDR_MASK_FEATURES:
         masks = []
         for i in range(6):
             mask = np.ones(len(cdrs[i]))
             mask[:diff_low[i]] = 0
             mask[-diff_high[i]:] = 0
             masks.append(mask)
-    if include_position_features:
+    if INCLUDE_CDR_POSITION_FEATURES:
         assert cdr_positions and cdr_positions_std
         positions = [
             normalize(c[1][0] + (c[1][1] - c[1][0])/2, cdr_positions[i], cdr_positions_std[i])

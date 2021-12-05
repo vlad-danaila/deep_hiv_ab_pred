@@ -17,9 +17,9 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
-    for i, (ab_cdr, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
         start = time.time()
-        pred = model.forward(ab_cdr, ab_cdr_pos, virus, pngs_mask)
+        pred = model.forward(ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
@@ -41,8 +41,8 @@ def eval_network(model, loader):
     model.eval()
     prediction_list, ground_truth_list = [], []
     with t.no_grad():
-        for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
-            pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
+        for i, (ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
+            pred = model.forward(ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask)
             prediction_list.append(to_numpy(pred))
             ground_truth_list.append(to_numpy(ground_truth))
     all_predictions = np.concatenate(prediction_list)
@@ -92,14 +92,11 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-    for i, (ab_cdr, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_cdr)
         with t.no_grad():
             ab_cdr, virus = model.module.forward_embeddings(ab_cdr, virus, batch_size)
-            if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos is not None:
-                ab_hidden = model.module.forward_antibodyes(ab_cdr, ab_cdr_pos)
-            else:
-                ab_hidden = model.module.forward_antibodyes(ab_cdr)
+            ab_hidden = model.module.forward_antibodyes(ab_cdr, ab_cdr_mask, ab_cdr_pos)
         pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
@@ -143,73 +140,6 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
             model.module.fully_connected.train()
 
             train_metrics = run_net_with_frozen_antibody_and_embedding(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
-            metrics_train_per_epochs.append(train_metrics)
-
-            test_metrics = eval_network(model, loader_val)
-            metrics_test_per_epochs.append(test_metrics)
-            # We save a model chekpoint if we find any improvement
-            if test_metrics[MATTHEWS_CORRELATION_COEFFICIENT] > best[MATTHEWS_CORRELATION_COEFFICIENT]:
-                best = test_metrics
-                if save_model:
-                    t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title} cv {cross_validation_round + 1}.tar'))
-            if log_every_epoch:
-                logging.info(f'Epoch {epoch + 1}, Correlation: {test_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {test_metrics[ACCURACY]}')
-
-        logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
-        return metrics_train_per_epochs, metrics_test_per_epochs, best
-    except KeyboardInterrupt as e:
-        logging.info('Training interrupted at epoch ' + epoch)
-
-def run_net_with_frozen_net_except_of_last_layer(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
-    metrics = np.zeros(3)
-    total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
-        batch_size = len(ab_light)
-        with t.no_grad():
-            ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
-            ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy, batch_size)
-            virus_and_pngs = t.cat([virus, pngs_mask], axis = 2)
-            model.module.virus_gru.flatten_parameters()
-            virus_ab_all_output, _ = model.module.virus_gru(virus_and_pngs, ab_hidden)
-            virus_output = virus_ab_all_output[:, -1]
-        virus_output = model.module.fc_dropout(virus_output)
-        pred = model.module.sigmoid(model.module.fully_connected(virus_output).squeeze())
-        if pred.shape != ground_truth.shape:
-            pred = pred.reshape(ground_truth.shape)
-        loss = loss_fn(pred, ground_truth)
-        if isTrain:
-            assert optimizer != None
-            loss.backward()
-            t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
-            optimizer.step()
-            optimizer.zero_grad()
-        weight = len(ground_truth) / conf['BATCH_SIZE']
-        total_weight += weight
-        metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
-    return metrics / total_weight
-
-def train_with_fozen_net_except_of_last_layer(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
-    for param in model.parameters():
-        param.requires_grad = False
-    for param in model.module.fully_connected.parameters():
-        param.requires_grad = True
-    model.module.fc_dropout.requires_grad = True
-    model.module.embedding_dropout = t.nn.Dropout(p = 0)
-    model.module.light_ab_gru.dropout = 0
-    model.module.heavy_ab_gru.dropout = 0
-    model.module.virus_gru.dropout = 0
-
-    loss_fn = t.nn.BCELoss()
-    optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
-    metrics_train_per_epochs, metrics_test_per_epochs = [], []
-    best = np.zeros(3)
-    try:
-        for epoch in range(epochs):
-            model.eval()
-            model.module.fc_dropout.train()
-            model.module.fully_connected.train()
-
-            train_metrics = run_net_with_frozen_net_except_of_last_layer(model, conf, loader_train, loss_fn, optimizer, isTrain = True)
             metrics_train_per_epochs.append(train_metrics)
 
             test_metrics = eval_network(model, loader_val)

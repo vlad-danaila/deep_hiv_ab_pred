@@ -56,11 +56,6 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
             _, _, metrics = train_with_frozen_antibody_and_embedding(
                 model, conf, loader_train, loader_test, i, 100, f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
             )
-        # deprecated
-        elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
-            _, _, metrics = train_with_fozen_net_except_of_last_layer(
-                model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
-            )
         elif freeze_mode == FREEZE_ALL:
             metrics = eval_network(model, loader_test)
         else:

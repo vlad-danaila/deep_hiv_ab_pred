@@ -14,10 +14,10 @@ class AssayDataset(t.utils.data.Dataset):
 
     def __getitem__(self, i):
         id, antibody, virus, ground_truth = self.assays[i]
-        ab_cdr_tensor, ab_cdr_position_tensor = self.antibody_cdrs[antibody]
+        ab_cdr_tensor, ab_cdr_masks_tensor, ab_cdr_position_tensor = self.antibody_cdrs[antibody]
         virus_tensor = self.virus_seq[virus]
         pngs_mask_tensor = self.pngs_mask_to_kemr_tensor[virus]
-        return ab_cdr_tensor, ab_cdr_position_tensor, virus_tensor, pngs_mask_tensor, ground_truth
+        return ab_cdr_tensor, ab_cdr_masks_tensor, ab_cdr_position_tensor, virus_tensor, pngs_mask_tensor, ground_truth
 
     def __len__(self):
         return len(self.assays)
