@@ -78,6 +78,6 @@ class FC_GRU(t.nn.Module):
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
 def get_FC_GRU_model(conf):
-    model = FC_GRU(conf, get_embeding_matrix(), INCLUDE_CDR_POSITION_FEATURES).to(device)
+    model = FC_GRU(conf, get_embeding_matrix()).to(device)
     model = t.nn.DataParallel(model)
     return model
