@@ -50,7 +50,7 @@ class FC_GRU(t.nn.Module):
         begin, end = 0, 0
         for i in range(len(CDR_LENGHTS)):
             end += CDR_LENGHTS[i] * self.embeding_size
-            if self.include_position_features and ab_cdr_pos is not None:
+            if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos is not None:
                 cdr_out_list.append(self.ab_dropout(self.cdr_fc[i](
                     t.cat([ ab_cdr[:, begin:end], ab_cdr_pos[:, i].reshape((ab_cdr_pos.shape[0], 1)) ], axis = 1)
                 )))

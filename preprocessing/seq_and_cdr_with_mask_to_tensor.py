@@ -38,7 +38,7 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
     cdr_light_seq = [ab_light_seq[max(0, idx[0]) : idx[1]] for idx in cdr_light_indexes]
     cdr_heavy_seq = [ab_heavy_seq[max(0, idx[0]) : idx[1]] for idx in cdr_heavy_indexes]
     cdrs = cdr_light_seq + cdr_heavy_seq
-    cdr_indexes = [ np.array([amino_to_index[s] for s in seq]) for seq in cdrs ]
+    cdr_indexes = np.concatenate([ np.array([amino_to_index[s] for s in seq]) for seq in cdrs ])
     masks, positions = None, None
     if INCLUDE_CDR_MASK_FEATURES:
         masks = []
