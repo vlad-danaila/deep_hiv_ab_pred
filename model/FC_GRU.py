@@ -1,16 +1,15 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
 from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
-from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_MASK_FEATURES, INCLUDE_CDR_POSITION_FEATURES
 from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
 
 class FC_GRU(t.nn.Module):
 
-    def __init__(self, conf, embeddings_matrix = None, include_position_features = False):
-        RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] // 6
+    def __init__(self, conf, embeddings_matrix = None):
         super().__init__()
+        RNN_HIDDEN_SIZE = conf['RNN_HIDDEN_SIZE'] // 6
         self.conf = conf
-        self.include_position_features = include_position_features
         if embeddings_matrix is None:
             self.embeding_size = conf['EMBEDDING_SIZE']
             self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = self.embeding_size)
@@ -19,9 +18,12 @@ class FC_GRU(t.nn.Module):
             self.aminoacid_embedding = t.nn.Embedding(num_embeddings = aminoacids_len, embedding_dim = self.embeding_size)
             self.aminoacid_embedding.load_state_dict({'weight': embeddings_matrix})
             self.aminoacid_embedding.weight.requires_grad = False
-        self.cdr_fc = t.nn.ModuleList([
-            t.nn.Linear(CDR_LENGHTS[i] * self.embeding_size + (1 if include_position_features else 0), RNN_HIDDEN_SIZE)
+        self.cdr_in_lens = [
+            CDR_LENGHTS[i] * self.embeding_size + (CDR_LENGHTS[i] if INCLUDE_CDR_MASK_FEATURES else 0) + (1 if INCLUDE_CDR_POSITION_FEATURES else 0)
             for i in range(len(CDR_LENGHTS))
+        ]
+        self.cdr_fc = t.nn.ModuleList([
+            t.nn.Linear(self.cdr_in_lens[i], RNN_HIDDEN_SIZE) for i in range(len(CDR_LENGHTS))
         ])
         self.ab_dropout = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
         self.VIRUS_RNN_HIDDEN_SIZE = RNN_HIDDEN_SIZE * 6
@@ -45,17 +47,17 @@ class FC_GRU(t.nn.Module):
         virus = self.embedding_dropout(self.aminoacid_embedding(virus).reshape(batch_size, -1, self.conf['KMER_LEN_VIRUS'] * self.embeding_size))
         return ab_cdr, virus
 
-    def forward_antibodyes(self, ab_cdr, ab_cdr_pos = None):
+    def forward_antibodyes(self, ab_cdr, ab_cdr_mask, ab_cdr_pos):
         cdr_out_list = []
         begin, end = 0, 0
         for i in range(len(CDR_LENGHTS)):
             end += CDR_LENGHTS[i] * self.embeding_size
+            tensor_in = ab_cdr[:, begin:end]
+            if INCLUDE_CDR_MASK_FEATURES and ab_cdr_mask is not None:
+                tensor_in = t.cat((tensor_in, ab_cdr_mask[:, begin:end]), axis = 1)
             if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos is not None:
-                cdr_out_list.append(self.ab_dropout(self.cdr_fc[i](
-                    t.cat([ ab_cdr[:, begin:end], ab_cdr_pos[:, i].reshape((ab_cdr_pos.shape[0], 1)) ], axis = 1)
-                )))
-            else:
-                cdr_out_list.append(self.ab_dropout(self.cdr_fc[i](ab_cdr[:, begin:end])))
+                tensor_in = t.cat((tensor_in, ab_cdr_pos[:, i].reshape((ab_cdr_pos.shape[0], 1))), axis = 1)
+            cdr_out_list.append(self.ab_dropout(self.cdr_fc[i](tensor_in)))
             begin = end
         return t.cat(cdr_out_list, axis = 1)
 
@@ -69,13 +71,10 @@ class FC_GRU(t.nn.Module):
         virus_output = self.fc_dropout(virus_output)
         return self.sigmoid(self.fully_connected(virus_output).squeeze())
 
-    def forward(self, ab_cdr, ab_cdr_pos, virus, pngs_mask):
+    def forward(self, ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask):
         batch_size = len(ab_cdr)
         ab_cdr, virus = self.forward_embeddings(ab_cdr, virus, batch_size)
-        if self.include_position_features and ab_cdr_pos is not None:
-            ab_hidden = self.forward_antibodyes(ab_cdr, ab_cdr_pos)
-        else:
-            ab_hidden = self.forward_antibodyes(ab_cdr)
+        ab_hidden = self.forward_antibodyes(ab_cdr, ab_cdr_mask, ab_cdr_pos)
         return self.forward_virus(virus, pngs_mask, ab_hidden)
 
 def get_FC_GRU_model(conf):
