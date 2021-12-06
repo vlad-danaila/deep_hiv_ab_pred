@@ -28,7 +28,6 @@ def read_cdrs():
         cdr_arrays[ab] = ab_cdrs_to_tensor(abs, ab_seq_light[ab], ab_seq_heavy[ab], tensor_sizes, cdr_positions, cdr_positions_std)
     return cdr_arrays
 
-# TODO tot trebuie sa faci padding
 def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positions, cdr_positions_std):
     cdr_lens = np.array([ab[1][1] - ab[1][0] + 1 for ab in abs])
     diff_low  = (tensor_sizes - cdr_lens) // 2
@@ -38,6 +37,11 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
     cdr_light_seq = [ab_light_seq[max(0, idx[0]) : idx[1] + 1] for idx in cdr_light_indexes]
     cdr_heavy_seq = [ab_heavy_seq[max(0, idx[0]) : idx[1] + 1] for idx in cdr_heavy_indexes]
     cdrs = cdr_light_seq + cdr_heavy_seq
+    # Sometimes the seq are shorter than the indexes selected for CDR3 light and heavy
+    if len(cdrs[2]) < tensor_sizes[2]:
+        cdrs[2] += 'X' * (tensor_sizes[2] - len(cdrs[2]))
+    if len(cdrs[5]) < tensor_sizes[5]:
+        cdrs[5] += 'X' * (tensor_sizes[5] - len(cdrs[5]))
     assert (np.array([len(c) for c in cdrs]) == tensor_sizes).all()
     cdr_indexes = np.concatenate([ np.array([amino_to_index[s] for s in seq]) for seq in cdrs ])
     masks, positions = None, None
@@ -48,6 +52,7 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
             mask[:diff_low[i]] = 0
             mask[-diff_high[i]:] = 0
             masks.append(mask)
+        masks = np.concatenate(masks)
     if INCLUDE_CDR_POSITION_FEATURES:
         assert cdr_positions and cdr_positions_std
         positions = [
@@ -56,6 +61,13 @@ def ab_cdrs_to_tensor(abs, ab_light_seq, ab_heavy_seq, tensor_sizes, cdr_positio
         ]
         positions = np.array(positions)
     return cdr_indexes, masks, positions
+
+    # np.pad(
+    #     s,
+    #     ((tensor_sizes[i] - len(s)) // 2, math.ceil((tensor_sizes[i] - len(s)) / 2)),
+    #     'constant',
+    #     constant_values = (amino_to_index['X'], amino_to_index['X'])
+    # )
 
 def cdr_indexes():
     cdr_dict = read_json_file(AB_CDRS)

@@ -51,8 +51,8 @@ class FC_GRU(t.nn.Module):
         cdr_out_list = []
         begin, end = 0, 0
         for i in range(len(CDR_LENGHTS)):
-            end += CDR_LENGHTS[i] * self.embeding_size
-            tensor_in = ab_cdr[:, begin:end]
+            end += CDR_LENGHTS[i]
+            tensor_in = ab_cdr[:, begin * self.embeding_size : end * self.embeding_size]
             if INCLUDE_CDR_MASK_FEATURES and ab_cdr_mask is not None:
                 tensor_in = t.cat((tensor_in, ab_cdr_mask[:, begin:end]), axis = 1)
             if INCLUDE_CDR_POSITION_FEATURES and ab_cdr_pos is not None:
