@@ -9,6 +9,8 @@ HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
 
 DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_fc_gru_uniform_props_only_1_layer_trial_415.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_fc_gru_uniform_props_only_1_layer_trial_207.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_cdr_fc_gru_uniform_props_only_1_layer_trial_253.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_cdr_fc_gru_uniform_props_only_1_layer_trial_417.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_fc_att_gru_uniform_one_hot_1_layer_trial_159.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_fc_att_gru_uniform_props_only_1_layer_trial_252.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_fc_att_gru_uniform_one_hot_and_props_1_layer_trial_213.json')
