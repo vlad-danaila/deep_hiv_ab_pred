@@ -2,6 +2,7 @@ import torch as t
 from deep_hiv_ab_pred.util.tools import device
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 from deep_hiv_ab_pred.util.tools import to_torch
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_MASK_FEATURES, INCLUDE_CDR_POSITION_FEATURES
 
 class AssayDataset(t.utils.data.Dataset):
 
@@ -24,8 +25,11 @@ class AssayDataset(t.utils.data.Dataset):
 
 def zero_padding(batch):
     ab_cdr      = to_torch([b[0] for b in batch], type = t.int)
-    ab_cdr_mask = to_torch([b[1] for b in batch], type = t.int)
-    ab_cdr_pos  = to_torch([b[2] for b in batch])
+    ab_cdr_mask, ab_cdr_pos = None, None
+    if INCLUDE_CDR_MASK_FEATURES:
+        ab_cdr_mask = to_torch([b[1] for b in batch], type = t.int)
+    if INCLUDE_CDR_POSITION_FEATURES:
+        ab_cdr_pos  = to_torch([b[2] for b in batch])
     virus       = [t.tensor(b[3], dtype=t.int, device = device) for b in batch]
     pngs_mask   = [t.tensor(b[4], dtype=t.float32, device = device) for b in batch]
     batched_ground_truth = t.tensor([b[5] for b in batch], dtype=t.float32, device=device)
