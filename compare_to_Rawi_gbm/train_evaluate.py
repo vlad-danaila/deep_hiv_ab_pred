@@ -6,9 +6,9 @@ from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
-from deep_hiv_ab_pred.preprocessing.seq_and_cdr_to_tensor import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.seq_and_cdr_with_mask_to_tensor import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.model.FC_GRU import get_FC_GRU_model
-from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
+from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding
 from os.path import join
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow

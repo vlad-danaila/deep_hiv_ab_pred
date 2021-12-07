@@ -22,9 +22,6 @@ class AssayDataset(t.utils.data.Dataset):
     def __len__(self):
         return len(self.assays)
 
-def __len__(self):
-    return len(self.assays)
-
 def zero_padding(batch):
     ab_cdr      = to_torch([b[0] for b in batch], type = t.int)
     ab_cdr_mask = to_torch([b[1] for b in batch], type = t.int)

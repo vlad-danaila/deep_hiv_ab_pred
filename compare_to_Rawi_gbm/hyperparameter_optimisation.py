@@ -8,7 +8,7 @@ import os
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
     CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
-from deep_hiv_ab_pred.preprocessing.seq_and_cdr_to_tensor import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.seq_and_cdr_with_mask_to_tensor import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cross_validate_antibody
 from os.path import join
 import mlflow
