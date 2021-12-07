@@ -64,7 +64,7 @@ class FC_GRU(t.nn.Module):
     def forward(self, ab_cdr, ab_cdr_pos, virus, pngs_mask):
         batch_size = len(ab_cdr)
         ab_cdr, virus = self.forward_embeddings(ab_cdr, virus, batch_size)
-        if self.include_position_features and ab_cdr_pos:
+        if self.include_position_features and ab_cdr_pos is not None:
             ab_hidden = self.forward_antibodyes(ab_cdr, ab_cdr_pos)
         else:
             ab_hidden = self.forward_antibodyes(ab_cdr)
