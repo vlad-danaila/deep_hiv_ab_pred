@@ -43,6 +43,8 @@ def eval_network(model, loader):
     with t.no_grad():
         for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
             pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
+            if pred.shape != ground_truth.shape:
+                pred = pred.reshape(ground_truth.shape)
             prediction_list.append(to_numpy(pred))
             ground_truth_list.append(to_numpy(ground_truth))
     all_predictions = np.concatenate(prediction_list)
