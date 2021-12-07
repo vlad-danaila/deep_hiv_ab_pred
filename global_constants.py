@@ -1,9 +1,9 @@
 from os.path import join
 
 #EMBEDDING = 'LEARNED'
-EMBEDDING = 'ONE-HOT'
+# EMBEDDING = 'ONE-HOT'
 # EMBEDDING = 'ONE-HOT-AND-PROPS'
-# EMBEDDING = 'PROPS-ONLY'
+EMBEDDING = 'PROPS-ONLY'
 
 HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
 
