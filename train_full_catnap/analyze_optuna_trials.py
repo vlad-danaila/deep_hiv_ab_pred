@@ -22,3 +22,4 @@ def plot_scatter_performance_vs_time(trials: List[optuna.trial.FrozenTrial]):
 if __name__ == '__main__':
     trials = get_best_trials_from_study(STUDY_NAME, SELECTION_TRESHOLD)
     plot_scatter_performance_vs_time(trials)
+    plt.show()
