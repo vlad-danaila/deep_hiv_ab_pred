@@ -45,7 +45,7 @@ class FC_GRU(t.nn.Module):
         return ab_cdr_seq, virus
 
     def forward_antibodyes(self, ab_cdr, ab_cdr_pos = None):
-        if ab_cdr_pos:
+        if ab_cdr_pos is not None:
             ab = t.cat([ab_cdr, ab_cdr_pos], axis = 1)
             return self.ab_dropout(self.ab_fc(ab))
         else:
