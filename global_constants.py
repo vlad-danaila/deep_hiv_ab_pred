@@ -15,4 +15,4 @@ DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_cdr_fc_gru_uniform_props_only
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_hold_out_prune_treshold_01_trial_162.json')
 
-INCLUDE_CDR_POSITION_FEATURES = False
+INCLUDE_CDR_POSITION_FEATURES = True
