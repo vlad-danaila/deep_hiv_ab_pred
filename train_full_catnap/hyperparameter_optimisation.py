@@ -35,8 +35,7 @@ def propose(trial: optuna.trial.Trial):
         'AB_TRANS_HEADS': trial.suggest_int('AB_TRANS_HEADS', 1, 25),
         'AB_TRANS_FC': trial.suggest_int('AB_TRANS_FC', 16, 1024),
         'AB_TRANS_DROPOUT': trial.suggest_float('AB_TRANS_DROPOUT', 0, .5),
-        'AB_TRANS_NORM': trial.suggest_float('AB_TRANS_NORM', 0, 1e-2),
-
+        'AB_TRANS_NORM': trial.suggest_float('AB_TRANS_NORM', 0, 1e-2)
     }
 
 # def train_hold_out_one_cluster(splits, catnap, conf, trial):

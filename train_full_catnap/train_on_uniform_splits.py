@@ -9,7 +9,7 @@ from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_C
 import mlflow
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF, HYPERPARAM_FOLDER
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import test
-from deep_hiv_ab_pred.model.FC_GRU_ATT import get_FC_GRU_ATT_model
+from deep_hiv_ab_pred.model.FC_TRANS_GRU import get_FC_TRANS_GRU_model
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 from deep_hiv_ab_pred.util.logging import setup_logging
@@ -39,7 +39,7 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     val_set = AssayDataset(val_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
-    model = get_FC_GRU_ATT_model(conf)
+    model = get_FC_TRANS_GRU_model(conf)
     _, test_metrics, last = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
     logging.info(f'Best epoch is {epoch_index + 1}')
@@ -61,7 +61,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
     test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
-    model = get_FC_GRU_ATT_model(conf)
+    model = get_FC_TRANS_GRU_model(conf)
     model_name = 'model_test'
     epochs = nb_epochs if nb_epochs else conf['EPOCHS']
     train_metrics_list, test_metrics_list, last = train_network_n_times(
@@ -89,6 +89,6 @@ def main_test():
     metrics = test(splits, catnap, conf)
 
 if __name__ == '__main__':
-    inspect_performance_per_epocs("hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json", 100)
+    inspect_performance_per_epocs("transformaers_gru_example.json", 100)
     # main_train()
     # main_test()
