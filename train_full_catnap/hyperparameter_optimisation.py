@@ -31,7 +31,12 @@ def propose(trial: optuna.trial.Trial):
         'RNN_HIDDEN_SIZE': trial.suggest_int('RNN_HIDDEN_SIZE', 16, 1024),
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_DROPOUT', 0, .5),
-        'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
+        'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
+        'AB_TRANS_HEADS': trial.suggest_int('AB_TRANS_HEADS', 1, 25),
+        'AB_TRANS_FC': trial.suggest_int('AB_TRANS_FC', 16, 1024),
+        'AB_TRANS_DROPOUT': trial.suggest_float('AB_TRANS_DROPOUT', 0, .5),
+        'AB_TRANS_NORM': trial.suggest_float('AB_TRANS_NORM', 0, 1e-2),
+
     }
 
 # def train_hold_out_one_cluster(splits, catnap, conf, trial):
