@@ -18,6 +18,12 @@ import time
 from deep_hiv_ab_pred.train_full_catnap.analyze_optuna_trials import get_best_trials_from_study
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 import torch as t
+from deep_hiv_ab_pred.util.tools import divisors
+from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
+from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
+
+assert LIGHT_ANTIBODY_TRIM == HEAVY_ANTIBODY_TRIM, 'light antibody trim and heavy antibody trim must be the same value'
+AB_EMBEDING_SIZE = get_embeding_matrix().shape[1] * LIGHT_ANTIBODY_TRIM
 
 def propose(trial: optuna.trial.Trial):
     kmer_len_virus = trial.suggest_int('KMER_LEN_VIRUS', 3, 110)
@@ -32,7 +38,7 @@ def propose(trial: optuna.trial.Trial):
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
-        'AB_TRANS_HEADS': trial.suggest_int('AB_TRANS_HEADS', 1, 25),
+        'AB_TRANS_HEADS': trial.suggest_categorical('AB_TRANS_HEADS', divisors(AB_EMBEDING_SIZE)),
         'AB_TRANS_FC': trial.suggest_int('AB_TRANS_FC', 16, 1024),
         'AB_TRANS_DROPOUT': trial.suggest_float('AB_TRANS_DROPOUT', 0, .5),
         'AB_TRANS_NORM': trial.suggest_float('AB_TRANS_NORM', 0, 1e-2)
