@@ -19,5 +19,5 @@ DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_mask_all_feat_fc_gru_uni
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_iceri_v2_hold_out_prune_treshold_01_trial_162.json')
 
-INCLUDE_CDR_MASK_FEATURES = True
-INCLUDE_CDR_POSITION_FEATURES = True
+INCLUDE_CDR_MASK_FEATURES = False
+INCLUDE_CDR_POSITION_FEATURES = False

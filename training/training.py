@@ -121,7 +121,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     model.module.embedding_dropout = t.nn.Dropout(p = 0)
     model.module.embedding_dropout.requires_grad = False
 
-    for param in model.module.cdr_fc.parameters():
+    for param in model.module.cdr.parameters():
         param.requires_grad = False
     model.module.ab_dropout.dropout = 0
     model.module.ab_dropout.requires_grad = False
@@ -134,7 +134,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
         for epoch in range(epochs):
             model.module.aminoacid_embedding.eval()
             model.module.embedding_dropout.eval()
-            model.module.cdr_fc.eval()
+            model.module.cdr.eval()
             model.module.ab_dropout.eval()
 
             model.module.virus_gru.train()
