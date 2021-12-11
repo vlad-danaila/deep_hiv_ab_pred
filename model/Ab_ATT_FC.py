@@ -18,6 +18,12 @@ class Ab_ATT_FC(t.nn.Module):
         self.fc = t.nn.Linear(in_size, out_size)
 
         if self.include_norm:
-            self.norm_1 = t.nn.LayerNorm(in_size, conf['AB_NORM_EPS'])
+            self.norm_1 = t.nn.LayerNorm(in_size)
+            self.norm_2 = t.nn.LayerNorm(out_size)
 
-        t.nn.TransformerEncoderLayer
+        self.dropout_1 = t.nn.Dropout(conf['ANTIBODIES_DROPOUT_ATT'])
+        self.dropout_2 = t.nn.Dropout(conf['ANTIBODIES_DROPOUT'])
+
+    def forward(self, cdr_tensor):
+        pass
+        
