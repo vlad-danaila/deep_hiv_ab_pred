@@ -46,18 +46,17 @@ def read_antibody_fasta_sequences(fasta_file_path, antibody_trim):
 
 def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
     virus_seq_dict = {}
-
     for seq_record in SeqIO.parse(fasta_file_path, "fasta"):
         id_split = seq_record.id.split('.')
         virus_id = id_split[-2]
         # seq = str(seq_record.seq).replace('-', '')
         seq = str(seq_record.seq)
+        if virus_id == '3468_V1_C12':
+            # fix for '*' character at the end of sequence
+            seq = seq[:-1]
         virus_seq_dict[virus_id] = seq
-
-    for virus, seq in virus_seq_dict.items():
         binary_mask = [1. if c == 'O' else 0. for c in seq]
-        virus_seq_dict[virus] = pngs_mask_to_kemr_tensor(binary_mask, kmer_len, kmer_stride)
-
+        virus_seq_dict[virus_id] = pngs_mask_to_kemr_tensor(binary_mask, kmer_len, kmer_stride)
     return virus_seq_dict
 
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
