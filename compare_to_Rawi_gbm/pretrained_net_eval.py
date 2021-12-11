@@ -32,3 +32,6 @@ def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
             logging.info(f'Ideal nb epochs {ideal_nb_epochs}')
         plt.show()
         log_metrics_from_lists(acc, mcc, auc)
+
+if __name__ == '__main__':
+    eval_pretrained_net('prtreain net eval', 100)

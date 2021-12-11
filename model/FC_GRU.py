@@ -1,7 +1,7 @@
 from deep_hiv_ab_pred.util.tools import device
 import torch as t
 from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
-from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_MASK_FEATURES, INCLUDE_CDR_POSITION_FEATURES
+from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_MASK_FEATURES, INCLUDE_CDR_POSITION_FEATURES, OUTPUT_AGGREGATE_MODE
 from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
 
 class FC_GRU(t.nn.Module):
@@ -67,7 +67,12 @@ class FC_GRU(t.nn.Module):
         ab_hidden_clone = t.clone(ab_hidden)
         ab_hidden_bidirectional = t.stack((ab_hidden, ab_hidden_clone), axis = 0)
         virus_ab_all_output, _ = self.virus_gru(virus_and_pngs, ab_hidden_bidirectional)
-        virus_output = virus_ab_all_output[:, -1]
+        if OUTPUT_AGGREGATE_MODE == 'LAST':
+            virus_output = virus_ab_all_output[:, -1]
+        elif OUTPUT_AGGREGATE_MODE == 'SUM':
+            virus_output = t.sum(virus_ab_all_output, axis = 1)
+        else:
+            raise 'OUTPUT_AGGREGATE_MODE constant must be set.'
         virus_output = self.fc_dropout(virus_output)
         return self.sigmoid(self.fully_connected(virus_output).squeeze())
 
