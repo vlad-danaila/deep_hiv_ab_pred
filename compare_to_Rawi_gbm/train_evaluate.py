@@ -28,7 +28,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     pretrain_set = AssayDataset(pretraining_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
     val_set = AssayDataset(rest_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
     loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
-    loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
+    loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_model(conf)
     assert pretrain_epochs
     metrics_train_per_epochs, metrics_test_per_epochs, best = train_network(
