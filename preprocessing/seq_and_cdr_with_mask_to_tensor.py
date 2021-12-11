@@ -11,6 +11,7 @@ from deep_hiv_ab_pred.catnap.constants import AB_CDRS
 from itertools import chain
 from deep_hiv_ab_pred.catnap.parse_cdr_reports import get_id_to_seq_mapping_from_fasta_file as ab_to_seq
 from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES, INCLUDE_CDR_MASK_FEATURES
+from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import fix_len_mismatches
 
 AB_LIGHT = 'ab_light'
 AB_HEAVY = 'ab_heavy'
@@ -117,6 +118,7 @@ def find_cdr_position_std():
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE, virus_kmer_len, virus_kmer_stride)
+    virus_seq, virus_pngs_mask = fix_len_mismatches(virus_seq, virus_pngs_mask)
     antibody_cdrs = read_cdrs()
     return virus_seq, virus_pngs_mask, antibody_cdrs
 
