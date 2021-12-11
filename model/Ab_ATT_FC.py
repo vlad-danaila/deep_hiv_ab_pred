@@ -7,9 +7,17 @@ from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embedi
 
 class Ab_ATT_FC(t.nn.Module):
 
-    def __init__(self, in_size, out_size, conf):
+    def __init__(self, in_size, out_size, conf, include_norm):
         super().__init__()
+        self.in_size = in_size
+        self.out_size = out_size
+        self.conf = conf
+        self.include_norm = include_norm
+
         self.att = t.nn.Linear(in_size, in_size)
         self.fc = t.nn.Linear(in_size, out_size)
+
+        if self.include_norm:
+            self.norm_1 = t.nn.LayerNorm(in_size, conf['AB_NORM_EPS'])
 
         t.nn.TransformerEncoderLayer
