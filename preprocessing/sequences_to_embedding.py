@@ -51,6 +51,7 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
         virus_id = id_split[-2]
         # seq = str(seq_record.seq).replace('-', '')
         seq = str(seq_record.seq)
+
         if seq[-1] == '*':
             seq = seq[:-1]
         virus_seq_dict[virus_id] = seq
@@ -58,9 +59,17 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
         virus_seq_dict[virus_id] = pngs_mask_to_kemr_tensor(binary_mask, kmer_len, kmer_stride)
     return virus_seq_dict
 
+def fix_len_mismatches(virus_seq, virus_pngs_mask):
+    for virus_id in virus_seq:
+        comom_len = min(len(virus_seq[virus_id]), len(virus_pngs_mask[virus_id]))
+        virus_seq[virus_id] = virus_seq[virus_id][: comom_len]
+        virus_pngs_mask[virus_id] = virus_pngs_mask[virus_id][: comom_len]
+    return virus_seq, virus_pngs_mask
+
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE, virus_kmer_len, virus_kmer_stride)
+    virus_seq, virus_pngs_mask = fix_len_mismatches(virus_seq, virus_pngs_mask)
     antibody_light_seq = read_antibody_fasta_sequences(ANTIBODIES_LIGHT_FASTA_FILE, LIGHT_ANTIBODY_TRIM)
     antibody_heavy_seq = read_antibody_fasta_sequences(ANTIBODIES_HEAVY_FASTA_FILE, HEAVY_ANTIBODY_TRIM)
     return virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
