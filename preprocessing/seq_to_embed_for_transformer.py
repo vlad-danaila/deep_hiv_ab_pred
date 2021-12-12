@@ -56,33 +56,19 @@ def parse_ab_sites():
     for ab in abs_in_assays:
         seq_light = ab_seq_light[ab]
         seq_heavy = ab_seq_heavy[ab]
-        selected_ab_seq[ab] = seq_light[light_cdr_1_2_begin : light_cdr_1_2_end] \
+        concatenated = seq_light[light_cdr_1_2_begin : light_cdr_1_2_end] \
                               + seq_light[light_cdr_3_begin : light_cdr_3_end] \
                               + seq_heavy[heavy_cdr_1_2_begin : heavy_cdr_1_2_end] \
                               + seq_heavy[heavy_cdr_3_begin : heavy_cdr_3_end]
+        selected_ab_seq[ab] = [ amino_to_index[a] for a in concatenated ]
     return selected_ab_seq
-
-def read_cdrs():
-    ab_seq_light = ab_to_seq(ANTIBODIES_LIGHT_FASTA_FILE)
-    ab_seq_heavy = ab_to_seq(ANTIBODIES_HEAVY_FASTA_FILE)
-    light_ab_cdr_possible_sites, heavy_ab_cdr_possible_sites = antibody_relevant_sites()
-
-    cdr_arrays = {}
-
-    tensor_sizes = np.array(find_cdr_lengths())
-    cdr_positions = find_cdr_centers()
-    cdr_positions_std = find_cdr_position_std()
-    for ab, cdr_data in cdr_dict.items():
-        abs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
-        cdr_arrays[ab] = ab_cdrs_to_tensor(abs, ab_seq_light[ab], ab_seq_heavy[ab], tensor_sizes, cdr_positions, cdr_positions_std)
-    return cdr_arrays
 
 def parse_catnap_sequences_to_embeddings():
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE)
     virus_seq, virus_pngs_mask = fix_len_mismatches(virus_seq, virus_pngs_mask)
-    antibody_cdrs = read_cdrs()
-    return virus_seq, virus_pngs_mask, antibody_cdrs
+    ab = parse_ab_sites()
+    return virus_seq, virus_pngs_mask, ab
 
 if __name__ == '__main__':
     abs = parse_ab_sites()
