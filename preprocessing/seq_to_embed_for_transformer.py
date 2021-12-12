@@ -28,7 +28,7 @@ def read_virus_fasta_sequences(fasta_file_path):
         id_split = seq_record.id.split('.')
         virus_id = id_split[-2]
         seq = str(seq_record.seq)
-        virus_seq_dict[virus_id] = [ amino_to_index[a] for a in seq ]
+        virus_seq_dict[virus_id] = np.array([ amino_to_index[a] for a in seq ])
     return virus_seq_dict
 
 def read_virus_pngs_mask(fasta_file_path):
@@ -37,7 +37,7 @@ def read_virus_pngs_mask(fasta_file_path):
         id_split = seq_record.id.split('.')
         virus_id = id_split[-2]
         seq = str(seq_record.seq)
-        virus_seq_dict[virus_id] = [1. if c == 'O' else 0. for c in seq]
+        virus_seq_dict[virus_id] = np.array([1. if c == 'O' else 0. for c in seq])
     return virus_seq_dict
 
 def antibody_relevant_sites():
@@ -60,15 +60,22 @@ def parse_ab_sites():
                               + seq_light[light_cdr_3_begin : light_cdr_3_end] \
                               + seq_heavy[heavy_cdr_1_2_begin : heavy_cdr_1_2_end] \
                               + seq_heavy[heavy_cdr_3_begin : heavy_cdr_3_end]
-        selected_ab_seq[ab] = [ amino_to_index[a] for a in concatenated ]
+        selected_ab_seq[ab] = np.array([ amino_to_index[a] for a in concatenated ])
     return selected_ab_seq
 
 def parse_catnap_sequences_to_embeddings():
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE)
-    virus_seq, virus_pngs_mask = fix_len_mismatches(virus_seq, virus_pngs_mask)
+    # virus_seq, virus_pngs_mask = fix_len_mismatches(virus_seq, virus_pngs_mask)
     ab = parse_ab_sites()
+
+    ab_max_len = max((len(seq) for seq in ab.values()))
+    virus_max_len = max((len(seq) for seq in virus_seq.values()))
+    pngs_max_len = max((len(seq) for seq in virus_pngs_mask.values()))
+    
+
+
     return virus_seq, virus_pngs_mask, ab
 
 if __name__ == '__main__':
-    abs = parse_ab_sites()
+    virus_seq, virus_pngs_mask, ab = parse_catnap_sequences_to_embeddings()
