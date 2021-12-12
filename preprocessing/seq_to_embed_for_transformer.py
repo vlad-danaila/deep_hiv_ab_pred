@@ -66,16 +66,23 @@ def parse_ab_sites():
 def parse_catnap_sequences_to_embeddings():
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE)
-    # virus_seq, virus_pngs_mask = fix_len_mismatches(virus_seq, virus_pngs_mask)
-    ab = parse_ab_sites()
+    abs = parse_ab_sites()
 
-    ab_max_len = max((len(seq) for seq in ab.values()))
-    virus_max_len = max((len(seq) for seq in virus_seq.values()))
+    ab_max_len = max((len(seq) for seq in abs.values()))
+    virus_seq_max_len = max((len(seq) for seq in virus_seq.values()))
     pngs_max_len = max((len(seq) for seq in virus_pngs_mask.values()))
-    
+    virus_max_len = max(virus_seq_max_len, pngs_max_len)
 
+    for ab_id, seq in abs.items():
+        abs[ab_id] = np.pad(seq, (0, ab_max_len - len(seq)), 'constant', constant_values = amino_to_index['X'])
 
-    return virus_seq, virus_pngs_mask, ab
+    for v in virus_seq:
+        virus_seq[v] = np.pad(virus_seq[v], (0, virus_max_len - len(virus_seq[v])), 'constant', constant_values = amino_to_index['X'])
+        virus_pngs_mask[v] = np.pad(virus_pngs_mask[v], (0, virus_max_len - len(virus_pngs_mask[v])), 'constant', constant_values = 0)
+
+    return virus_seq, virus_pngs_mask, abs
 
 if __name__ == '__main__':
-    virus_seq, virus_pngs_mask, ab = parse_catnap_sequences_to_embeddings()
+    virus_seq, virus_pngs_mask, abs = parse_catnap_sequences_to_embeddings()
+
+    
