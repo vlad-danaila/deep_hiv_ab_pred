@@ -1,25 +1,9 @@
-import torch as t
-from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
-from deep_hiv_ab_pred.util.tools import device
-from Bio import SeqIO
-from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FASTA_FILE, ANTIBODIES_HEAVY_FASTA_FILE
-from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
-from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import fix_len_mismatches
-import math
-from deep_hiv_ab_pred.util.tools import normalize, to_torch
 import numpy as np
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
-from deep_hiv_ab_pred.util.tools import device, read_json_file
 from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FASTA_FILE, ANTIBODIES_HEAVY_FASTA_FILE
-from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import read_virus_fasta_sequences, read_virus_pngs_mask
-from deep_hiv_ab_pred.catnap.constants import AB_CDRS
-from itertools import chain
 from deep_hiv_ab_pred.catnap.parse_cdr_reports import get_id_to_seq_mapping_from_fasta_file as ab_to_seq
-from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES, INCLUDE_CDR_MASK_FEATURES
-from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import fix_len_mismatches
-from deep_hiv_ab_pred.preprocessing.seq_and_cdr_with_mask_to_tensor import cdr_indexes
 from deep_hiv_ab_pred.catnap.parse_cdr_reports import assays_abs
 
 def read_virus_fasta_sequences(fasta_file_path):
