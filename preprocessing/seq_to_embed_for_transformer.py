@@ -74,15 +74,18 @@ def parse_catnap_sequences_to_embeddings():
     virus_max_len = max(virus_seq_max_len, pngs_max_len)
 
     for ab_id, seq in abs.items():
-        abs[ab_id] = np.pad(seq, (0, ab_max_len - len(seq)), 'constant', constant_values = amino_to_index['X'])
+        pad_amnt = ab_max_len - len(seq)
+        seq = np.pad(seq, (0, pad_amnt), 'constant', constant_values = amino_to_index['X'])
+        abs[ab_id] = (seq, pad_amnt)
 
     for v in virus_seq:
-        virus_seq[v] = np.pad(virus_seq[v], (0, virus_max_len - len(virus_seq[v])), 'constant', constant_values = amino_to_index['X'])
-        virus_pngs_mask[v] = np.pad(virus_pngs_mask[v], (0, virus_max_len - len(virus_pngs_mask[v])), 'constant', constant_values = 0)
+        pad_amnt = virus_max_len - len(virus_seq[v])
+        seq = np.pad(virus_seq[v], (0, pad_amnt), 'constant', constant_values = amino_to_index['X'])
+        pngs = np.pad(virus_pngs_mask[v], (0, virus_max_len - len(virus_pngs_mask[v])), 'constant', constant_values = 0)
+        virus_seq[v] = (seq, pngs, pad_amnt)
 
-    return virus_seq, virus_pngs_mask, abs
+    return virus_seq, abs
 
 if __name__ == '__main__':
-    virus_seq, virus_pngs_mask, abs = parse_catnap_sequences_to_embeddings()
+    virus_seq, abs = parse_catnap_sequences_to_embeddings()
 
-    
