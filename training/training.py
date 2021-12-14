@@ -54,7 +54,7 @@ def eval_network(model, loader):
 # Train
 def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
     loss_fn = t.nn.BCELoss()
-    optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     best = np.zeros(3)
     try:
@@ -127,7 +127,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     model.module.ab_dropout.requires_grad = False
 
     loss_fn = t.nn.BCELoss()
-    optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     best = np.zeros(3)
     try:
@@ -161,7 +161,7 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
 
 def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', pruner: CrossValidationPruner = None):
     loss_fn = t.nn.BCELoss()
-    optimizer = t.optim.RMSprop(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     milestones = np.floor(epochs * np.array([.25, .5, .75]))
     step_counter = 0
