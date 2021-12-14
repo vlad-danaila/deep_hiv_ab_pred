@@ -37,7 +37,7 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     val_set = AssayDataset(val_assays, abs, virus_seq)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
-    model = get_TRANSF_model(conf)
+    model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
     _, test_metrics, last = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
     logging.info(f'Best epoch is {epoch_index + 1}')
@@ -46,7 +46,6 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
 
 def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     setup_logging()
-    # TODO add example conf for tranformers
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
@@ -58,7 +57,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     test_set = AssayDataset(test_assays, abs, virus)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
-    model = get_TRANSF_model(conf)
+    model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
     model_name = 'model_test'
     train_metrics_list, test_metrics_list, last = train_network_n_times(
         model, conf, loader_train, loader_test, None, nb_epochs, model_name, MODELS_FOLDER)
@@ -85,6 +84,6 @@ def main_test():
     metrics = test(splits, catnap, conf)
 
 if __name__ == '__main__':
-    inspect_performance_per_epocs("hyperparam_fc_att_gru_uniform_one_hot_1_layer_trial_159.json", 100)
+    inspect_performance_per_epocs("hyperparam_transformers_example.json", 100)
     # main_train()
     # main_test()
