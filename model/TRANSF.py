@@ -3,6 +3,7 @@ import torch as t
 from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
 from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_MASK_FEATURES, INCLUDE_CDR_POSITION_FEATURES, OUTPUT_AGGREGATE_MODE
 from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
+from deep_hiv_ab_pred.model.PositionalEmbedding import get_positional_embeding
 
 class TRANSF(t.nn.Module):
 
@@ -45,16 +46,30 @@ class TRANSF(t.nn.Module):
         self.fully_connected = t.nn.Linear(self.embeding_size * tgt_seq_len, 1)
         self.sigmoid = t.nn.Sigmoid()
 
-    def forward_embeddings(self, ab, virus):
+    def forward_embeddings(self, ab, virus, pngs_mask):
         ab = self.embedding_dropout(self.aminoacid_embedding(ab))
         virus = self.embedding_dropout(self.aminoacid_embedding(virus))
-        # TODO add positional embedding
-        # the embeding lenghts for enc and dec are in the conf object:
-        # POS_EMBED_LEN_ENC & POS_EMBED_LEN_DEC
+
+        ab_pos_embed = get_positional_embeding(self.conf['POS_EMBED_LEN_ENC'], self.src_seq_len)\
+            .repeat((self.conf['BATCH_SIZE'], 1, 1))
+        virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED_LEN_DEC'], self.tgt_seq_len)\
+            .repeat((self.conf['BATCH_SIZE'], 1, 1))
+
+        pngs_mask = pngs_mask.unsqueeze(dim = 2)
+        ab = t.cat((ab, ab_pos_embed), dim = 2)
+        virus = t.cat((virus, pngs_mask, virus_pos_embed), dim = 2)
+
         return ab, virus
 
     def forward_antibodyes(self, ab):
+
         return self.transf_encoder(ab)
+
+    def forward(self, ab, virus, pngs_mask):
+        ab, virus = self.forward_embeddings(ab, virus, pngs_mask)
+        # TODO add masks
+        ab_hidden = self.forward_antibodyes(ab)
+        return self.forward_virus(virus, ab_hidden)
 
 def get_TRANSF_model(conf, src_seq_len, tgt_seq_len):
     model = TRANSF(conf, src_seq_len, tgt_seq_len, get_embeding_matrix()).to(device)

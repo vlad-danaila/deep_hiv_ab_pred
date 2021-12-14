@@ -17,14 +17,14 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
-    for i, (ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab, virus, pngs_mask, ground_truth) in enumerate(loader):
         start = time.time()
-        pred = model.forward(ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask)
+        pred = model.forward(ab, virus, pngs_mask)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
         loss.backward()
-        t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
+        # t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
         optimizer.step()
         optimizer.zero_grad()
         # The last batch have fewer elements then the rest.
@@ -41,8 +41,8 @@ def eval_network(model, loader):
     model.eval()
     prediction_list, ground_truth_list = [], []
     with t.no_grad():
-        for i, (ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
-            pred = model.forward(ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask)
+        for i, (ab, virus, pngs_mask, ground_truth) in enumerate(loader):
+            pred = model.forward(ab, virus, pngs_mask)
             if pred.shape != ground_truth.shape:
                 pred = pred.reshape(ground_truth.shape)
             prediction_list.append(to_numpy(pred))
@@ -94,11 +94,11 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-    for i, (ab_cdr, ab_cdr_mask, ab_cdr_pos, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab, virus, pngs_mask, ground_truth) in enumerate(loader):
         batch_size = len(ab_cdr)
         with t.no_grad():
             ab_cdr, virus = model.module.forward_embeddings(ab_cdr, virus, batch_size)
-            ab_hidden = model.module.forward_antibodyes(ab_cdr, ab_cdr_mask, ab_cdr_pos)
+            ab_hidden = model.module.forward_antibodyes(ab)
         pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
@@ -106,7 +106,7 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
         if isTrain:
             assert optimizer != None
             loss.backward()
-            t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
+            # t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
             optimizer.step()
             optimizer.zero_grad()
         weight = len(ground_truth) / conf['BATCH_SIZE']

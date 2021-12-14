@@ -4,6 +4,7 @@ from torch import Tensor
 import math
 import matplotlib.pyplot as plt
 from deep_hiv_ab_pred.util.tools import to_numpy, to_torch
+from deep_hiv_ab_pred.util.tools import device
 
 # implementation adaptation from https://pytorch.org/tutorials/beginner/transformer_tutorial.html
 # for virus good values are 6 and 1019
@@ -14,7 +15,8 @@ def get_positional_embeding(pos_embed_size, seq_len):
     pe = torch.zeros(seq_len, pos_embed_size)
     pe[:, 0::2] = torch.sin(pos * div)
     pe[:, 1::2] = torch.cos(pos * div)
-    return pe
+    pe.requires_grad = False
+    return pe.type(torch.float32).to(device)
 
 if __name__ == '__main__':
     pe_virus = to_numpy(get_positional_embeding(6, 1019))
