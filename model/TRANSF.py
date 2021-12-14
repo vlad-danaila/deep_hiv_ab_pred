@@ -62,7 +62,9 @@ class TRANSF(t.nn.Module):
         return ab, virus
 
     def forward_antibodyes(self, ab):
-
+        # TODO mask fac un tensor boolean care sa imi zica unde e padding
+        # Vezi in documentatie ce format, ce tip de date suporta
+        # Si vezi care tb sa fie true si care false, ca se poate sa fie pe dos
         return self.transf_encoder(ab)
 
     def forward(self, ab, virus, pngs_mask):
