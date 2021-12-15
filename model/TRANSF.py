@@ -26,7 +26,9 @@ class TRANSF(t.nn.Module):
         self.embedding_dropout = t.nn.Dropout(conf['EMBEDDING_DROPOUT'])
 
         transf_enc_layer = t.nn.TransformerEncoderLayer(
-            d_model = self.embeding_size + conf['POS_EMBED_LEN_ENC'],
+            # 1 is added to have the same size as the virus embed
+            # the tensor is filled with zeros along this last added dimension
+            d_model = self.embeding_size + conf['POS_EMBED'] + 1,
             nhead = conf['N_HEADS_ENCODER'],
             dim_feedforward = conf['TRANS_HIDDEN_ENCODER'],
             dropout = conf['TRANS_DROPOUT_ENCODER'],
@@ -35,7 +37,8 @@ class TRANSF(t.nn.Module):
         self.transf_encoder = t.nn.TransformerEncoder(transf_enc_layer, conf['TRANSF_ENCODER_LAYERS'])
 
         trasnf_dec_layer = t.nn.TransformerDecoderLayer(
-            d_model = self.embeding_size + conf['POS_EMBED_LEN_DEC'] + 1, # 1 is from the pngs mask
+            # 1 is from the pngs mask
+            d_model = self.embeding_size + conf['POS_EMBED'] + 1,
             nhead = conf['N_HEADS_DECODER'],
             dim_feedforward = conf['TRANS_HIDDEN_DECODER'],
             dropout = conf['TRANS_DROPOUT_DECODER'],
@@ -44,21 +47,22 @@ class TRANSF(t.nn.Module):
         self.transf_decoder = t.nn.TransformerDecoder(trasnf_dec_layer, conf['TRANSF_DECODER_LAYERS'])
 
         self.fc_dropout = t.nn.Dropout(conf['FULLY_CONNECTED_DROPOUT'])
-        self.fully_connected = t.nn.Linear(self.embeding_size * tgt_seq_len, 1)
+        self.fully_connected = t.nn.Linear((self.embeding_size + conf['POS_EMBED'] + 1) * tgt_seq_len, 1)
         self.sigmoid = t.nn.Sigmoid()
 
     def forward_embeddings(self, ab, virus, pngs_mask):
         ab = self.embedding_dropout(self.aminoacid_embedding(ab))
         virus = self.embedding_dropout(self.aminoacid_embedding(virus))
 
-        ab_pos_embed = get_positional_embeding(self.conf['POS_EMBED_LEN_ENC'], self.src_seq_len)\
+        ab_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.src_seq_len)\
             .repeat((self.conf['BATCH_SIZE'], 1, 1))
-        virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED_LEN_DEC'], self.tgt_seq_len)\
+        virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.tgt_seq_len)\
             .repeat((self.conf['BATCH_SIZE'], 1, 1))
 
         pngs_mask = pngs_mask.unsqueeze(dim = 2)
-        ab = t.cat((ab, ab_pos_embed), dim = 2)
-        virus = t.cat((virus, pngs_mask, virus_pos_embed), dim = 2)
+        empty = t.zeros((self.conf['BATCH_SIZE'], self.src_seq_len, 1))
+        ab = t.cat((ab, ab_pos_embed, empty), dim = 2)
+        virus = t.cat((virus, virus_pos_embed, pngs_mask), dim = 2)
 
         return ab, virus
 
@@ -68,6 +72,7 @@ class TRANSF(t.nn.Module):
     def forward_virus(self, virus, ab_hidden, virus_mask, ab_mask):
         transf_out = self.transf_decoder(
             virus, ab_hidden, tgt_key_padding_mask = virus_mask, memory_key_padding_mask = ab_mask)
+        transf_out = transf_out.reshape(self.conf['BATCH_SIZE'], -1)
         transf_out = self.fc_dropout(transf_out)
         return self.sigmoid(self.fully_connected(transf_out).squeeze())
 
