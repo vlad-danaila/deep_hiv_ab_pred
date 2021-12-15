@@ -50,17 +50,15 @@ class TRANSF(t.nn.Module):
         self.fully_connected = t.nn.Linear((self.embeding_size + conf['POS_EMBED'] + 1) * tgt_seq_len, 1)
         self.sigmoid = t.nn.Sigmoid()
 
-    def forward_embeddings(self, ab, virus, pngs_mask):
+    def forward_embeddings(self, ab, virus, pngs_mask, batch_size):
         ab = self.embedding_dropout(self.aminoacid_embedding(ab))
         virus = self.embedding_dropout(self.aminoacid_embedding(virus))
 
-        ab_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.src_seq_len)\
-            .repeat((self.conf['BATCH_SIZE'], 1, 1))
-        virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.tgt_seq_len)\
-            .repeat((self.conf['BATCH_SIZE'], 1, 1))
+        ab_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.src_seq_len).repeat((batch_size, 1, 1))
+        virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.tgt_seq_len).repeat((batch_size, 1, 1))
 
         pngs_mask = pngs_mask.unsqueeze(dim = 2)
-        empty = t.zeros((self.conf['BATCH_SIZE'], self.src_seq_len, 1)).to(device)
+        empty = t.zeros((batch_size, self.src_seq_len, 1)).to(device)
         ab = t.cat((ab, ab_pos_embed, empty), dim = 2)
         virus = t.cat((virus, virus_pos_embed, pngs_mask), dim = 2)
 
@@ -69,19 +67,20 @@ class TRANSF(t.nn.Module):
     def forward_antibodyes(self, ab, ab_mask):
         return self.transf_encoder(ab, src_key_padding_mask = ab_mask)
 
-    def forward_virus(self, virus, ab_hidden, virus_mask, ab_mask):
+    def forward_virus(self, virus, ab_hidden, virus_mask, ab_mask, batch_size):
         transf_out = self.transf_decoder(
             virus, ab_hidden, tgt_key_padding_mask = virus_mask, memory_key_padding_mask = ab_mask)
-        transf_out = transf_out.reshape(self.conf['BATCH_SIZE'], -1)
+        transf_out = transf_out.reshape(batch_size, -1)
         transf_out = self.fc_dropout(transf_out)
         return self.sigmoid(self.fully_connected(transf_out).squeeze())
 
     def forward(self, ab, virus, pngs_mask):
+        batch_size = ab.shape[0]
         ab_mask = ab == amino_to_index['X']
         virus_mask = virus == amino_to_index['X']
-        ab, virus = self.forward_embeddings(ab, virus, pngs_mask)
+        ab, virus = self.forward_embeddings(ab, virus, pngs_mask, batch_size)
         ab_hidden = self.forward_antibodyes(ab, ab_mask)
-        return self.forward_virus(virus, ab_hidden, virus_mask, ab_mask)
+        return self.forward_virus(virus, ab_hidden, virus_mask, ab_mask, batch_size)
 
 def get_TRANSF_model(conf, src_seq_len, tgt_seq_len):
     model = TRANSF(conf, src_seq_len, tgt_seq_len, get_embeding_matrix()).to(device)
