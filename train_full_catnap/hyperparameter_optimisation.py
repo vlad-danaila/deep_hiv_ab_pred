@@ -1,10 +1,7 @@
 import mlflow
-
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI_V2
 import numpy as np
 import optuna
-from optuna.pruners import BasePruner
-from optuna.trial._state import TrialState
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_HOLD_OUT_ONE_CLUSTER, SPLITS_UNIFORM, BEST_PARAMS
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
@@ -15,7 +12,6 @@ from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import train_
 from deep_hiv_ab_pred.train_full_catnap.train_on_uniform_splits import train_on_uniform_splits
 import os
 import time
-from deep_hiv_ab_pred.train_full_catnap.analyze_optuna_trials import get_best_trials_from_study
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 import torch as t
 from deep_hiv_ab_pred.util.tools import divisors
@@ -25,9 +21,17 @@ from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
 
 EMBED_SIZE = get_embeding_matrix().shape[1]
 
-def propose(trial: optuna.trial.Trial, ab_max_len, virus_max_len):
+def propose(trial: optuna.trial.Trial):
     POS_EMBED = trial.suggest_int('POS_EMBED', 6, 50)
-    N_HEADS = divisors(EMBED_SIZE + POS_EMBED + 1)
+    divs = np.array(divisors(EMBED_SIZE + POS_EMBED + 1))
+
+    N_HEADS_ENCODER = trial.suggest_float('N_HEADS_ENCODER', 1, EMBED_SIZE + POS_EMBED + 1)
+    diff_enc = np.abs(divs - N_HEADS_ENCODER)
+    heads_enc = divs[diff_enc.argmin()]
+
+    N_HEADS_DECODER = trial.suggest_float('N_HEADS_DECODER', 1, EMBED_SIZE + POS_EMBED + 1)
+    diff_dec = np.abs(divs - N_HEADS_DECODER)
+    heads_dec = divs[diff_dec.argmin()]
 
     return {
         'EPOCHS': 100,
@@ -37,12 +41,12 @@ def propose(trial: optuna.trial.Trial, ab_max_len, virus_max_len):
         "EMBEDDING_DROPOUT": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         "FULLY_CONNECTED_DROPOUT": trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
 
-        "N_HEADS_ENCODER": trial.suggest_categorical('N_HEADS_ENCODER', N_HEADS),
+        "N_HEADS_ENCODER": heads_enc,
         "TRANS_HIDDEN_ENCODER": trial.suggest_int('TRANS_HIDDEN_ENCODER', 10, 1024),
         "TRANS_DROPOUT_ENCODER": trial.suggest_float('TRANS_DROPOUT_ENCODER', 0, .5),
         "TRANSF_ENCODER_LAYERS": 1,
 
-        "N_HEADS_DECODER": trial.suggest_categorical('N_HEADS_DECODER', N_HEADS),
+        "N_HEADS_DECODER": heads_dec,
         "TRANS_HIDDEN_DECODER": trial.suggest_int('TRANS_HIDDEN_DECODER', 10, 1024),
         "TRANS_DROPOUT_DECODER": trial.suggest_float('TRANS_DROPOUT_DECODER', 0, .5),
         "TRANSF_DECODER_LAYERS": 1,
@@ -98,7 +102,7 @@ def get_objective_train_on_uniform_splits():
     train_set = AssayDataset(train_assays, abs, virus_seq)
     val_set = AssayDataset(val_assays, abs, virus_seq)
     def objective(trial):
-        conf = propose(trial, ab_max_len, virus_max_len)
+        conf = propose(trial)
         try:
             start = time.time()
             metrics = train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, cvp)
