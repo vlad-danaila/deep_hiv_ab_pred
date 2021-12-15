@@ -22,14 +22,14 @@ from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
 EMBED_SIZE = get_embeding_matrix().shape[1]
 
 def propose(trial: optuna.trial.Trial):
-    POS_EMBED = trial.suggest_int('POS_EMBED', 6, 50)
+    POS_EMBED = trial.suggest_categorical('POS_EMBED', list(range(6, 33, 2)))
     divs = np.array(divisors(EMBED_SIZE + POS_EMBED + 1))
 
-    N_HEADS_ENCODER = trial.suggest_float('N_HEADS_ENCODER', 1, EMBED_SIZE + POS_EMBED + 1)
+    N_HEADS_ENCODER = trial.suggest_loguniform('N_HEADS_ENCODER', 1, EMBED_SIZE + POS_EMBED + 1)
     diff_enc = np.abs(divs - N_HEADS_ENCODER)
     heads_enc = divs[diff_enc.argmin()]
 
-    N_HEADS_DECODER = trial.suggest_float('N_HEADS_DECODER', 1, EMBED_SIZE + POS_EMBED + 1)
+    N_HEADS_DECODER = trial.suggest_loguniform('N_HEADS_DECODER', 1, EMBED_SIZE + POS_EMBED + 1)
     diff_dec = np.abs(divs - N_HEADS_DECODER)
     heads_dec = divs[diff_dec.argmin()]
 
