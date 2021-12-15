@@ -4,6 +4,7 @@ from deep_hiv_ab_pred.preprocessing.constants import CDR_LENGHTS
 from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_MASK_FEATURES, INCLUDE_CDR_POSITION_FEATURES, OUTPUT_AGGREGATE_MODE
 from deep_hiv_ab_pred.preprocessing.aminoacids import aminoacids_len, get_embeding_matrix
 from deep_hiv_ab_pred.model.PositionalEmbedding import get_positional_embeding
+from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 
 class TRANSF(t.nn.Module):
 
@@ -34,7 +35,7 @@ class TRANSF(t.nn.Module):
         self.transf_encoder = t.nn.TransformerEncoder(transf_enc_layer, conf['TRANSF_ENCODER_LAYERS'])
 
         trasnf_dec_layer = t.nn.TransformerDecoderLayer(
-            d_model = self.embeding_size + conf['POS_EMBED_LEN_DEC'],
+            d_model = self.embeding_size + conf['POS_EMBED_LEN_DEC'] + 1, # 1 is from the pngs mask
             nhead = conf['N_HEADS_DECODER'],
             dim_feedforward = conf['TRANS_HIDDEN_DECODER'],
             dropout = conf['TRANS_DROPOUT_DECODER'],
@@ -61,17 +62,21 @@ class TRANSF(t.nn.Module):
 
         return ab, virus
 
-    def forward_antibodyes(self, ab):
-        # TODO mask fac un tensor boolean care sa imi zica unde e padding
-        # Vezi in documentatie ce format, ce tip de date suporta
-        # Si vezi care tb sa fie true si care false, ca se poate sa fie pe dos
-        return self.transf_encoder(ab)
+    def forward_antibodyes(self, ab, ab_mask):
+        return self.transf_encoder(ab, src_key_padding_mask = ab_mask)
+
+    def forward_virus(self, virus, ab_hidden, virus_mask, ab_mask):
+        transf_out = self.transf_decoder(
+            virus, ab_hidden, tgt_key_padding_mask = virus_mask, memory_key_padding_mask = ab_mask)
+        transf_out = self.fc_dropout(transf_out)
+        return self.sigmoid(self.fully_connected(transf_out).squeeze())
 
     def forward(self, ab, virus, pngs_mask):
+        ab_mask = ab == amino_to_index['X']
+        virus_mask = virus == amino_to_index['X']
         ab, virus = self.forward_embeddings(ab, virus, pngs_mask)
-        # TODO add masks
-        ab_hidden = self.forward_antibodyes(ab)
-        return self.forward_virus(virus, ab_hidden)
+        ab_hidden = self.forward_antibodyes(ab, ab_mask)
+        return self.forward_virus(virus, ab_hidden, virus_mask, ab_mask)
 
 def get_TRANSF_model(conf, src_seq_len, tgt_seq_len):
     model = TRANSF(conf, src_seq_len, tgt_seq_len, get_embeding_matrix()).to(device)
