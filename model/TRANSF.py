@@ -60,7 +60,7 @@ class TRANSF(t.nn.Module):
             .repeat((self.conf['BATCH_SIZE'], 1, 1))
 
         pngs_mask = pngs_mask.unsqueeze(dim = 2)
-        empty = t.zeros((self.conf['BATCH_SIZE'], self.src_seq_len, 1))
+        empty = t.zeros((self.conf['BATCH_SIZE'], self.src_seq_len, 1)).to(device)
         ab = t.cat((ab, ab_pos_embed, empty), dim = 2)
         virus = t.cat((virus, virus_pos_embed, pngs_mask), dim = 2)
 
