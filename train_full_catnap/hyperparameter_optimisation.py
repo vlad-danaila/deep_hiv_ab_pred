@@ -18,28 +18,36 @@ import time
 from deep_hiv_ab_pred.train_full_catnap.analyze_optuna_trials import get_best_trials_from_study
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 import torch as t
+from deep_hiv_ab_pred.util.tools import divisors
+from deep_hiv_ab_pred.preprocessing.seq_to_embed_for_transformer import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.pytorch_dataset_transf import AssayDataset
+from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
 
-def propose(trial: optuna.trial.Trial):
-    kmer_len_virus = trial.suggest_int('KMER_LEN_VIRUS', 3, 110)
+EMBED_SIZE = get_embeding_matrix().shape[1]
+
+def propose(trial: optuna.trial.Trial, ab_max_len, virus_max_len):
+    POS_EMBED = trial.suggest_int(6, 50)
+    N_HEADS = divisors(EMBED_SIZE + POS_EMBED + 1)
+
     return {
-        'KMER_LEN_VIRUS': kmer_len_virus,
-        'KMER_STRIDE_VIRUS': trial.suggest_int('KMER_STRIDE_VIRUS', max(1, kmer_len_virus // 10), kmer_len_virus),
-        'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
-        'EPOCHS': 100,
-        'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
-        'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'RNN_HIDDEN_SIZE': trial.suggest_int('RNN_HIDDEN_SIZE', 16, 1024),
-        'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
-        'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_DROPOUT', 0, .5),
-        'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
-    }
+        "BATCH_SIZE": trial.suggest_int('BATCH_SIZE', 50, 5000),
+        "LEARNING_RATE": trial.suggest_loguniform('LEARNING_RATE', 1e-5, 1e-1),
 
-# def train_hold_out_one_cluster(splits, catnap, conf, trial):
-#     for i in range(5):
-#         trial.report(random.random(), i)
-#         if trial.should_prune():
-#             raise optuna.TrialPruned()
-#     return np.array([[random.random(), random.random(), random.random()]])
+        "EMBEDDING_DROPOUT": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
+        "FULLY_CONNECTED_DROPOUT": trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
+
+        "N_HEADS_ENCODER": trial.suggest_categorical('N_HEADS_ENCODER', N_HEADS),
+        "TRANS_HIDDEN_ENCODER": trial.suggest_int(10, 1024),
+        "TRANS_DROPOUT_ENCODER": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
+        "TRANSF_ENCODER_LAYERS": 1,
+
+        "N_HEADS_DECODER": trial.suggest_categorical('N_HEADS_DECODER', N_HEADS),
+        "TRANS_HIDDEN_DECODER": trial.suggest_int(10, 1024),
+        "TRANS_DROPOUT_DECODER": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
+        "TRANSF_DECODER_LAYERS": 1,
+
+        "POS_EMBED": POS_EMBED
+    }
 
 def empty_cuda_cahce():
     try:
@@ -81,12 +89,18 @@ def get_objective_train_on_uniform_splits():
     mlflow.set_tag('hyperparam opt', 'uniform splits')
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(20, 3, 1, .05)
+    cvp = CrossValidationPruner(30, 3, 1, .05)
+    virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
+    train_ids, val_ids = splits['train'], splits['val']
+    train_assays = [a for a in catnap if a[0] in train_ids]
+    val_assays = [a for a in catnap if a[0] in val_ids]
+    train_set = AssayDataset(train_assays, abs, virus_seq)
+    val_set = AssayDataset(val_assays, abs, virus_seq)
     def objective(trial):
-        conf = propose(trial)
+        conf = propose(trial, ab_max_len, virus_max_len)
         try:
             start = time.time()
-            metrics = train_on_uniform_splits(splits, catnap, conf, cvp)
+            metrics = train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, cvp)
             end = time.time()
             metrics = np.array(metrics)
             return metrics[MATTHEWS_CORRELATION_COEFFICIENT]

@@ -28,13 +28,7 @@ def log_metrics(metrics):
         f'auc': metrics[AUC]
     })
 
-def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner = None):
-    virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
-    train_ids, val_ids = splits['train'], splits['val']
-    train_assays = [a for a in catnap if a[0] in train_ids]
-    val_assays = [a for a in catnap if a[0] in val_ids]
-    train_set = AssayDataset(train_assays, abs, virus_seq)
-    val_set = AssayDataset(val_assays, abs, virus_seq)
+def train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, pruner: CrossValidationPruner = None):
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
     model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)

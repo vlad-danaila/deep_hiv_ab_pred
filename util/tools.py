@@ -93,3 +93,6 @@ def write_specific_study_params_to_json(study_name, study_number, hyperparameter
     study = optuna.create_study(study_name = study_name, direction = 'maximize', load_if_exists = True, storage = f'sqlite:///{study_name}.db')
     trial_params = [t for t in study.get_trials() if t.number == study_number][0].params
     dump_json(trial_params, join(HYPERPARAMETERS_FOLDER, hyperparameters_file))
+
+def divisors(n):
+    return [i for i in range(1, n + 1) if n % i == 0]
