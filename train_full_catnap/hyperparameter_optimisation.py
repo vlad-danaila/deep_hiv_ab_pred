@@ -26,7 +26,7 @@ from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
 EMBED_SIZE = get_embeding_matrix().shape[1]
 
 def propose(trial: optuna.trial.Trial, ab_max_len, virus_max_len):
-    POS_EMBED = trial.suggest_int(6, 50)
+    POS_EMBED = trial.suggest_int('POS_EMBED', 6, 50)
     N_HEADS = divisors(EMBED_SIZE + POS_EMBED + 1)
 
     return {
@@ -37,13 +37,13 @@ def propose(trial: optuna.trial.Trial, ab_max_len, virus_max_len):
         "FULLY_CONNECTED_DROPOUT": trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
 
         "N_HEADS_ENCODER": trial.suggest_categorical('N_HEADS_ENCODER', N_HEADS),
-        "TRANS_HIDDEN_ENCODER": trial.suggest_int(10, 1024),
-        "TRANS_DROPOUT_ENCODER": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
+        "TRANS_HIDDEN_ENCODER": trial.suggest_int('TRANS_HIDDEN_ENCODER', 10, 1024),
+        "TRANS_DROPOUT_ENCODER": trial.suggest_float('TRANS_DROPOUT_ENCODER', 0, .5),
         "TRANSF_ENCODER_LAYERS": 1,
 
         "N_HEADS_DECODER": trial.suggest_categorical('N_HEADS_DECODER', N_HEADS),
-        "TRANS_HIDDEN_DECODER": trial.suggest_int(10, 1024),
-        "TRANS_DROPOUT_DECODER": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
+        "TRANS_HIDDEN_DECODER": trial.suggest_int('TRANS_HIDDEN_DECODER', 10, 1024),
+        "TRANS_DROPOUT_DECODER": trial.suggest_float('TRANS_DROPOUT_DECODER', 0, .5),
         "TRANSF_DECODER_LAYERS": 1,
 
         "POS_EMBED": POS_EMBED
