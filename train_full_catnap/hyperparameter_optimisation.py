@@ -94,7 +94,7 @@ def get_objective_train_on_uniform_splits():
     mlflow.set_tag('hyperparam opt', 'uniform splits')
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(40, 3, 1, .05)
+    cvp = CrossValidationPruner(30, 3, 1, .05)
     virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
     train_ids, val_ids = splits['train'], splits['val']
     train_assays = [a for a in catnap if a[0] in train_ids]

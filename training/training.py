@@ -32,7 +32,7 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
         weight = len(ground_truth) / conf['BATCH_SIZE']
         total_weight += weight
         metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
-        if epochs and pruner:
+        if i > 1 and i < 10 and epochs and pruner:
             estimated_time = epochs * len(loader) * (time.time() - start) / 60
             pruner.report_time(estimated_time)
     return metrics / total_weight
