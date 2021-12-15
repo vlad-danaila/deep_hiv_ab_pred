@@ -30,6 +30,7 @@ def propose(trial: optuna.trial.Trial, ab_max_len, virus_max_len):
     N_HEADS = divisors(EMBED_SIZE + POS_EMBED + 1)
 
     return {
+        'EPOCHS': 100,
         "BATCH_SIZE": trial.suggest_int('BATCH_SIZE', 50, 5000),
         "LEARNING_RATE": trial.suggest_loguniform('LEARNING_RATE', 1e-5, 1e-1),
 
