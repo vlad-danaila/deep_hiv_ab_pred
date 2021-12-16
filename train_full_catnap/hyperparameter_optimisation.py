@@ -110,19 +110,19 @@ def get_objective_train_on_uniform_splits():
             metrics = np.array(metrics)
             return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
         except optuna.TrialPruned as pruneError:
-            raise pruneError
+            return 0
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = True)
                 empty_cuda_cahce()
-                raise optuna.TrialPruned()
+                return 0
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
                 empty_cuda_cahce()
-                raise optuna.TrialPruned()
+                return 0
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
-            raise optuna.TrialPruned()
+            return 0
     return objective
 
 # class CrossValidationPruner(BasePruner):
