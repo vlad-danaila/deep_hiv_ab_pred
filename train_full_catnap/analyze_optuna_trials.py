@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 STUDY_NAME = 'ICERI2021_v2'
 # SELECTION_TRESHOLD = .48
-SELECTION_TRESHOLD = .7
+SELECTION_TRESHOLD = .6
 
 def get_best_trials_from_study(study_name, selection_treshold):
     study = optuna.create_study(study_name = study_name, direction = 'maximize', storage = f'sqlite:///{study_name}.db', load_if_exists = True)
