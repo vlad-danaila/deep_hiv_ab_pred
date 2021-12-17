@@ -36,7 +36,8 @@ def propose(trial: optuna.trial.Trial):
     return {
         'EPOCHS': 100,
         "BATCH_SIZE": trial.suggest_int('BATCH_SIZE', 50, 5000),
-        "LEARNING_RATE": trial.suggest_loguniform('LEARNING_RATE', 1e-5, 1e-1),
+        "LEARNING_RATE": trial.suggest_loguniform('LEARNING_RATE', 1e-4, 1),
+        "WARMUP": trial.suggest_int("WARMUP", 1000, 100_000, log = True),
 
         "EMBEDDING_DROPOUT": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         "FULLY_CONNECTED_DROPOUT": trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),

@@ -1,15 +1,13 @@
 import os
 import time
-from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT
 import numpy as np
 import torch as t
 from deep_hiv_ab_pred.util.metrics import compute_metrics
-import optuna
 from deep_hiv_ab_pred.util.tools import to_numpy
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
-from deep_hiv_ab_pred.global_constants import INCLUDE_CDR_POSITION_FEATURES
+from labml_nn.optimizers.noam import Noam
 
 def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = None, pruner = None):
     metrics = np.zeros(3)
@@ -54,7 +52,8 @@ def eval_network(model, loader):
 # Train
 def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
     loss_fn = t.nn.BCELoss()
-    optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    # optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    optimizer = Noam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'], warmup = conf['WARMUP'], d_model = 1)
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     best = np.zeros(3)
     try:
@@ -161,7 +160,8 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
 
 def train_network_n_times(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', pruner: CrossValidationPruner = None):
     loss_fn = t.nn.BCELoss()
-    optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    # optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
+    optimizer = Noam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'], warmup = conf['WARMUP'], d_model = 1)
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     milestones = np.floor(epochs * np.array([.25, .5, .75]))
     step_counter = 0
@@ -189,3 +189,14 @@ def train_network_n_times(model, conf, loader_train, loader_val, cross_validatio
         return metrics_train_per_epochs, metrics_test_per_epochs, last
     except KeyboardInterrupt as e:
         logging.info('Training interrupted at epoch ' + epoch)
+
+def plot_noam_learning_rates(lr, warmup):
+    import matplotlib.pyplot as plt
+    model = t.nn.Linear(10, 10)
+    opt = Noam(model.parameters(), d_model = 1, warmup = warmup, lr = lr)
+    plt.plot(np.arange(1, 100_000), [opt.get_lr({'step': i}, opt.defaults) for i in range(1, 100_000)])
+    plt.title("Learning Rate")
+    plt.show()
+
+if __name__ == '__main__':
+    plot_noam_learning_rates(.2, 5_000)
