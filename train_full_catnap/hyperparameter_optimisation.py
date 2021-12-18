@@ -114,7 +114,7 @@ def get_objective_train_on_uniform_splits():
             return 0
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
-                logging.error('CUDA out of memory', exc_info = True)
+                logging.error('CUDA out of memory', exc_info = False)
                 empty_cuda_cahce()
                 return 0
             elif 'CUDA error' in str(e):
