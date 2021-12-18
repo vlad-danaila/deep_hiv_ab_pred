@@ -18,8 +18,27 @@ from deep_hiv_ab_pred.util.tools import divisors
 from deep_hiv_ab_pred.preprocessing.seq_to_embed_for_transformer import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset_transf import AssayDataset
 from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
+from sklearn.preprocessing import normalize
 
 EMBED_SIZE = get_embeding_matrix().shape[1]
+
+def choose(x, choices):
+    choices_idx = np.linspace(0, 1, len(choices))
+    diff = np.abs(choices_idx - x)
+    return choices[diff.argmin()]
+
+def wrap_propose(trial: optuna.trial.Trial):
+    conf = propose(trial)
+
+    POS_EMBED = choose(conf['POS_EMBED'], list(range(6, 129, 2)))
+    conf['POS_EMBED'] = POS_EMBED
+
+    divs = np.array(divisors(EMBED_SIZE + POS_EMBED + 1))
+
+    conf['N_HEADS_ENCODER'] = choose(conf['N_HEADS_ENCODER'], divs)
+    conf['N_HEADS_DECODER'] = choose(conf['N_HEADS_DECODER'], divs)
+
+    # TODO continue implementation here
 
 def propose(trial: optuna.trial.Trial):
     POS_EMBED = trial.suggest_categorical('POS_EMBED', list(range(6, 33, 2)))
