@@ -155,7 +155,8 @@ def optimize_hyperparameters():
     # pruner = CrossValidationPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
-    sampler = optuna.samplers.CmaEsSampler(consider_pruned_trials = True)
+    # sampler = optuna.samplers.CmaEsSampler(consider_pruned_trials = True)
+    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, constant_liar = True)
     study = optuna.create_study(study_name = study_name, direction='maximize',
         storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler = sampler)
     initial_conf = read_json_file(INITIAL_CONF_TRANS)
