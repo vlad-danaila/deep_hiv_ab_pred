@@ -55,7 +55,7 @@ def propose(trial: optuna.trial.Trial):
         "TRANS_DROPOUT_DECODER": trial.suggest_float('TRANS_DROPOUT_DECODER', 0, .5),
         "TRANSF_DECODER_LAYERS": 1,
 
-        "POS_EMBED": trial.suggest_float('POS_EMBED', 0, 1, log = True),
+        "POS_EMBED": trial.suggest_float('POS_EMBED', 0, 1),
     }
 
 def empty_cuda_cahce():
