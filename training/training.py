@@ -50,16 +50,19 @@ def eval_network(model, loader):
     return compute_metrics(all_ground_truths, all_predictions, include_AUC = True)
 
 # Train
-def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model', model_path = '', save_model = True, log_every_epoch = True):
+def train_network(model, conf, loader_train, loader_val, cross_validation_round, epochs, model_title = 'model',
+                  model_path = '', save_model = True, log_every_epoch = True, pruner: CrossValidationPruner = None):
     loss_fn = t.nn.BCELoss()
     # optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     optimizer = Noam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'], warmup = conf['WARMUP'], d_model = 1)
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
     best = np.zeros(3)
+    milestones = np.floor(epochs * np.array([.25, .5, .75]))
+    step_counter = 0
     try:
         for epoch in range(epochs):
             model.train()
-            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer)
+            train_metrics = run_network_for_training(model, conf, loader_train, loss_fn, optimizer, epochs, pruner)
             metrics_train_per_epochs.append(train_metrics)
             if loader_val:
                 test_metrics = eval_network(model, loader_val)
@@ -82,6 +85,11 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
                         t.save({'model': model.state_dict()}, os.path.join(model_path, f'{model_title}.tar'))
                 if log_every_epoch:
                     logging.info(f'Epoch {epoch + 1}, Correlation: {train_metrics[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {train_metrics[ACCURACY]}')
+            if epoch in milestones and pruner is not None:
+                cv_fold = cross_validation_round if cross_validation_round is not None else 0
+                # This throws a pruning exception if the trial needs to be pruned
+                pruner.report(test_metrics[MATTHEWS_CORRELATION_COEFFICIENT], step_counter, cv_fold)
+                step_counter += 1
         if cross_validation_round is not None:
             logging.info(f'Cross validation round {cross_validation_round + 1}, Correlation: {best[MATTHEWS_CORRELATION_COEFFICIENT]}, Accuracy: {best[ACCURACY]}')
         else:
