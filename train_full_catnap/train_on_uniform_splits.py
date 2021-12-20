@@ -32,7 +32,8 @@ def train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf,
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
     model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
-    _, test_metrics, last = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
+    _, test_metrics, best = train_network_n_times(
+        model, conf, loader_train, loader_val, None, conf['EPOCHS'], 'model', MODELS_FOLDER, True, True, pruner)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
     logging.info(f'Best epoch is {epoch_index + 1}')
     log_metrics(best_metrics)
