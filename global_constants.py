@@ -7,7 +7,12 @@ EMBEDDING = 'PROPS-ONLY'
 
 HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
 
-DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_seq_only_fc_gru_uniform_props_only_1_layer_trial_95.json')
+DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_unifrom_props_only_multivariate_tpe_trial_16492.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_trial_606.json')
+
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_adam_100_epochs_uniform_props_only_trial_415.json')
+
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_seq_only_fc_gru_uniform_props_only_1_layer_trial_95.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_seq_only_fc_gru_uniform_props_only_1_layer_trial_402.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_seq_only_fc_gru_uniform_props_only_1_layer_trial_294.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_mask_all_feat_fc_gru_uniform_props_only_1_layer_trial_457.json')
