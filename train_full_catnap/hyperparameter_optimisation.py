@@ -117,19 +117,19 @@ def get_objective_train_on_uniform_splits():
             metrics = np.array(metrics)
             return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
         except optuna.TrialPruned as pruneError:
-            return 0
+            raise pruneError
         except Exception as e:
             if str(e).startswith('CUDA out of memory'):
                 logging.error('CUDA out of memory', exc_info = False)
                 empty_cuda_cahce()
-                return 0
+                raise optuna.TrialPruned()
             elif 'CUDA error' in str(e):
                 logging.error('CUDA error', exc_info = True)
                 empty_cuda_cahce()
-                return 0
+                raise optuna.TrialPruned()
             logging.exception(str(e), exc_info = True)
             logging.error(f'Configuration {conf}')
-            return 0
+            raise optuna.TrialPruned()
     return objective
 
 # class CrossValidationPruner(BasePruner):
@@ -162,7 +162,7 @@ def optimize_hyperparameters():
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
     # sampler = optuna.samplers.CmaEsSampler(consider_pruned_trials = True)
-    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, constant_liar = True)
+    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True)
     study = optuna.create_study(study_name = study_name, direction='maximize',
         storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler = sampler)
     initial_conf = read_json_file(INITIAL_CONF_TRANS)
