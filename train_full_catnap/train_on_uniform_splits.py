@@ -1,5 +1,5 @@
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_UNIFORM, MODELS_FOLDER
-from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
+from deep_hiv_ab_pred.training.training import train_network_n_times, train_network, eval_network
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset_transf import AssayDataset
 from deep_hiv_ab_pred.preprocessing.seq_to_embed_for_transformer import parse_catnap_sequences_to_embeddings
@@ -32,7 +32,7 @@ def train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf,
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
     model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
-    _, test_metrics, best = train_network_n_times(
+    _, test_metrics, best = train_network(
         model, conf, loader_train, loader_val, None, conf['EPOCHS'], 'model', MODELS_FOLDER, True, True, pruner)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
     logging.info(f'Best epoch is {epoch_index + 1}')
