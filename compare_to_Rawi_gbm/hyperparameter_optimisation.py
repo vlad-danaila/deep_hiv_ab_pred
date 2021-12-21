@@ -19,6 +19,7 @@ from deep_hiv_ab_pred.util.logging import setup_logging
 import logging
 from optuna.pruners import BasePruner
 from optuna.trial._state import TrialState
+from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import wrap_propose
 
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
@@ -117,6 +118,7 @@ def get_data():
     all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(DEFAULT_CONF)
+    base_conf = wrap_propose(base_conf)
     virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
     return all_splits, catnap, base_conf, virus_seq, abs, virus_max_len, ab_max_len
 
