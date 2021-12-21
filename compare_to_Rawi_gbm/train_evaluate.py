@@ -5,7 +5,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RA
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
-from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
+from deep_hiv_ab_pred.preprocessing.pytorch_dataset_transf import AssayDataset
 from deep_hiv_ab_pred.preprocessing.seq_and_cdr_with_mask_to_tensor import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.model.TRANSF import get_TRANSF_model
 from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding
@@ -21,22 +21,22 @@ CV = 'cross_validation'
 TRAIN = 'train'
 TEST = 'test'
 
-def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs, pretrain_epochs):
+def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, abs, virus_max_len, ab_max_len, pretrain_epochs):
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
     rest_assays = [a for a in catnap if a[0] not in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
-    pretrain_set = AssayDataset(pretraining_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
-    val_set = AssayDataset(rest_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
-    loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
-    loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
-    model = get_TRANSF_model(conf)
+    pretrain_set = AssayDataset(pretraining_assays, abs, virus_seq)
+    val_set = AssayDataset(rest_assays, abs, virus_seq)
+    loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
+    loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
+    model = get_TRANSF_model(conf, ab_max_len, virus_max_len)
     assert pretrain_epochs
     metrics_train_per_epochs, metrics_test_per_epochs, best = train_network(
         model, conf, loader_pretrain, loader_val, None, pretrain_epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
     )
     return metrics_train_per_epochs, metrics_test_per_epochs, best
 
-def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_cdrs,
+def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, abs, virus_max_len, ab_max_len,
                             trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
 
     cv_metrics = []
@@ -45,11 +45,11 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         train_assays = [a for a in catnap if a[0] in train_ids]
         test_assays = [a for a in catnap if a[0] in test_ids]
         assert len(train_assays) == len(train_ids) and len(test_assays) == len(test_ids)
-        train_set = AssayDataset(train_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
-        test_set = AssayDataset(test_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
-        loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
-        loader_test = t.utils.data.DataLoader(test_set, len(test_set), shuffle = False, collate_fn = zero_padding, num_workers = 0)
-        model = get_FC_GRU_model(conf)
+        train_set = AssayDataset(train_assays, abs, virus_seq)
+        test_set = AssayDataset(test_assays, abs, virus_seq)
+        loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
+        loader_test = t.utils.data.DataLoader(test_set, len(test_set), shuffle = False, num_workers = 0)
+        model = get_TRANSF_model(conf, ab_max_len, virus_max_len)
         checkpoint = t.load(join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar'))
         model.load_state_dict(checkpoint['model'])
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:

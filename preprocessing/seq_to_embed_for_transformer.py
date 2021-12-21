@@ -71,5 +71,5 @@ def parse_catnap_sequences_to_embeddings():
     return virus_seq, abs, virus_max_len, ab_max_len
 
 if __name__ == '__main__':
-    virus_seq, abs = parse_catnap_sequences_to_embeddings()
+    virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
 
