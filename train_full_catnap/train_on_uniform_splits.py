@@ -60,7 +60,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     best_mcc = max(mccs)
     ideal_epoch = mccs.index(best_mcc) + 1
     logging.info(f'Best MCC {best_mcc} at epoch {ideal_epoch}')
-    plot_epochs(train_metrics_list, test_metrics_list)
+    plot_epochs(train_metrics_list, test_metrics_list, title = 'Performance per epochs', save_file = f'plot_perf_per_epochs')
 
 def main_train():
     setup_logging()
