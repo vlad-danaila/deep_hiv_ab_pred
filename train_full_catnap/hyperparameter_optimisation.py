@@ -28,10 +28,10 @@ def choose(x, choices):
 
 def handle_categorical_params(conf):
     POS_EMBED = choose(conf['POS_EMBED'], list(range(6, 129, 2)))
-    divs = np.array(divisors(EMBED_SIZE + POS_EMBED + 1))
+    # divs = np.array(divisors(EMBED_SIZE + POS_EMBED + 1))
     conf['POS_EMBED'] = POS_EMBED
-    conf['N_HEADS_ENCODER'] = choose(conf['N_HEADS_ENCODER'], divs)
-    conf['N_HEADS_DECODER'] = choose(conf['N_HEADS_DECODER'], divs)
+    # conf['N_HEADS_ENCODER'] = choose(conf['N_HEADS_ENCODER'], divs)
+    # conf['N_HEADS_DECODER'] = choose(conf['N_HEADS_DECODER'], divs)
     return conf
 
 def wrap_propose(trial: optuna.trial.Trial):
