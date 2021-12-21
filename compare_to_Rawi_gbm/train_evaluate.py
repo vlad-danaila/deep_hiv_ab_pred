@@ -7,7 +7,7 @@ import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.seq_and_cdr_with_mask_to_tensor import parse_catnap_sequences_to_embeddings
-from deep_hiv_ab_pred.model.FC_GRU import get_FC_GRU_model
+from deep_hiv_ab_pred.model.TRANSF import get_TRANSF_model
 from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding
 from os.path import join
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
@@ -29,7 +29,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     val_set = AssayDataset(rest_assays, antibody_cdrs, virus_seq, virus_pngs_mask)
     loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
-    model = get_FC_GRU_model(conf)
+    model = get_TRANSF_model(conf)
     assert pretrain_epochs
     metrics_train_per_epochs, metrics_test_per_epochs, best = train_network(
         model, conf, loader_pretrain, loader_val, None, pretrain_epochs, f'model_{antibody}_pretrain', MODELS_FOLDER
