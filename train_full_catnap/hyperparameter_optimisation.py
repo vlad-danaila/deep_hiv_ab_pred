@@ -48,12 +48,12 @@ def propose(trial: optuna.trial.Trial):
         "EMBEDDING_DROPOUT": trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         "FULLY_CONNECTED_DROPOUT": trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
 
-        "N_HEADS_ENCODER": trial.suggest_float('N_HEADS_ENCODER', 0, 1),
+        "N_HEADS_ENCODER": 1,
         "TRANS_HIDDEN_ENCODER": trial.suggest_int('TRANS_HIDDEN_ENCODER', 10, 1024),
         "TRANS_DROPOUT_ENCODER": trial.suggest_float('TRANS_DROPOUT_ENCODER', 0, .5),
         "TRANSF_ENCODER_LAYERS": 1,
 
-        "N_HEADS_DECODER": trial.suggest_float('N_HEADS_DECODER', 0, 1),
+        "N_HEADS_DECODER": 1,
         "TRANS_HIDDEN_DECODER": trial.suggest_int('TRANS_HIDDEN_DECODER', 10, 1024),
         "TRANS_DROPOUT_DECODER": trial.suggest_float('TRANS_DROPOUT_DECODER', 0, .5),
         "TRANSF_DECODER_LAYERS": 1,
@@ -162,7 +162,7 @@ def optimize_hyperparameters():
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
     # sampler = optuna.samplers.CmaEsSampler(consider_pruned_trials = True)
-    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True)
+    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, n_startup_trials = 1)
     study = optuna.create_study(study_name = study_name, direction='maximize',
         storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler = sampler)
     initial_conf = read_json_file(INITIAL_CONF_TRANS)
