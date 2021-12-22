@@ -165,9 +165,9 @@ def optimize_hyperparameters():
     # sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, n_startup_trials = 1)
     study = optuna.create_study(study_name = study_name, direction='maximize',
         storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler = sampler)
-    initial_conf = read_json_file(INITIAL_CONF_TRANS)
-    if not study_exists:
-        study.enqueue_trial(initial_conf)
+    # initial_conf = read_json_file(INITIAL_CONF_TRANS)
+    # if not study_exists:
+    #     study.enqueue_trial(initial_conf)
     #objective = get_objective_train_hold_out_one_cluster()
     objective = get_objective_train_on_uniform_splits()
     study.optimize(objective, n_trials=100_000)
