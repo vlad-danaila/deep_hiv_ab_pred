@@ -51,7 +51,6 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
         virus_id = id_split[-2]
         # seq = str(seq_record.seq).replace('-', '')
         seq = str(seq_record.seq)
-        virus_seq_dict[virus_id] = seq
         binary_mask = [1. if c == 'O' else 0. for c in seq]
         virus_seq_dict[virus_id] = pngs_mask_to_kemr_tensor(binary_mask, kmer_len, kmer_stride)
     return virus_seq_dict
