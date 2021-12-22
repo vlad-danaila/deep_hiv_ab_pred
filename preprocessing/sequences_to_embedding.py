@@ -1,3 +1,4 @@
+import numpy as np
 import torch as t
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 from deep_hiv_ab_pred.util.tools import device
@@ -27,7 +28,7 @@ def read_virus_fasta_sequences(fasta_file_path, kmer_len, kmer_stride):
         virus_id = id_split[-2]
         seq = str(seq_record.seq)
         # seq = seq.replace('-', '')
-        virus_seq_dict[virus_id] = sequence_to_indexes(seq, kmer_len, kmer_stride)
+        virus_seq_dict[virus_id] = np.array(sequence_to_indexes(seq, kmer_len, kmer_stride))
     return virus_seq_dict
 
 def read_antibody_fasta_sequences(fasta_file_path, antibody_trim):
@@ -52,7 +53,7 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
         # seq = str(seq_record.seq).replace('-', '')
         seq = str(seq_record.seq)
         binary_mask = [1. if c == 'O' else 0. for c in seq]
-        virus_seq_dict[virus_id] = pngs_mask_to_kemr_tensor(binary_mask, kmer_len, kmer_stride)
+        virus_seq_dict[virus_id] = np.array(pngs_mask_to_kemr_tensor(binary_mask, kmer_len, kmer_stride))
     return virus_seq_dict
 
 def fix_len_mismatches(virus_seq, virus_pngs_mask):
