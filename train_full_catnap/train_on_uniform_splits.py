@@ -2,14 +2,14 @@ from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_UNIFORM, MODELS_
 from deep_hiv_ab_pred.training.training import train_network_n_times, train_network, eval_network
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset_transf import AssayDataset
-from deep_hiv_ab_pred.preprocessing.seq_to_embed_for_transformer import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.seq_to_embed_with_kmers_for_transformer import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.util.tools import read_json_file
 import torch as t
 from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_COEFFICIENT, AUC
 import mlflow
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF, HYPERPARAM_FOLDER
 from deep_hiv_ab_pred.train_full_catnap.train_hold_out_one_cluster import test
-from deep_hiv_ab_pred.model.TRANSF import get_TRANSF_model
+from deep_hiv_ab_pred.model.TRANSF_KMER import get_TRANSF_KMER_model
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 from deep_hiv_ab_pred.util.logging import setup_logging
@@ -31,7 +31,7 @@ def log_metrics(metrics):
 def train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, pruner: CrossValidationPruner = None):
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
-    model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
+    model = get_TRANSF_KMER_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
     _, test_metrics, best = train_network(
         model, conf, loader_train, loader_val, None, conf['EPOCHS'], 'model', MODELS_FOLDER, True, True, pruner)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
@@ -44,7 +44,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    virus, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
+    virus, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings(conf['KMER_LEN'], conf['KMER_STRIDE'])
     test_ids = splits['test']
     train_assays = [a for a in catnap if a[0] not in test_ids]
     test_assays = [a for a in catnap if a[0] in test_ids]
@@ -52,7 +52,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     test_set = AssayDataset(test_assays, abs, virus)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, num_workers = 0)
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, num_workers = 0)
-    model = get_TRANSF_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
+    model = get_TRANSF_KMER_model(conf, src_seq_len=ab_max_len, tgt_seq_len=virus_max_len)
     model_name = 'model_test'
     train_metrics_list, test_metrics_list, last = train_network_n_times(
         model, conf, loader_train, loader_test, None, nb_epochs, model_name, MODELS_FOLDER)

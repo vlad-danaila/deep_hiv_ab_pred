@@ -1,8 +1,5 @@
 import torch
-from torch import nn
-from torch import Tensor
 import math
-import matplotlib.pyplot as plt
 from deep_hiv_ab_pred.util.tools import to_numpy, to_torch
 from deep_hiv_ab_pred.util.tools import device
 
@@ -19,5 +16,5 @@ def get_positional_embeding(pos_embed_size, seq_len):
     return pe.type(torch.float32).to(device)
 
 if __name__ == '__main__':
-    pe_virus = to_numpy(get_positional_embeding(6, 1019))
-    pe_ab = to_numpy(get_positional_embeding(4, 227))
+    pe_virus = to_numpy(get_positional_embeding(4, 86))
+    pe_ab = to_numpy(get_positional_embeding(4, 86))

@@ -15,7 +15,7 @@ import time
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 import torch as t
 from deep_hiv_ab_pred.util.tools import divisors
-from deep_hiv_ab_pred.preprocessing.seq_to_embed_for_transformer import parse_catnap_sequences_to_embeddings
+from deep_hiv_ab_pred.preprocessing.seq_to_embed_with_kmers_for_transformer import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset_transf import AssayDataset
 from deep_hiv_ab_pred.preprocessing.aminoacids import get_embeding_matrix
 
@@ -102,14 +102,15 @@ def get_objective_train_on_uniform_splits():
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
     cvp = CrossValidationPruner(30, 3, 1, .05)
-    virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings()
-    train_ids, val_ids = splits['train'], splits['val']
-    train_assays = [a for a in catnap if a[0] in train_ids]
-    val_assays = [a for a in catnap if a[0] in val_ids]
-    train_set = AssayDataset(train_assays, abs, virus_seq)
-    val_set = AssayDataset(val_assays, abs, virus_seq)
+
     def objective(trial):
         conf = wrap_propose(trial)
+        virus_seq, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings(conf['KMER_LEN'], conf['KMER_STRIDE'])
+        train_ids, val_ids = splits['train'], splits['val']
+        train_assays = [a for a in catnap if a[0] in train_ids]
+        val_assays = [a for a in catnap if a[0] in val_ids]
+        train_set = AssayDataset(train_assays, abs, virus_seq)
+        val_set = AssayDataset(val_assays, abs, virus_seq)
         try:
             start = time.time()
             metrics = train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, cvp)
