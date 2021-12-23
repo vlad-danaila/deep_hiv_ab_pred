@@ -6,20 +6,34 @@ from Bio import SeqIO
 from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FASTA_FILE, ANTIBODIES_HEAVY_FASTA_FILE
 from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
 
+def get_pad_size_for_kmer_split(seq_len, kmer_len, kmer_stride):
+    diff = kmer_len - kmer_stride
+    modulo = seq_len % kmer_stride
+    if modulo == 0:
+        return diff
+    elif modulo > diff:
+        return kmer_len - modulo
+    else:
+        return kmer_len - kmer_stride - modulo
+
 def sequence_to_indexes(seq, kmer_len, kmer_stride):
+    pad_size = get_pad_size_for_kmer_split(len(seq), kmer_len, kmer_stride)
+    seq += pad_size * ['X']
     return [
         [amino_to_index[seq[i + j]] for j in range(kmer_len)]
         for i in range(0, len(seq) - kmer_len + 1, kmer_stride)
     ]
 
-def kmers(seq, kmer_len, stride):
+def kmers(seq, kmer_len, stride, pad_value):
+    pad_size = get_pad_size_for_kmer_split(len(seq), kmer_len, stride)
+    seq += pad_size * [pad_value]
     return [
         seq[i : i + kmer_len]
         for i in range(0, len(seq) - kmer_len + 1, stride)
     ]
 
 def pngs_mask_to_kemr_tensor(pngs_mask, kmer_len, kmer_stride):
-    return kmers(pngs_mask, kmer_len, kmer_stride)
+    return kmers(pngs_mask, kmer_len, kmer_stride, pad_value = 0)
 
 def read_virus_fasta_sequences(fasta_file_path, kmer_len, kmer_stride):
     virus_seq_dict = {}

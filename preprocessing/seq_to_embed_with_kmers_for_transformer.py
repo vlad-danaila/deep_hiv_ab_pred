@@ -6,10 +6,6 @@ from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import read_virus_fas
 from deep_hiv_ab_pred.catnap.parse_cdr_reports import get_id_to_seq_mapping_from_fasta_file as ab_to_seq
 from deep_hiv_ab_pred.catnap.parse_cdr_reports import assays_abs
 
-def get_pad_size_for_kmer_split(seq_len, kmer_len, kmer_stride):
-    ideal_len = (seq_len // kmer_stride) * kmer_stride + kmer_len
-    return ideal_len - seq_len
-
 def antibody_relevant_sites():
     light_ab_cdr_possible_sites = ((17, 77), (84, 133))
     heavy_ab_cdr_possible_sites = ((13, 79), (83, 135))
@@ -30,8 +26,6 @@ def parse_ab_sites(kmer_len, kmer_stride):
                               + seq_light[light_cdr_3_begin : light_cdr_3_end] \
                               + seq_heavy[heavy_cdr_1_2_begin : heavy_cdr_1_2_end] \
                               + seq_heavy[heavy_cdr_3_begin : heavy_cdr_3_end]
-        pad_size = get_pad_size_for_kmer_split(len(concatenated), kmer_len, kmer_stride)
-        concatenated += pad_size * ['X']
         selected_ab_seq[ab] = np.array(sequence_to_indexes(concatenated, kmer_len, kmer_stride))
     return selected_ab_seq
 
