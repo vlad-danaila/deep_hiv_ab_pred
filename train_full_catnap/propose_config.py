@@ -22,6 +22,7 @@ def wrap_propose(trial: optuna.trial.Trial):
     return handle_categorical_params(conf)
 
 def propose(trial: optuna.trial.Trial):
+    kmer_len = trial.suggest_int('KMER_LEN', 3, 227)
     return {
         'EPOCHS': 100,
         "BATCH_SIZE": trial.suggest_int('BATCH_SIZE', 50, 5000),
@@ -42,4 +43,7 @@ def propose(trial: optuna.trial.Trial):
         "TRANSF_DECODER_LAYERS": 1,
 
         "POS_EMBED": trial.suggest_float('POS_EMBED', 0, 1),
+
+        "KMER_LEN": kmer_len,
+        "KMER_STRIDE": trial.suggest_int('KMER_STRIDE', max(1, kmer_len // 10), kmer_len)
     }
