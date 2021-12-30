@@ -60,8 +60,7 @@ class TRANSF_KMER(t.nn.Module):
         virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.tgt_seq_len).repeat((batch_size, 1, 1))
 
         # pngs_mask = pngs_mask.unsqueeze(dim = 2)
-        # TODO aici tb sa pui in loc de 1 self.conf['KMER_LEN'], de testat
-        empty = t.zeros((batch_size, self.src_seq_len, 1)).to(device)
+        empty = t.zeros((batch_size, self.src_seq_len, self.conf['KMER_LEN'])).to(device)
         ab = t.cat((ab, ab_pos_embed, empty), dim = 2)
         virus = t.cat((virus, virus_pos_embed, pngs_mask), dim = 2)
 
@@ -80,7 +79,9 @@ class TRANSF_KMER(t.nn.Module):
     def forward(self, ab, virus, pngs_mask):
         batch_size = ab.shape[0]
         ab_mask = ab == amino_to_index['X']
+        ab_mask = t.all(ab_mask, 2)
         virus_mask = virus == amino_to_index['X']
+        virus_mask = t.all(virus_mask, 2)
         ab, virus = self.forward_embeddings(ab, virus, pngs_mask, batch_size)
         ab_hidden = self.forward_antibodyes(ab, ab_mask)
         return self.forward_virus(virus, ab_hidden, virus_mask, ab_mask, batch_size)
