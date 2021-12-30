@@ -18,7 +18,7 @@ def get_pad_size_for_kmer_split(seq_len, kmer_len, kmer_stride):
 
 def sequence_to_indexes(seq, kmer_len, kmer_stride):
     pad_size = get_pad_size_for_kmer_split(len(seq), kmer_len, kmer_stride)
-    seq += pad_size * ['X']
+    seq += pad_size * 'X'
     return [
         [amino_to_index[seq[i + j]] for j in range(kmer_len)]
         for i in range(0, len(seq) - kmer_len + 1, kmer_stride)

@@ -17,6 +17,7 @@ from deep_hiv_ab_pred.util.plotting import plot_epochs
 from os.path import join
 from deep_hiv_ab_pred.catnap.download_dataset import download_catnap
 from deep_hiv_ab_pred.util.metrics import find_ideal_epoch
+from deep_hiv_ab_pred.train_full_catnap.propose_config import handle_categorical_params
 
 def log_metrics(metrics):
     logging.info(f'Acc {metrics[ACCURACY]}')
@@ -42,6 +43,7 @@ def train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf,
 def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     setup_logging()
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
+    conf = handle_categorical_params(conf)
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
     virus, abs, virus_max_len, ab_max_len = parse_catnap_sequences_to_embeddings(conf['KMER_LEN'], conf['KMER_STRIDE'])

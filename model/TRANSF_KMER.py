@@ -25,7 +25,7 @@ class TRANSF_KMER(t.nn.Module):
 
         self.embedding_dropout = t.nn.Dropout(conf['EMBEDDING_DROPOUT'])
 
-        self.transf_d_model = (self.embeding_size + 1) * conf['KMER_LEN_VIRUS'] + conf['POS_EMBED']
+        self.transf_d_model = (self.embeding_size + 1) * conf['KMER_LEN'] + conf['POS_EMBED']
 
         transf_enc_layer = t.nn.TransformerEncoderLayer(
             # 1 is added to have the same size as the virus embed
@@ -53,13 +53,14 @@ class TRANSF_KMER(t.nn.Module):
         self.sigmoid = t.nn.Sigmoid()
 
     def forward_embeddings(self, ab, virus, pngs_mask, batch_size):
-        ab = self.embedding_dropout(self.aminoacid_embedding(ab))
-        virus = self.embedding_dropout(self.aminoacid_embedding(virus))
+        ab = self.embedding_dropout(self.aminoacid_embedding(ab)).reshape(-1, self.src_seq_len, self.conf['KMER_LEN'] * self.embeding_size)
+        virus = self.embedding_dropout(self.aminoacid_embedding(virus)).reshape(-1, self.tgt_seq_len, self.conf['KMER_LEN'] * self.embeding_size)
 
         ab_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.src_seq_len).repeat((batch_size, 1, 1))
         virus_pos_embed = get_positional_embeding(self.conf['POS_EMBED'], self.tgt_seq_len).repeat((batch_size, 1, 1))
 
-        pngs_mask = pngs_mask.unsqueeze(dim = 2)
+        # pngs_mask = pngs_mask.unsqueeze(dim = 2)
+        # TODO aici tb sa pui in loc de 1 self.conf['KMER_LEN'], de testat
         empty = t.zeros((batch_size, self.src_seq_len, 1)).to(device)
         ab = t.cat((ab, ab_pos_embed, empty), dim = 2)
         virus = t.cat((virus, virus_pos_embed, pngs_mask), dim = 2)
