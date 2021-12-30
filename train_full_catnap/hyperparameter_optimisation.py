@@ -59,7 +59,7 @@ def get_objective_train_on_uniform_splits():
     mlflow.set_tag('hyperparam opt', 'uniform splits')
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    cvp = CrossValidationPruner(30, 3, 1, .05)
+    # cvp = CrossValidationPruner(30, 3, 1, .05)
 
     def objective(trial):
         conf = wrap_propose(trial)
@@ -71,7 +71,7 @@ def get_objective_train_on_uniform_splits():
         val_set = AssayDataset(val_assays, abs, virus_seq)
         try:
             start = time.time()
-            metrics = train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, cvp)
+            metrics = train_on_uniform_splits(train_set, val_set, ab_max_len, virus_max_len, conf, None)
             end = time.time()
             metrics = np.array(metrics)
             return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
