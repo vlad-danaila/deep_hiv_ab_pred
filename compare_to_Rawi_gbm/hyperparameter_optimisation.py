@@ -19,7 +19,7 @@ from deep_hiv_ab_pred.util.logging import setup_logging
 import logging
 from optuna.pruners import BasePruner
 from optuna.trial._state import TrialState
-from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import handle_categorical_params
+from deep_hiv_ab_pred.train_full_catnap.propose_config import handle_categorical_params
 
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
