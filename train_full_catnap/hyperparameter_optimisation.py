@@ -86,7 +86,7 @@ def get_objective_train_on_uniform_splits():
         conf = propose(trial)
         try:
             start = time.time()
-            metrics = train_on_uniform_splits(splits, catnap, conf, cvp)
+            metrics = train_on_uniform_splits(splits, catnap, conf, None)
             end = time.time()
             metrics = np.array(metrics)
             return metrics[MATTHEWS_CORRELATION_COEFFICIENT]
@@ -135,8 +135,9 @@ def optimize_hyperparameters():
     # pruner = CrossValidationPruner(.05)
     study_name = 'ICERI2021_v2'
     study_exists = os.path.isfile(study_name + '.db')
+    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, n_startup_trials = 0)
     study = optuna.create_study(study_name = study_name, direction='maximize',
-        storage = f'sqlite:///{study_name}.db', load_if_exists = True)
+        storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler = sampler)
     initial_conf = read_yaml(CONF_ICERI_V2)
     if not study_exists:
         study.enqueue_trial(initial_conf)

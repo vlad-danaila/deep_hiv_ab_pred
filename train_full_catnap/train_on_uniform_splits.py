@@ -1,5 +1,5 @@
 from deep_hiv_ab_pred.train_full_catnap.constants import SPLITS_UNIFORM, MODELS_FOLDER
-from deep_hiv_ab_pred.training.training import train_network_n_times, eval_network
+from deep_hiv_ab_pred.training.training import train_network_n_times, train_network, eval_network
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
@@ -40,13 +40,13 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
-    _, test_metrics, last = train_network_n_times(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, pruner)
+    _, test_metrics, best = train_network(model, conf, loader_train, loader_val, None, conf['EPOCHS'], f'model', MODELS_FOLDER, True, True)
     epoch_index, best_metrics = find_ideal_epoch(test_metrics)
     logging.info(f'Best epoch is {epoch_index + 1}')
     log_metrics(best_metrics)
     return best_metrics
 
-def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
+def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     setup_logging()
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
     splits = read_json_file(SPLITS_UNIFORM)
@@ -63,14 +63,13 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = None):
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
     model_name = 'model_test'
-    epochs = nb_epochs if nb_epochs else conf['EPOCHS']
     train_metrics_list, test_metrics_list, last = train_network_n_times(
-        model, conf, loader_train, loader_test, None, epochs, model_name, MODELS_FOLDER)
+        model, conf, loader_train, loader_test, None, nb_epochs, model_name, MODELS_FOLDER)
     mccs = [m[MATTHEWS_CORRELATION_COEFFICIENT] for m in test_metrics_list]
     best_mcc = max(mccs)
     ideal_epoch = mccs.index(best_mcc) + 1
     logging.info(f'Best MCC {best_mcc} at epoch {ideal_epoch}')
-    plot_epochs(train_metrics_list, test_metrics_list)
+    plot_epochs(train_metrics_list, test_metrics_list, title = 'Performance per epochs', save_file = f'plot_perf_per_epochs')
 
 def main_train():
     setup_logging()
