@@ -1,8 +1,9 @@
+import pandas as pd
 import torch as t
 from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 from deep_hiv_ab_pred.util.tools import device
 from Bio import SeqIO
-from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE
+from deep_hiv_ab_pred.catnap.constants import VIRUS_FILE, VIRUS_WITH_PNGS_FILE, ANTIBODIES_LIGHT_FILE, ANTIBODIES_HEAVY_FILE, ANTIBODIES_DETAILS_FILE
 from deep_hiv_ab_pred.preprocessing.constants import LIGHT_ANTIBODY_TRIM, HEAVY_ANTIBODY_TRIM
 
 def sequence_to_indexes(seq, kmer_len, kmer_stride):
@@ -61,11 +62,19 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
 
     return virus_seq_dict
 
+def find_ab_types(ab_details_file):
+    ab_details = pd.read_csv(ab_details_file, delimiter='\t')
+    'Name'
+    types = set(ab_details['Type'])
+    # TODO handle nan
+    return ab_details
+
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE, virus_kmer_len, virus_kmer_stride)
     antibody_light_seq = read_antibody_fasta_sequences(ANTIBODIES_LIGHT_FILE, LIGHT_ANTIBODY_TRIM)
     antibody_heavy_seq = read_antibody_fasta_sequences(ANTIBODIES_HEAVY_FILE, HEAVY_ANTIBODY_TRIM)
+    ab_types = find_ab_types(ANTIBODIES_DETAILS_FILE)
     return virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
 
 if __name__ == '__main__':
