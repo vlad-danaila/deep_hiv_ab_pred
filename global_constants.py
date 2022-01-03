@@ -7,12 +7,16 @@ EMBEDDING = 'PROPS-ONLY'
 
 HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
 
+DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_kmer_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_no_prunner_trial_506.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_kmer_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_no_prunner_trial_720.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_kmer_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_no_prunner_trial_102.json')
+
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_v2_trial_1169.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_unifrom_props_only_multivariate_tpe_trial_16492.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_trial_606.json')
 
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_adam_100_epochs_uniform_props_only_trial_415.json')
-DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transformers_example.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transformers_example.json')
 
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_seq_only_fc_gru_uniform_props_only_1_layer_trial_95.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_6cdr_seq_only_fc_gru_uniform_props_only_1_layer_trial_402.json')
