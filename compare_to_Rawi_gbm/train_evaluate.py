@@ -21,7 +21,9 @@ CV = 'cross_validation'
 TRAIN = 'train'
 TEST = 'test'
 
-def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs):
+def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pngs_mask,
+    antibody_light_seq, antibody_heavy_seq, pretrain_epochs, ab_to_types):
+
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
     rest_assays = [a for a in catnap if a[0] not in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
@@ -37,7 +39,7 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     return metrics_train_per_epochs, metrics_test_per_epochs, best
 
 def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq,
-    antibody_heavy_seq, trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
+    antibody_heavy_seq, ab_to_types, trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
 
     cv_metrics = []
     for (i, cv_fold) in enumerate(splits_cv[:cv_folds_trim]):
@@ -87,9 +89,9 @@ def train_net(experiment_name, tags = None, freeze_mode = FREEZE_ANTIBODY_AND_EM
         acc, mcc = [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):
             logging.info(f'{i}. Antibody {antibody}')
-            pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
+            pretrain_net(antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, 100, ab_to_types)
             cv_metrics = cross_validate_antibody(antibody, splits[CV], catnap, conf, virus_seq, virus_pngs_mask,
-                antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
+                antibody_light_seq, antibody_heavy_seq, ab_to_types, freeze_mode = freeze_mode)
             cv_mean_acc, cv_mean_mcc = log_metrics_per_cv_antibody(cv_metrics, antibody)
             acc.append(cv_mean_acc)
             mcc.append(cv_mean_mcc)

@@ -70,7 +70,8 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = get_data()
     splits = all_splits[antibody]
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
-        pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs)
+        pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask,
+            antibody_light_seq, antibody_heavy_seq, pretrain_epochs, ab_to_types)
     def objective(trial):
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
             conf = propose_conf_for_frozen_antb_and_embeddings(trial, base_conf)
@@ -81,7 +82,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
             raise 'Must provide a proper freeze mode.'
         try:
             cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf, virus_seq,
-                virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, trial, cv_folds_trim, freeze_mode)
+                virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types, trial, cv_folds_trim, freeze_mode)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             return cv_mean_mcc
@@ -138,7 +139,7 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')
     conf = add_properties_from_base_config(conf, base_conf)
     cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
-        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, freeze_mode = freeze_mode)
+        virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types, freeze_mode = freeze_mode)
     cv_mean_acc, cv_mean_mcc, cv_mean_auc = log_metrics_per_cv_antibody(cv_metrics, antibody)
     return cv_mean_acc, cv_mean_mcc, cv_mean_auc
 

@@ -20,7 +20,8 @@ def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
         for i, (antibody, splits) in enumerate(all_splits.items()):
             logging.info(f'{i}. Antibody {antibody}')
             metrics_train_per_epochs, metrics_test_per_epochs, best = pretrain_net(
-                antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, proposed_epochs)
+                antibody, splits[PRETRAINING], catnap, conf, virus_seq, virus_pngs_mask,
+                antibody_light_seq, antibody_heavy_seq, proposed_epochs, ab_to_types)
             ideal_nb_epochs = [
                 i + 1 for (i, m) in enumerate(metrics_test_per_epochs)
                 if m[MATTHEWS_CORRELATION_COEFFICIENT] == best[MATTHEWS_CORRELATION_COEFFICIENT]
