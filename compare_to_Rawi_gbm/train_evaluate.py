@@ -1,14 +1,14 @@
 import statistics
-from deep_hiv_ab_pred.util.tools import read_json_file, read_yaml, device, get_experiment
+from deep_hiv_ab_pred.util.tools import read_json_file, get_experiment
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
-    FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER, FREEZE_ALL
+    FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 import torch as t
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.preprocessing.pytorch_dataset import AssayDataset, zero_padding
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.model.FC_GRU_ATT import get_FC_GRU_ATT_model
-from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding, train_with_fozen_net_except_of_last_layer
+from deep_hiv_ab_pred.training.training import train_network, eval_network, train_with_frozen_antibody_and_embedding
 from os.path import join
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT
 import mlflow
@@ -55,11 +55,6 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         if freeze_mode == FREEZE_ANTIBODY_AND_EMBEDDINGS:
             _, _, metrics = train_with_frozen_antibody_and_embedding(
                 model, conf, loader_train, loader_test, i, 100, f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
-            )
-        # deprecated
-        elif freeze_mode == FREEZE_ALL_BUT_LAST_LAYER:
-            _, _, metrics = train_with_fozen_net_except_of_last_layer(
-                model, conf, loader_train, loader_test, i, conf['EPOCHS'], f'model_{antibody}', MODELS_FOLDER, False, log_every_epoch = False
             )
         elif freeze_mode == FREEZE_ALL:
             metrics = eval_network(model, loader_test)
