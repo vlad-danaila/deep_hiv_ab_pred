@@ -62,19 +62,29 @@ def read_virus_pngs_mask(fasta_file_path, kmer_len, kmer_stride):
 
     return virus_seq_dict
 
-def find_ab_types(ab_details_file):
-    ab_details = pd.read_csv(ab_details_file, delimiter='\t')
-    'Name'
-    types = set(ab_details['Type'])
-    # TODO handle nan
-    return ab_details
+def find_ab_types():
+    ab_details = pd.read_csv(ANTIBODIES_DETAILS_FILE, delimiter='\t')
+    types_to_indexes = {}
+    ab_to_types = {}
+    counter = 0
+    for i, record in ab_details.iterrows():
+        ab = record['Name']
+        ab_types = record['Type']
+        if type(ab_types) == str:
+            ab_types = ab_types.split(';')
+            for ab_type in ab_types:
+                if ab_type not in types_to_indexes:
+                    types_to_indexes[ab_type] = counter
+                    counter += 1
+            ab_to_types[ab] = [types_to_indexes[t] for t in ab_types]
+    return ab_to_types, types_to_indexes
 
 def parse_catnap_sequences_to_embeddings(virus_kmer_len, virus_kmer_stride):
     virus_seq = read_virus_fasta_sequences(VIRUS_FILE, virus_kmer_len, virus_kmer_stride)
     virus_pngs_mask = read_virus_pngs_mask(VIRUS_WITH_PNGS_FILE, virus_kmer_len, virus_kmer_stride)
     antibody_light_seq = read_antibody_fasta_sequences(ANTIBODIES_LIGHT_FILE, LIGHT_ANTIBODY_TRIM)
     antibody_heavy_seq = read_antibody_fasta_sequences(ANTIBODIES_HEAVY_FILE, HEAVY_ANTIBODY_TRIM)
-    ab_types = find_ab_types(ANTIBODIES_DETAILS_FILE)
+    ab_to_types, types_to_indexes = find_ab_types()
     return virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
 
 if __name__ == '__main__':
