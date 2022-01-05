@@ -106,7 +106,7 @@ if __name__ == '__main__':
     # For making sure the phylogenetic tree was created
     # print_phylogenetic_tree()
     conf = read_yaml(CONF_ICERI)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = parse_catnap_sequences_to_embeddings(
         conf[KMER_LEN], conf[KMER_STRIDE]
     )
     assays = read_json_file(CATNAP_FLAT)

@@ -67,7 +67,7 @@ def propose_conf_for_frozen_net_without_last_layer(trial: optuna.trial.Trial, ba
     return conf
 
 def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrain_epochs):
-    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = get_data()
     splits = all_splits[antibody]
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
         pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs)
@@ -117,10 +117,10 @@ def get_data():
     all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(DEFAULT_CONF)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = parse_catnap_sequences_to_embeddings(
         base_conf['KMER_LEN_VIRUS'], base_conf['KMER_STRIDE_VIRUS']
     )
-    return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq
+    return all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types
 
 def add_properties_from_base_config(conf, base_conf):
     for prop in base_conf:
@@ -132,7 +132,7 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
     optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS,
         prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name, freeze_mode = freeze_mode, pretrain_epochs = pretrain_epochs)
-    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = get_data()
     mlflow.log_artifact(DEFAULT_CONF, 'base_conf.json')
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')

@@ -14,7 +14,7 @@ PRETRAINING = 'pretraining'
 def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
-        all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+        all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = get_data()
         mlflow.log_artifact(DEFAULT_CONF, 'conf.json')
         acc, mcc, auc = [], [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):

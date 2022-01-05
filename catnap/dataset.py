@@ -31,7 +31,7 @@ def catnap_by_antibodies():
     assays_df = read_assays_df()
     assays = collections.defaultdict(lambda: {})
     conf = read_yaml(CONF_ICERI)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = parse_catnap_sequences_to_embeddings(
         conf[KMER_LEN], conf[KMER_STRIDE]
     )
     # The for loop iterates through assays grouped by the antibody and virus pairs

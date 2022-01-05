@@ -29,7 +29,7 @@ def log_metrics(metrics):
     })
 
 def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner = None):
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS']
     )
     train_ids, val_ids = splits['train'], splits['val']
@@ -51,7 +51,7 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     conf = read_json_file(join(HYPERPARAM_FOLDER, hyperparam_file))
     splits = read_json_file(SPLITS_UNIFORM)
     catnap = read_json_file(CATNAP_FLAT)
-    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
+    virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, ab_to_types = parse_catnap_sequences_to_embeddings(
         conf['KMER_LEN_VIRUS'], conf['KMER_STRIDE_VIRUS']
     )
     test_ids = splits['test']
