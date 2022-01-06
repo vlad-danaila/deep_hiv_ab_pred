@@ -56,7 +56,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
     # optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
     optimizer = Noam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'], warmup = conf['WARMUP'], d_model = 1)
     metrics_train_per_epochs, metrics_test_per_epochs = [], []
-    best = np.zeros(3)
+    best = np.array([0, -np.inf, 0])
     milestones = np.floor(epochs * np.array([.25, .5, .75]))
     step_counter = 0
     try:
