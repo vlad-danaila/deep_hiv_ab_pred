@@ -20,7 +20,7 @@ class AssayDataset(t.utils.data.Dataset):
         antibody_heavy_tensor = self.antibody_heavy_seq[antibody]
         virus_tensor          = self.virus_seq[virus]
         pngs_mask_tensor      = self.pngs_mask_to_kemr_tensor[virus]
-        ab_types_ground_truth = self.ab_to_types[antibody]
+        ab_types_ground_truth = self.ab_to_types[antibody] if antibody in self.ab_to_types else None
         return antibody_light_tensor, antibody_heavy_tensor, virus_tensor, pngs_mask_tensor, ground_truth, ab_types_ground_truth
 
     def __len__(self):

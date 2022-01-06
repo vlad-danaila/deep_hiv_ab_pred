@@ -35,6 +35,8 @@ class FC_GRU_ATT(t.nn.Module):
         self.embedding_dropout = t.nn.Dropout(conf['EMBEDDING_DROPOUT'])
         self.fc_dropout = t.nn.Dropout(conf['FULLY_CONNECTED_DROPOUT'])
         self.fully_connected = t.nn.Linear(2 * self.VIRUS_RNN_HIDDEN_SIZE, 1)
+        self.ab_type_dropout = t.nn.Dropout(conf['AB_TYPE_DROPOUT'])
+        self.ab_type_fc = t.nn.Linear(self.VIRUS_RNN_HIDDEN_SIZE, 1)
         self.sigmoid = t.nn.Sigmoid()
 
     def virus_state_init(self, batch_size):
@@ -66,6 +68,9 @@ class FC_GRU_ATT(t.nn.Module):
         virus_output = virus_ab_all_output[:, -1]
         virus_output = self.fc_dropout(virus_output)
         return self.sigmoid(self.fully_connected(virus_output).squeeze())
+
+    def forward_ab_type(self, ab_hidden):
+        return self.sigmoid(self.ab_type_dropout(self.ab_type_fc(ab_hidden)))
 
     def forward(self, ab_light, ab_heavy, virus, pngs_mask):
         batch_size = len(ab_light)

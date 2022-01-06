@@ -17,13 +17,24 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth) in enumerate(loader):
         start = time.time()
-        pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
-        if pred.shape != ground_truth.shape:
-            pred = pred.reshape(ground_truth.shape)
-        loss = loss_fn(pred, ground_truth)
-        loss.backward()
+        # pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
+
+        batch_size = len(ab_light)
+        ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)
+        ab_hidden = model.module.forward_antibodyes(ab_light, ab_heavy)
+        pred_virus = model.module.forward_virus(virus, pngs_mask, ab_hidden)
+        pred_ab_type = model.module.forward_ab_type(ab_hidden)
+
+        if pred_virus.shape != ground_truth.shape:
+            pred_virus = pred_virus.reshape(ground_truth.shape)
+
+        loss_ab = loss_fn(pred_ab_type, ab_type_ground_truth)
+        loss_virus = loss_fn(pred_virus, ground_truth)
+        loss_virus.backward()
+        loss_ab.backward()
+
         t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
         optimizer.step()
         optimizer.zero_grad()
@@ -31,7 +42,7 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
         # For this reason we weight each metric by the population size of the batch using the variable named 'weight'
         weight = len(ground_truth) / conf['BATCH_SIZE']
         total_weight += weight
-        metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred)) * weight
+        metrics += compute_metrics(to_numpy(ground_truth), to_numpy(pred_virus)) * weight
         if i > 1 and i < 10 and epochs and pruner:
             estimated_time = epochs * len(loader) * (time.time() - start) / 60
             pruner.report_time(estimated_time)
@@ -41,7 +52,7 @@ def eval_network(model, loader):
     model.eval()
     prediction_list, ground_truth_list = [], []
     with t.no_grad():
-        for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
+        for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth) in enumerate(loader):
             pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
             if pred.shape != ground_truth.shape:
                 pred = pred.reshape(ground_truth.shape)
@@ -94,7 +105,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth) in enumerate(loader):
+    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth) in enumerate(loader):
         batch_size = len(ab_light)
         with t.no_grad():
             ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)

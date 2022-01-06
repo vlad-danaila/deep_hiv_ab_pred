@@ -27,8 +27,8 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     pretraining_assays = [a for a in catnap if a[0] in splits_pretraining]
     rest_assays = [a for a in catnap if a[0] not in splits_pretraining]
     assert len(pretraining_assays) == len(splits_pretraining)
-    pretrain_set = AssayDataset(pretraining_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-    val_set = AssayDataset(rest_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    pretrain_set = AssayDataset(pretraining_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
+    val_set = AssayDataset(rest_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
     loader_pretrain = t.utils.data.DataLoader(pretrain_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
@@ -47,8 +47,8 @@ def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_
         train_assays = [a for a in catnap if a[0] in train_ids]
         test_assays = [a for a in catnap if a[0] in test_ids]
         assert len(train_assays) == len(train_ids) and len(test_assays) == len(test_ids)
-        train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-        test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+        train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
+        test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
         loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
         loader_test = t.utils.data.DataLoader(test_set, len(test_set), shuffle = False, collate_fn = zero_padding, num_workers = 0)
         model = get_FC_GRU_ATT_model(conf)

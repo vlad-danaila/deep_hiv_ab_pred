@@ -35,8 +35,8 @@ def train_on_uniform_splits(splits, catnap, conf, pruner: CrossValidationPruner 
     train_ids, val_ids = splits['train'], splits['val']
     train_assays = [a for a in catnap if a[0] in train_ids]
     val_assays = [a for a in catnap if a[0] in val_ids]
-    train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-    val_set = AssayDataset(val_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
+    val_set = AssayDataset(val_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_val = t.utils.data.DataLoader(val_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
@@ -57,8 +57,8 @@ def inspect_performance_per_epocs(hyperparam_file, nb_epochs = 100):
     test_ids = splits['test']
     train_assays = [a for a in catnap if a[0] not in test_ids]
     test_assays = [a for a in catnap if a[0] in test_ids]
-    train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
-    test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask)
+    train_set = AssayDataset(train_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
+    test_set = AssayDataset(test_assays, antibody_light_seq, antibody_heavy_seq, virus_seq, virus_pngs_mask, ab_to_types)
     loader_train = t.utils.data.DataLoader(train_set, conf['BATCH_SIZE'], shuffle = True, collate_fn = zero_padding, num_workers = 0)
     loader_test = t.utils.data.DataLoader(test_set, conf['BATCH_SIZE'], shuffle = False, collate_fn = zero_padding, num_workers = 0)
     model = get_FC_GRU_ATT_model(conf)
