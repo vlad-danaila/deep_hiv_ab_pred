@@ -30,7 +30,9 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
         if pred_virus.shape != ground_truth.shape:
             pred_virus = pred_virus.reshape(ground_truth.shape)
 
+        # TODO Geting error with weight, inverstigate
         ab_type_loss_fn = t.nn.BCELoss(ab_type_bce_loss_weight)
+        # ab_type_loss_fn = t.nn.BCELoss()
         loss_ab = ab_type_loss_fn(pred_ab_type, ab_type_ground_truth)
         loss_virus = loss_fn(pred_virus, ground_truth)
         loss_virus.backward()
