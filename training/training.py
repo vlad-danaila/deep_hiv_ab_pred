@@ -17,7 +17,7 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
     # all batches will have the same number of elements (weight one), except
     # for the last one which will have less elements (will have subunitary weight)
     total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth) in enumerate(loader):
+    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth, ab_type_bce_loss_weight) in enumerate(loader):
         start = time.time()
         # pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
 
@@ -30,7 +30,8 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
         if pred_virus.shape != ground_truth.shape:
             pred_virus = pred_virus.reshape(ground_truth.shape)
 
-        loss_ab = loss_fn(pred_ab_type, ab_type_ground_truth)
+        ab_type_loss_fn = t.nn.BCELoss(ab_type_bce_loss_weight)
+        loss_ab = ab_type_loss_fn(pred_ab_type, ab_type_ground_truth)
         loss_virus = loss_fn(pred_virus, ground_truth)
         loss_virus.backward()
         loss_ab.backward()
@@ -52,7 +53,7 @@ def eval_network(model, loader):
     model.eval()
     prediction_list, ground_truth_list = [], []
     with t.no_grad():
-        for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth) in enumerate(loader):
+        for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth, ab_type_bce_loss_weight) in enumerate(loader):
             pred = model.forward(ab_light, ab_heavy, virus, pngs_mask)
             if pred.shape != ground_truth.shape:
                 pred = pred.reshape(ground_truth.shape)
@@ -105,7 +106,7 @@ def train_network(model, conf, loader_train, loader_val, cross_validation_round,
 def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, optimizer = None, isTrain = False):
     metrics = np.zeros(3)
     total_weight = 0
-    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth) in enumerate(loader):
+    for i, (ab_light, ab_heavy, virus, pngs_mask, ground_truth, ab_type_ground_truth, ab_type_bce_loss_weight) in enumerate(loader):
         batch_size = len(ab_light)
         with t.no_grad():
             ab_light, ab_heavy, virus = model.module.forward_embeddings(ab_light, ab_heavy, virus, batch_size)

@@ -36,7 +36,7 @@ class FC_GRU_ATT(t.nn.Module):
         self.fc_dropout = t.nn.Dropout(conf['FULLY_CONNECTED_DROPOUT'])
         self.fully_connected = t.nn.Linear(2 * self.VIRUS_RNN_HIDDEN_SIZE, 1)
         self.ab_type_dropout = t.nn.Dropout(conf['AB_TYPE_DROPOUT'])
-        self.ab_type_fc = t.nn.Linear(self.VIRUS_RNN_HIDDEN_SIZE, 1)
+        self.ab_type_fc = t.nn.Linear(self.VIRUS_RNN_HIDDEN_SIZE, 19)
         self.sigmoid = t.nn.Sigmoid()
 
     def virus_state_init(self, batch_size):
