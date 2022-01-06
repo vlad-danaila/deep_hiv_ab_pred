@@ -39,7 +39,7 @@ def zero_padding(batch):
     pngs_mask    = [b[3] for b in batch]
     ground_truth = [b[4] for b in batch]
     ab_types_ground_truth = [b[5] for b in batch]
-    ab_type_bce_loss_weight = [b[6] for b in batch]
+    ab_type_bce_loss_weight = [[b[6]] * 19 for b in batch]
     batched_ab_light = t.stack(ab_light)
     batched_ab_heavy = t.stack(ab_heavy)
     batched_virus = t.nn.utils.rnn.pad_sequence(virus, batch_first=True, padding_value = amino_to_index['X'])
