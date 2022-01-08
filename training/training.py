@@ -35,8 +35,9 @@ def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = N
         # ab_type_loss_fn = t.nn.BCELoss()
         loss_ab = ab_type_loss_fn(pred_ab_type, ab_type_ground_truth)
         loss_virus = loss_fn(pred_virus, ground_truth)
-        loss_virus.backward()
-        loss_ab.backward()
+        r = conf['LOSS_AB_TO_VIRUS_RATIO']
+        cumulated_loss = r * loss_ab + (1 - r) * loss_virus
+        cumulated_loss.backward()
 
         t.nn.utils.clip_grad_norm_(model.parameters(), conf['GRAD_NORM_CLIP'], norm_type=1)
         optimizer.step()

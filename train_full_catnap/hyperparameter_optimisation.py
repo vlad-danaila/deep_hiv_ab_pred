@@ -32,7 +32,8 @@ def propose(trial: optuna.trial.Trial):
         'EMBEDDING_DROPOUT': trial.suggest_float('EMBEDDING_DROPOUT', 0, .5),
         'ANTIBODIES_DROPOUT': trial.suggest_float('ANTIBODIES_DROPOUT', 0, .5),
         'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
-        'AB_TYPE_DROPOUT': trial.suggest_float('AB_TYPE_DROPOUT', 0, .5)
+        'AB_TYPE_DROPOUT': trial.suggest_float('AB_TYPE_DROPOUT', 0, .5),
+        'LOSS_AB_TO_VIRUS_RATIO': trial.suggest_float('LOSS_AB_TO_VIRUS_RATIO', 0, 1)
     }
 
 # def train_hold_out_one_cluster(splits, catnap, conf, trial):
