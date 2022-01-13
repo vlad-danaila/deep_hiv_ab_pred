@@ -1,13 +1,17 @@
 from os.path import join
 
 #EMBEDDING = 'LEARNED'
-# EMBEDDING = 'ONE-HOT'
+EMBEDDING = 'ONE-HOT'
 # EMBEDDING = 'ONE-HOT-AND-PROPS'
-EMBEDDING = 'PROPS-ONLY'
+# EMBEDDING = 'PROPS-ONLY'
 
 HYPERPARAM_FOLDER = join('deep_hiv_ab_pred', 'hyperparameters')
 
-DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_no_prunner_trial_229.json')
+DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_one_hot_multivariate_tpe_no_prunner_trial_365.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_one_hot_multivariate_tpe_no_prunner_trial_483.json')
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_one_hot_multivariate_tpe_no_prunner_trial_273.json')
+
+# DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_no_prunner_trial_229.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epohs_uniform_props_only_multivariate_tpe_no_prunner_trial_382.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_uniform_props_only_multivariate_tpe_v2_trial_1169.json')
 # DEFAULT_CONF = join(HYPERPARAM_FOLDER, 'hyperparam_transf_6cdr_noam_100_epochs_unifrom_props_only_multivariate_tpe_trial_16492.json')
