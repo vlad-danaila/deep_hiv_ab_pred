@@ -88,6 +88,7 @@ def main_test():
     metrics = test(splits, catnap, conf)
 
 if __name__ == '__main__':
-    inspect_performance_per_epocs("hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json", 100)
+    # inspect_performance_per_epocs("hyperparam_iceri_v2_uniform_prune_treshold_05_trial_330.json", 100)
+    inspect_performance_per_epocs("hyperparam_fc_att_gru_uniform_props_only_1_layer_trial_252.json", 100)
     # main_train()
     # main_test()
