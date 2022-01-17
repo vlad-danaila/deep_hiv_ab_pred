@@ -143,7 +143,7 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')
     conf = add_properties_from_base_config(conf, base_conf)
     cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap, conf,
-        virus_seq, virus_seq, abs, virus_max_len, ab_max_len, freeze_mode = freeze_mode)
+        virus_seq, abs, virus_max_len, ab_max_len, freeze_mode = freeze_mode)
     cv_mean_acc, cv_mean_mcc, cv_mean_auc = log_metrics_per_cv_antibody(cv_metrics, antibody)
     return cv_mean_acc, cv_mean_mcc, cv_mean_auc
 
