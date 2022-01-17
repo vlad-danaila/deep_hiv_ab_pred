@@ -82,7 +82,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
             raise 'Must provide a proper freeze mode.'
         try:
             cv_metrics = cross_validate_antibody(antibody, splits['cross_validation'], catnap, conf, virus_seq,
-                virus_pngs_mask, antibody_cdrs, trial, cv_folds_trim, freeze_mode)
+                                                 abs, virus_max_len, ab_max_len, trial, cv_folds_trim, freeze_mode)
             cv_metrics = np.array(cv_metrics)
             cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
             return cv_mean_mcc
@@ -105,10 +105,11 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
 
 def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = '',
         freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs=None):
-    pruner = CrossValidationPruner(prune_trehold)
+    # pruner = CrossValidationPruner(prune_trehold)
+    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, n_startup_trials = 0)
     study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
-                                storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
+                                storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler=sampler)
     objective = get_objective_cross_validation(antibody_name, cv_folds_trim, freeze_mode, pretrain_epochs)
     study.optimize(objective, n_trials = n_trials)
     logging.info(study.best_params)
