@@ -23,16 +23,20 @@ from deep_hiv_ab_pred.train_full_catnap.hyperparameter_optimisation import handl
 
 def propose_conf_for_frozen_antb_and_embeddings(trial: optuna.trial.Trial, base_conf: dict):
     return {
-        'BATCH_SIZE': trial.suggest_int('BATCH_SIZE', 50, 5000),
-        'LEARNING_RATE': trial.suggest_loguniform('LEARNING_RATE', 1e-6, 1e-1),
-        'GRAD_NORM_CLIP': trial.suggest_loguniform('GRAD_NORM_CLIP', 1e-2, 1000),
-        'FULLY_CONNECTED_DROPOUT': trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
-        'EMBEDDING_DROPOUT': base_conf['EMBEDDING_DROPOUT'],
-        'KMER_LEN_VIRUS': base_conf['KMER_LEN_VIRUS'],
-        'KMER_STRIDE_VIRUS': base_conf['KMER_STRIDE_VIRUS'],
-        'RNN_HIDDEN_SIZE': base_conf['RNN_HIDDEN_SIZE'],
-        'ANTIBODIES_DROPOUT': base_conf['ANTIBODIES_DROPOUT'],
-        'EPOCHS': 100
+        "BATCH_SIZE": trial.suggest_int('BATCH_SIZE', 50, 5000),
+        "LEARNING_RATE": trial.suggest_loguniform('LEARNING_RATE', 1e-4, 1),
+        "WARMUP": trial.suggest_int("WARMUP", 1000, 100_000, log = True),
+        "EMBEDDING_DROPOUT": base_conf['EMBEDDING_DROPOUT'],
+        "FULLY_CONNECTED_DROPOUT": trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5),
+        "N_HEADS_ENCODER": base_conf["N_HEADS_ENCODER"],
+        "TRANS_HIDDEN_ENCODER": base_conf["TRANS_HIDDEN_ENCODER"],
+        "TRANS_DROPOUT_ENCODER": base_conf["TRANS_DROPOUT_ENCODER"],
+        "N_HEADS_DECODER": base_conf["N_HEADS_DECODER"],
+        "TRANS_HIDDEN_DECODER": base_conf["TRANS_HIDDEN_DECODER"],
+        "TRANS_DROPOUT_DECODER": trial.suggest_float('TRANS_DROPOUT_DECODER', 0, .5),
+        "POS_EMBED": base_conf["POS_EMBED"],
+        "TRANSF_ENCODER_LAYERS": base_conf["TRANSF_ENCODER_LAYERS"],
+        "TRANSF_DECODER_LAYERS":  base_conf["TRANSF_DECODER_LAYERS"]
     }
 
 class CrossValidationPruner(BasePruner):
