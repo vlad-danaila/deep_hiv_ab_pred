@@ -8,6 +8,7 @@ from deep_hiv_ab_pred.util.tools import to_numpy
 import logging
 from deep_hiv_ab_pred.training.cv_pruner import CrossValidationPruner
 from labml_nn.optimizers.noam import Noam
+from deep_hiv_ab_pred.preprocessing.aminoacids import amino_to_index
 
 def run_network_for_training(model, conf, loader, loss_fn, optimizer, epochs = None, pruner = None):
     metrics = np.zeros(3)
@@ -102,11 +103,13 @@ def run_net_with_frozen_antibody_and_embedding(model, conf, loader, loss_fn, opt
     metrics = np.zeros(3)
     total_weight = 0
     for i, (ab, virus, pngs_mask, ground_truth) in enumerate(loader):
-        batch_size = len(ab_cdr)
+        batch_size = ab.shape[0]
+        virus_mask = virus == amino_to_index['X']
         with t.no_grad():
-            ab_cdr, virus = model.module.forward_embeddings(ab_cdr, virus, batch_size)
-            ab_hidden = model.module.forward_antibodyes(ab)
-        pred = model.module.forward_virus(virus, pngs_mask, ab_hidden)
+            ab_mask = ab == amino_to_index['X']
+            ab, virus = model.module.forward_embeddings(ab, virus, pngs_mask, batch_size)
+            ab_hidden = model.module.forward_antibodyes(ab, ab_mask)
+        pred =  model.module.forward_virus(virus, ab_hidden, virus_mask, ab_mask, batch_size)
         if pred.shape != ground_truth.shape:
             pred = pred.reshape(ground_truth.shape)
         loss = loss_fn(pred, ground_truth)
