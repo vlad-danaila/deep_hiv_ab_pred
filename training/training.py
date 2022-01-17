@@ -128,10 +128,11 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
     model.module.embedding_dropout = t.nn.Dropout(p = 0)
     model.module.embedding_dropout.requires_grad = False
 
-    for param in model.module.cdr.parameters():
+    for param in model.module.transf_encoder.parameters():
         param.requires_grad = False
-    model.module.ab_dropout.dropout = 0
-    model.module.ab_dropout.requires_grad = False
+    model.module.transf_encoder.layers[0].dropout.p = 0
+    model.module.transf_encoder.layers[0].dropout1.p = 0
+    model.module.transf_encoder.layers[0].dropout2.p = 0
 
     loss_fn = t.nn.BCELoss()
     optimizer = t.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = conf['LEARNING_RATE'])
@@ -141,10 +142,9 @@ def train_with_frozen_antibody_and_embedding(model, conf, loader_train, loader_v
         for epoch in range(epochs):
             model.module.aminoacid_embedding.eval()
             model.module.embedding_dropout.eval()
-            model.module.cdr.eval()
-            model.module.ab_dropout.eval()
+            model.module.transf_encoder.eval()
 
-            model.module.virus_gru.train()
+            model.module.transf_decoder.train()
             model.module.fc_dropout.train()
             model.module.fully_connected.train()
 
