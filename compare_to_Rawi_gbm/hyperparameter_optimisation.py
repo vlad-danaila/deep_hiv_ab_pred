@@ -110,10 +110,10 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
 def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = '',
         freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs=None):
     # pruner = CrossValidationPruner(prune_trehold)
-    sampler = optuna.samplers.TPESampler(multivariate = True, warn_independent_sampling = True, n_startup_trials = 0)
+    sampler = optuna.samplers.TPESampler(multivariate = True, n_startup_trials = 100)
     study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
-                                storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler=sampler)
+                                storage = f'sqlite:///{study_name}.db', load_if_exists = True, sampler = sampler)
     objective = get_objective_cross_validation(antibody_name, cv_folds_trim, freeze_mode, pretrain_epochs)
     study.optimize(objective, n_trials = n_trials)
     logging.info(study.best_params)
