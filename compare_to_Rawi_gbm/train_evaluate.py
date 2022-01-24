@@ -15,6 +15,7 @@ import mlflow
 import optuna
 from deep_hiv_ab_pred.util.metrics import log_metrics_per_cv_antibody
 import logging
+import time
 
 PRETRAINING = 'pretraining'
 CV = 'cross_validation'
