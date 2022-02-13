@@ -8,12 +8,14 @@ from os import listdir
 from os.path import join
 
 def get_slpnap_ab_virus_pairs():
+    ab_viruses = {}
     for ab_results_file in listdir(SLAPNAP_RESULTS):
         if not ab_results_file.endswith('json'):
             continue
         ab_results = read_json_file(join(SLAPNAP_RESULTS, ab_results_file))
         antibody = ab_results_file.split('.')[0]
-        
+        ab_viruses[antibody] = ab_results['virus_ids']
+    return ab_viruses
 
 def create_splits_to_compare_with_slapnap(catnap):
     rawi_data = read_json_file(RAWI_DATA)
