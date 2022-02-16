@@ -1,7 +1,7 @@
 import optuna
-from os import listdir
+from os import listdir, sep
 from os.path import join
-from deep_hiv_ab_pred.util.tools import read_json_file
+from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
 from copy import deepcopy
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.hyperparameter_optimisation import add_properties_from_base_config
@@ -26,3 +26,5 @@ if __name__ == '__main__':
     abntibodies_hyperparam_folder = 'C:/DOC/Articol HIV Antibodies/Experiments/Experiments/Compare Rawi/Compare Rawi FC ATT GRU 1 layer trial 252 props only'
     pretraining_hyperparameters_file = DEFAULT_CONF
     hyperparams = read_hyperparameters_for_antibodies(abntibodies_hyperparam_folder, pretraining_hyperparameters_file)
+    dump_path = r'C:\DOC\Workspace\HIV Article\deep_hiv_ab_pred\hyperparameters\specific_antibodies\complete\\' + DEFAULT_CONF.split(sep)[-1]
+    dump_json(hyperparams, dump_path)
