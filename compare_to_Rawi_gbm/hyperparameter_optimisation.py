@@ -102,7 +102,7 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
         return cv_mean_mcc
     return objective
 
-def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .1, model_trial_name = '',
+def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .05, model_trial_name = '',
         freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs=None):
     pruner = CrossValidationPruner(prune_trehold)
     study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
