@@ -8,7 +8,7 @@ COMPARE_SPLITS_FOR_RAWI = join(COMPARE_RAWI_FOLDER, 'splits_Rawi_comparison.json
 CATNAP_DATA = join(COMPARE_RAWI_FOLDER, 'catnap_classification.json')
 MODELS_FOLDER = join(COMPARE_RAWI_FOLDER, 'models')
 
-HYPERPARAM_FOLDER_ANTIBODIES = join(HYPERPARAM_FOLDER, 'specific_antibodies', 'ICERI_v2')
+HYPERPARAM_FOLDER_ANTIBODIES = join(HYPERPARAM_FOLDER, 'specific_antibodies', 'ab_tuning')
 
 # Need to clone https://github.com/RedaRawi/bNAb-ReP.git
 SEQ_FOLDER = r'C:\DOC\Workspace\bNAb-ReP\alignments'
