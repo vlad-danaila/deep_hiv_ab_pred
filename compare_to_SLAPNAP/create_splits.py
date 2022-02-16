@@ -20,7 +20,6 @@ def map_to_ids(antibody, viruses, catnap):
     assert len(cv_data) == len(viruses)
     return cv_data
 
-# TODO use catnap data ids instead of viruses
 def cross_validation_splits(virus_ids, folds, antibody, catnap):
     virus_ids_np = np.array(virus_ids)
     cv_splits = []
