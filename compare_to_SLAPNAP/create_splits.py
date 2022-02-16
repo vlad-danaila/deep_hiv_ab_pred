@@ -1,7 +1,7 @@
 import numpy as np
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
-from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import SPLITS_COMPARE_SLAPNAP, SLAPNAP_RESULTS
+from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import COMPARE_SPLITS_FOR_SLAPNAP, SLAPNAP_RESULTS
 from os import listdir
 from os.path import join
 
@@ -48,4 +48,4 @@ def create_splits_to_compare_with_slapnap(catnap):
 if __name__ == '__main__':
     catnap = read_json_file(CATNAP_FLAT)
     splits = create_splits_to_compare_with_slapnap(catnap)
-    dump_json(splits, SPLITS_COMPARE_SLAPNAP)
+    dump_json(splits, COMPARE_SPLITS_FOR_SLAPNAP)

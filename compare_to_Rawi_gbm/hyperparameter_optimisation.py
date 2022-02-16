@@ -66,8 +66,8 @@ def propose_conf_for_frozen_net_without_last_layer(trial: optuna.trial.Trial, ba
     conf['FULLY_CONNECTED_DROPOUT'] = trial.suggest_float('FULLY_CONNECTED_DROPOUT', 0, .5)
     return conf
 
-def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrain_epochs):
-    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrain_epochs, splits_file):
+    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data(splits_file)
     splits = all_splits[antibody]
     if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
         pretrain_net(antibody, splits['pretraining'], catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, pretrain_epochs)
@@ -102,19 +102,19 @@ def get_objective_cross_validation(antibody, cv_folds_trim, freeze_mode, pretrai
         return cv_mean_mcc
     return objective
 
-def optimize_hyperparameters(antibody_name, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .05, model_trial_name = '',
+def optimize_hyperparameters(antibody_name, splits_file, cv_folds_trim = 10, n_trials = 1000, prune_trehold = .05, model_trial_name = '',
         freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs=None):
     pruner = CrossValidationPruner(prune_trehold)
     study_name = f'Compare_Rawi_ICERI2021_v2_{model_trial_name}_{antibody_name}'
     study = optuna.create_study(study_name = study_name, direction = 'maximize',
                                 storage = f'sqlite:///{study_name}.db', load_if_exists = True, pruner = pruner)
-    objective = get_objective_cross_validation(antibody_name, cv_folds_trim, freeze_mode, pretrain_epochs)
+    objective = get_objective_cross_validation(antibody_name, cv_folds_trim, freeze_mode, pretrain_epochs, splits_file)
     study.optimize(objective, n_trials = n_trials)
     logging.info(study.best_params)
     dump_json(study.best_params, join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody_name}.json'))
 
-def get_data():
-    all_splits = read_json_file(COMPARE_SPLITS_FOR_RAWI)
+def get_data(splits_file):
+    all_splits = read_json_file(splits_file)
     catnap = read_json_file(CATNAP_FLAT)
     base_conf = read_json_file(DEFAULT_CONF)
     virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = parse_catnap_sequences_to_embeddings(
@@ -128,11 +128,11 @@ def add_properties_from_base_config(conf, base_conf):
             conf[prop] = base_conf[prop]
     return conf
 
-def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs = None):
+def test_optimized_antibody(antibody, splits_file, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs = None):
     mlflow.log_params({ 'cv_folds_trim': CV_FOLDS_TRIM, 'n_trials': N_TRIALS, 'prune_trehold': PRUNE_TREHOLD })
-    optimize_hyperparameters(antibody, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS,
-        prune_trehold = PRUNE_TREHOLD, model_trial_name = model_trial_name, freeze_mode = freeze_mode, pretrain_epochs = pretrain_epochs)
-    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+    optimize_hyperparameters(antibody, splits_file, cv_folds_trim = CV_FOLDS_TRIM, n_trials = N_TRIALS, prune_trehold = PRUNE_TREHOLD,
+        model_trial_name = model_trial_name, freeze_mode = freeze_mode, pretrain_epochs = pretrain_epochs)
+    all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data(splits_file)
     mlflow.log_artifact(DEFAULT_CONF, 'base_conf.json')
     conf = read_json_file(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'))
     mlflow.log_artifact(join(HYPERPARAM_FOLDER_ANTIBODIES, f'{antibody}.json'), f'{antibody} conf.json')
@@ -142,14 +142,15 @@ def test_optimized_antibody(antibody, model_trial_name = '', freeze_mode = FREEZ
     cv_mean_acc, cv_mean_mcc, cv_mean_auc = log_metrics_per_cv_antibody(cv_metrics, antibody)
     return cv_mean_acc, cv_mean_mcc, cv_mean_auc
 
-def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '', freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs = None):
+def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '',
+        freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs = None, splits_file = COMPARE_SPLITS_FOR_RAWI):
     setup_logging()
     experiment_name += f' {model_trial_name}'
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
         acc, mcc, auc = [], [], []
         for antibody in ANTIBODIES_LIST:
-            cv_mean_acc, cv_mean_mcc, cv_mean_auc = test_optimized_antibody(antibody, model_trial_name, freeze_mode, pretrain_epochs)
+            cv_mean_acc, cv_mean_mcc, cv_mean_auc = test_optimized_antibody(antibody, splits_file, model_trial_name, freeze_mode, pretrain_epochs)
             acc.append(cv_mean_acc)
             mcc.append(cv_mean_mcc)
             auc.append(cv_mean_auc)

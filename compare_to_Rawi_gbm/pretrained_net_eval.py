@@ -8,13 +8,14 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net
 from deep_hiv_ab_pred.training.constants import MATTHEWS_CORRELATION_COEFFICIENT, ACCURACY, AUC
 from deep_hiv_ab_pred.util.plotting import plot_epochs
 import matplotlib.pyplot as plt
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI
 
 PRETRAINING = 'pretraining'
 
-def eval_pretrained_net(experiment_name, proposed_epochs, tags = None):
+def eval_pretrained_net(experiment_name, proposed_epochs, tags = None, splits_file = COMPARE_SPLITS_FOR_RAWI):
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
-        all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data()
+        all_splits, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data(splits_file)
         mlflow.log_artifact(DEFAULT_CONF, 'conf.json')
         acc, mcc, auc = [], [], []
         for i, (antibody, splits) in enumerate(all_splits.items()):

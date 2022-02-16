@@ -9,5 +9,5 @@ SLAPNAP_ABS = [ "2G12", "PG16", "PG9", "PGT145", "PGDM1400", "VRC26.08", "VRC26.
                     "b12", "PGT151", "VRC34.01", "8ANC195", "35O22", "2F5", "4E10" ]
 
 COMPARE_SLAPNAP_FOLDER = join('deep_hiv_ab_pred', 'compare_to_SLAPNAP')
-SPLITS_COMPARE_SLAPNAP = join(COMPARE_SLAPNAP_FOLDER, 'splits_SLAPNAP_comparison.json')
+COMPARE_SPLITS_FOR_SLAPNAP = join(COMPARE_SLAPNAP_FOLDER, 'splits_SLAPNAP_comparison.json')
 SLAPNAP_RESULTS = join(COMPARE_SLAPNAP_FOLDER, 'slapnap_results')
