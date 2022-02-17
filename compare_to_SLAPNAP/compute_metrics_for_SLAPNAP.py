@@ -6,10 +6,8 @@ from os import listdir
 from os.path import join
 from deep_hiv_ab_pred.util.metrics import compute_metrics, ACCURACY, AUC, MATTHEWS_CORRELATION_COEFFICIENT
 
-# 'pred'
-# 'ground_truth'
-# 'folds' are string keys and nb lists
-
+# TODO compute standard deviation per antibody (taking into account folds)
+# Compute confidence intervals
 def compute_metrics_for_SLAPNAP():
     metrics = {}
     for ab_results_file in listdir(SLAPNAP_RESULTS):
