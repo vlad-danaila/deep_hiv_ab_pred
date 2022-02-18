@@ -7,7 +7,7 @@ from deep_hiv_ab_pred.training.constants import ACCURACY, MATTHEWS_CORRELATION_C
 import logging
 import statistics
 
-def log_metrics_per_cv_antibody(cv_metrics, antibody):
+def compute_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
     cv_mean_acc = cv_metrics[:, ACCURACY].mean()
     cv_std_acc = cv_metrics[:, ACCURACY].std()
@@ -15,6 +15,10 @@ def log_metrics_per_cv_antibody(cv_metrics, antibody):
     cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
     cv_mean_auc = cv_metrics[:, AUC].mean()
     cv_std_auc = cv_metrics[:, AUC].std()
+    return cv_mean_acc, cv_std_acc, cv_mean_mcc, cv_std_mcc, cv_mean_auc, cv_std_auc
+
+def log_metrics_per_cv_antibody(cv_metrics, antibody):
+    cv_mean_acc, cv_std_acc, cv_mean_mcc, cv_std_mcc, cv_mean_auc, cv_std_auc = compute_cv_metrics(cv_metrics)
     logging.info(f'CV Mean Acc {cv_mean_acc} CV Std Acc {cv_std_acc}')
     logging.info(f'CV Mean MCC {cv_mean_mcc} CV Std MCC {cv_std_mcc}')
     logging.info(f'CV Mean AUC {cv_mean_auc} CV Std AUC {cv_std_auc}')
