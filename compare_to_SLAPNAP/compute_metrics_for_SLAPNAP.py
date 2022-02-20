@@ -5,6 +5,7 @@ from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import SLAPNAP_RESULTS
 from os import listdir
 from os.path import join
 from deep_hiv_ab_pred.util.metrics import compute_metrics
+import statistics
 
 def compute_metrics_for_SLAPNAP():
     metrics = {}
@@ -32,6 +33,12 @@ def compute_metrics_for_SLAPNAP():
             'cv_mean_auc': cv_mean_auc,
             'cv_std_auc': cv_std_auc
         }
+    all_acc = [m['cv_mean_acc'] for m in metrics.values()]
+    all_mcc = [m['cv_mean_mcc'] for m in metrics.values()]
+    all_auc = [m['cv_mean_auc'] for m in metrics.values()]
+    metrics['global_acc'] = statistics.mean(all_acc)
+    metrics['global_mcc'] = statistics.mean(all_mcc)
+    metrics['global_auc'] = statistics.mean(all_auc)
     return metrics
 
 if __name__ == '__main__':
