@@ -16,19 +16,18 @@ def get_slpnap_ab_data():
     return ab_viruses
 
 def map_to_ids(antibody, viruses, catnap):
-    cv_data = [data[0] for data in catnap if data[1] == antibody and data[2] in viruses]
+    cv_data = [data[0] for data in catnap if data[1] == antibody.strip() and data[2] in viruses]
     assert len(cv_data) == len(viruses)
     return cv_data
 
 def cross_validation_splits(virus_ids, folds, antibody, catnap):
-    virus_ids_np = np.array(virus_ids)
     cv_splits = []
     for fold, indexes in folds.items():
         # indexes are coming from R, where indices start with 1
         indexes = np.array(indexes) - 1
-        test_viruses = virus_ids_np[indexes]
-        train_splits_indexes = [i for i in range(len(virus_ids_np)) if i not in indexes]
-        train_viruses = virus_ids_np[train_splits_indexes]
+        test_viruses = virus_ids[indexes]
+        train_splits_indexes = [i for i in range(len(virus_ids)) if i not in indexes]
+        train_viruses = virus_ids[train_splits_indexes]
         assert len(train_viruses) + len(test_viruses) == len(virus_ids)
         train_ids = map_to_ids(antibody, train_viruses, catnap)
         test_ids = map_to_ids(antibody, test_viruses, catnap)
@@ -42,14 +41,23 @@ def create_splits_to_compare_with_slapnap(catnap, fold):
     # The elements from fold i are not found in the elements of nested folds with the same index i
     # Therefore the nested fold is for training/validation and the fold is for testing
     for antibody, (virus_ids, folds, nested_folds) in slapnap_data.items():
-        pretrain_data = [ data[0] for data in catnap if data[1] != antibody ]
         print(antibody)
-        cv_splits = cross_validation_splits(virus_ids, nested_folds[fold], antibody, catnap)
-        splits[antibody] = { 'pretraining': pretrain_data, 'test': folds[fold], 'cross_validation': cv_splits }
+        virus_ids = np.array(virus_ids)
+
+        pretrain_data = [ data[0] for data in catnap if data[1] != antibody ]
+
+        test_indexes = np.array(folds[fold]) - 1
+        test_viruses = virus_ids[test_indexes]
+        test_data = map_to_ids(antibody, test_viruses, catnap)
+
+        cv_viruses = np.array([ v for v in virus_ids if v not in test_viruses ])
+        cv_splits = cross_validation_splits(cv_viruses, nested_folds[fold], antibody, catnap)
+
+        splits[antibody] = { 'pretraining': pretrain_data, 'test': test_data, 'cross_validation': cv_splits }
     return splits
 
 if __name__ == '__main__':
     catnap = read_json_file(CATNAP_FLAT)
     for i in range(1, 6):
-        splits = create_splits_to_compare_with_slapnap(catnap)
+        splits = create_splits_to_compare_with_slapnap(catnap, i)
         dump_json(splits, COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV.replace('.json', f'_{i}.json'))
