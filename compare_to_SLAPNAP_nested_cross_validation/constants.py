@@ -2,4 +2,9 @@ from os.path import join
 
 COMPARE_SLAPNAP_FOLDER_NESTED_CV = join('deep_hiv_ab_pred', 'compare_to_SLAPNAP_nested_cross_validation')
 SLAPNAP_RESULTS_NESTED_CV = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'slapnap_results_nested_cv')
-COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'splits_SLAPNAP_comparison_nested_cross_validation.json')
+
+COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_1 = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'splits_SLAPNAP_comparison_nested_cross_validation_1.json')
+COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_2 = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'splits_SLAPNAP_comparison_nested_cross_validation_2.json')
+COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_3 = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'splits_SLAPNAP_comparison_nested_cross_validation_3.json')
+COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_4 = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'splits_SLAPNAP_comparison_nested_cross_validation_4.json')
+COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_5 = join(COMPARE_SLAPNAP_FOLDER_NESTED_CV, 'splits_SLAPNAP_comparison_nested_cross_validation_5.json')
