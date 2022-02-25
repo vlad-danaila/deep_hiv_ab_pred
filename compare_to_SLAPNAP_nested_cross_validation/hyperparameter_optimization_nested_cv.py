@@ -56,7 +56,7 @@ def test_optimized_antibody(antibody, splits_file, model_trial_name = '', freeze
     return acc, mcc, auc
 
 def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '',
-                              freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs = None, splits_file = COMPARE_SPLITS_FOR_RAWI):
+                              freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS, pretrain_epochs = None, splits_file = COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_1):
     setup_logging()
     experiment_name += f' {model_trial_name}'
     experiment_id = get_experiment(experiment_name)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         'input': 'props-only',
         'trial': '252',
         'prune': 'treshold 0.05',
-        'pretrain_epochs': 100
+        'pretrain_epochs': '100'
     }
     test_optimized_antibodies('Trial 252', tags = tags, model_trial_name = 'fc_att_gru_trial_252',
-                              pretrain_epochs = 100, splits_file = COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_1)
+                          pretrain_epochs = 100, splits_file = COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_1)

@@ -1,7 +1,7 @@
 import numpy as np
 from deep_hiv_ab_pred.catnap.constants import CATNAP_FLAT
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json
-from deep_hiv_ab_pred.compare_to_SLAPNAP_nested_cross_validation.constants import SLAPNAP_RESULTS_NESTED_CV, COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV
+from deep_hiv_ab_pred.compare_to_SLAPNAP_nested_cross_validation.constants import SLAPNAP_RESULTS_NESTED_CV, COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_NAME_TEMPLATE
 from os import listdir
 from os.path import join
 
@@ -41,6 +41,7 @@ def create_splits_to_compare_with_slapnap(catnap, fold):
     # The elements from fold i are not found in the elements of nested folds with the same index i
     # Therefore the nested fold is for training/validation and the fold is for testing
     for antibody, (virus_ids, folds, nested_folds) in slapnap_data.items():
+        antibody = antibody.strip()
         print(antibody)
         virus_ids = np.array(virus_ids)
 
@@ -60,4 +61,4 @@ if __name__ == '__main__':
     catnap = read_json_file(CATNAP_FLAT)
     for i in range(1, 6):
         splits = create_splits_to_compare_with_slapnap(catnap, i)
-        dump_json(splits, COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV.replace('.json', f'_{i}.json'))
+        dump_json(splits, COMPARE_SPLITS_FOR_SLAPNAP_NESTED_CV_NAME_TEMPLATE.replace('.json', f'_{i}.json'))
