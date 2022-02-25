@@ -47,14 +47,16 @@ def create_splits_to_compare_with_slapnap(catnap, fold):
 
         pretrain_data = [ data[0] for data in catnap if data[1] != antibody ]
 
+        # indexes are coming from R, where indices start with 1
         test_indexes = np.array(folds[fold]) - 1
         test_viruses = virus_ids[test_indexes]
         test_data = map_to_ids(antibody, test_viruses, catnap)
+        train_data = np.array([ v for v in virus_ids if v not in test_viruses ])
+        test_splits = { 'train': train_data, 'test': test_data }
 
-        cv_viruses = np.array([ v for v in virus_ids if v not in test_viruses ])
-        cv_splits = cross_validation_splits(cv_viruses, nested_folds[fold], antibody, catnap)
+        cv_splits = cross_validation_splits(train_data, nested_folds[fold], antibody, catnap)
 
-        splits[antibody] = { 'pretraining': pretrain_data, 'test': test_data, 'cross_validation': cv_splits }
+        splits[antibody] = { 'pretraining': pretrain_data, 'test': test_splits, 'cross_validation': cv_splits }
     return splits
 
 if __name__ == '__main__':
