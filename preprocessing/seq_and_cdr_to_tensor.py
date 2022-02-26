@@ -20,12 +20,12 @@ def read_cdrs(include_position_features = True):
     cdr_positions = find_cdr_centers()
     cdr_positions_std = find_cdr_position_std()
     for ab, cdr_data in cdr_dict.items():
-        abs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
-        cdr_arrays[ab] = ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features)
+        cdrs = cdr_data[AB_LIGHT] + cdr_data[AB_HEAVY] # concatenate
+        cdr_arrays[ab] = ab_cdrs_to_tensor(cdrs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features)
     return cdr_arrays
 
-def ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features):
-    sequences = [c[0] for c in abs]
+def ab_cdrs_to_tensor(cdrs, tensor_sizes, cdr_positions, cdr_positions_std, include_position_features):
+    sequences = [c[0] for c in cdrs]
     sequences_index = [ [amino_to_index[s] for s in seq] for seq in sequences ]
     sequences_index = [
         np.pad(
@@ -41,7 +41,7 @@ def ab_cdrs_to_tensor(abs, tensor_sizes, cdr_positions, cdr_positions_std, inclu
         assert cdr_positions and cdr_positions_std
         positions = [
             normalize(c[1][0] + (c[1][1] - c[1][0])/2, cdr_positions[i], cdr_positions_std[i])
-            for (i, c) in enumerate(abs)
+            for (i, c) in enumerate(cdrs)
         ]
         return sequences_index, np.array(positions)
     return sequences_index
