@@ -5,7 +5,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import RAWI_DATA, COMPARE_SP
 import random
 from sklearn.model_selection import RepeatedStratifiedKFold
 
-def cross_validation_splits(cv_data, ground_truths, folds = 10, repeats = 10):
+def cross_validation_splits(cv_data, ground_truths, folds = 10, repeats = 11):
     random.shuffle(cv_data)
     cv_data = np.array(cv_data)
     rkf = RepeatedStratifiedKFold(n_splits = folds, n_repeats = repeats)

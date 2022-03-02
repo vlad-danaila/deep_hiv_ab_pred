@@ -37,10 +37,10 @@ def pretrain_net(antibody, splits_pretraining, catnap, conf, virus_seq, virus_pn
     return metrics_train_per_epochs, metrics_test_per_epochs, best
 
 def cross_validate_antibody(antibody, splits_cv, catnap, conf, virus_seq, virus_pngs_mask, antibody_light_seq,
-    antibody_heavy_seq, trial = None, cv_folds_trim = 100, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
+    antibody_heavy_seq, trial = None, cv_folds_trim = 100, cv_folds_skip = 0, freeze_mode = FREEZE_ANTIBODY_AND_EMBEDDINGS):
 
     cv_metrics = []
-    for (i, cv_fold) in enumerate(splits_cv[:cv_folds_trim]):
+    for (i, cv_fold) in enumerate(splits_cv[cv_folds_skip : cv_folds_skip + cv_folds_trim]):
         train_ids, test_ids = cv_fold[TRAIN], cv_fold[TEST]
         train_assays = [a for a in catnap if a[0] in train_ids]
         test_assays = [a for a in catnap if a[0] in test_ids]
