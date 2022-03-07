@@ -20,7 +20,9 @@ def is_cv_splits_valid(splits, catnap):
         train_ground_truths = [ int(data[3]) for data in catnap if data[0] in train ]
         test_ground_truths = [ int(data[3]) for data in catnap if data[0] in test ]
         # If there are both positive and negative outcomes return True (valid)
-        return sum(train_ground_truths) < len(train_ground_truths) and sum(test_ground_truths) < len(test_ground_truths)
+        if sum(train_ground_truths) == len(train_ground_truths) or sum(test_ground_truths) == len(test_ground_truths):
+            return False
+    return True
 
 def create_splits_to_compare_with_rawi(catnap):
     rawi_data = read_json_file(RAWI_DATA)
