@@ -14,6 +14,14 @@ def cross_validation_splits(cv_data, ground_truths, folds = 10, repeats = 11):
         for train, test in rkf.split(cv_data, ground_truths)
     ]
 
+def is_cv_splits_valid(splits, catnap):
+    for split in splits:
+        train, test = split['train'], split['test']
+        train_ground_truths = [ int(data[3]) for data in catnap if data[0] in train ]
+        test_ground_truths = [ int(data[3]) for data in catnap if data[0] in test ]
+        # If there are both positive and negative outcomes return True (valid)
+        return sum(train_ground_truths) < len(train_ground_truths) and sum(test_ground_truths) < len(test_ground_truths)
+
 def create_splits_to_compare_with_rawi(catnap):
     rawi_data = read_json_file(RAWI_DATA)
     splits = {}
@@ -28,6 +36,9 @@ def create_splits_to_compare_with_rawi(catnap):
             continue
         print(antibody)
         cv_splits = cross_validation_splits(cv_data, ground_truths)
+        while not is_cv_splits_valid(cv_splits, catnap):
+            print('Retrying ', antibody)
+            cv_splits = cross_validation_splits(cv_data, ground_truths) # Retry
         splits[antibody] = { 'pretraining': pretrain_data, 'cross_validation': cv_splits }
     return splits
 
