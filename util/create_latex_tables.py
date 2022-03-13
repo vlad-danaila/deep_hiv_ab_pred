@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+import numpy as np
 acc_mean, acc_std = 'acc_mean', 'acc_std'
 auc_mean, auc_std = 'auc_mean', 'auc_std'
 mcc_mean, mcc_std = 'mcc_mean', 'mcc_std'
@@ -21,12 +21,12 @@ results_rawi = defaultdict(dict)
 
 for i in range(len(antibodies_rawi)):
     ab = antibodies_rawi[i]
-    results_rawi[ab][acc_mean] = acc_rawi[i * 2]
-    results_rawi[ab][acc_std] = acc_rawi[i * 2 + 1]
-    results_rawi[ab][auc_mean] = auc_rawi[i * 2]
-    results_rawi[ab][auc_std] = auc_rawi[i * 2 + 1]
-    results_rawi[ab][mcc_mean] = mcc_rawi[i * 2]
-    results_rawi[ab][mcc_std] = mcc_rawi[i * 2 + 1]
+    results_rawi[ab][acc_mean] = float(acc_rawi[i * 2])
+    results_rawi[ab][acc_std] = float(acc_rawi[i * 2 + 1][1:-1])
+    results_rawi[ab][auc_mean] = float(auc_rawi[i * 2])
+    results_rawi[ab][auc_std] = float(auc_rawi[i * 2 + 1][1:-1])
+    results_rawi[ab][mcc_mean] = float(mcc_rawi[i * 2])
+    results_rawi[ab][mcc_std] = float(mcc_rawi[i * 2 + 1][1:-1])
 
 '''
 Results FC-ATT-GRU
@@ -42,17 +42,39 @@ results_fc_att_gru = defaultdict(dict)
 for i, txt in enumerate(header):
     ab = txt.split()[-1]
     if 'cv mean acc' in txt:
-        results_fc_att_gru[ab][acc_mean] = data[i][:4]
+        results_fc_att_gru[ab][acc_mean] = float(data[i])
     elif 'cv mean auc' in txt:
-        results_fc_att_gru[ab][auc_mean] = data[i][:4]
+        results_fc_att_gru[ab][auc_mean] = float(data[i])
     elif 'cv mean mcc' in txt:
-        results_fc_att_gru[ab][mcc_mean] = data[i][:4]
+        results_fc_att_gru[ab][mcc_mean] = float(data[i])
     elif 'cv std acc' in txt:
-        results_fc_att_gru[ab][acc_std] = f'({data[i][:4]})'
+        results_fc_att_gru[ab][acc_std] = float(data[i])
     elif 'cv std auc' in txt:
-        results_fc_att_gru[ab][auc_std] = f'({data[i][:4]})'
+        results_fc_att_gru[ab][auc_std] = float(data[i])
     elif 'cv std mcc' in txt:
-        results_fc_att_gru[ab][mcc_std] = f'({data[i][:4]})'
+        results_fc_att_gru[ab][mcc_std] = float(data[i])
 
+def display_table_row(ab, metrics):
+    table_row = f'{ab} & {str(metrics[0])[:4]}({round(metrics[1], 2)}) & ' + \
+                f'{str(metrics[2])[:4]}({round(metrics[3], 2)}) & ' + \
+                f'{str(metrics[4])[:4]}({round(metrics[5], 2)}) & ' + \
+                f'{str(metrics[6])[:4]}({round(metrics[7], 2)}) & ' + \
+                f'{str(metrics[8])[:4]}({round(metrics[9], 2)}) & ' + \
+                f'{str(metrics[10])[:4]}({round(metrics[11], 2)})\\\\'
+    return table_row
+
+totals = np.zeros(12)
 for ab, metrics_us in results_fc_att_gru.items():
-    print(f'b12 & 0.56(0.02) & 0.82(0.01) & 0.79(0.01) & 0.53(0.07) & 0.79(0.05) & 0.79(0.04)\\\\')
+    metrics_Rawi = results_rawi[ab]
+    metrics = np.array([
+        metrics_Rawi[mcc_mean], metrics_Rawi[mcc_std],
+        metrics_Rawi[auc_mean], metrics_Rawi[auc_std],
+        metrics_Rawi[acc_mean], metrics_Rawi[acc_std],
+        metrics_us[mcc_mean], metrics_us[mcc_std],
+        metrics_us[auc_mean], metrics_us[auc_std],
+        metrics_us[acc_mean], metrics_us[acc_std]
+    ])
+    totals = totals + metrics
+    print(display_table_row(ab, metrics))
+totals = totals / len(results_fc_att_gru)
+print(display_table_row('Average', totals))
