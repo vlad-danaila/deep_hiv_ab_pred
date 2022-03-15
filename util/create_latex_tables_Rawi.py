@@ -54,13 +54,33 @@ for i, txt in enumerate(header):
     elif 'cv std mcc' in txt:
         results_fc_att_gru[ab][mcc_std] = float(data[i])
 
+def bold(text):
+    return '\\textbf{' + text + '}'
+
 def display_table_row(ab, metrics):
-    table_row = f'{ab} & {str(metrics[0])[:4]}({round(metrics[1], 2)}) & ' + \
-                f'{str(metrics[2])[:4]}({round(metrics[3], 2)}) & ' + \
-                f'{str(metrics[4])[:4]}({round(metrics[5], 2)}) & ' + \
-                f'{str(metrics[6])[:4]}({round(metrics[7], 2)}) & ' + \
-                f'{str(metrics[8])[:4]}({round(metrics[9], 2)}) & ' + \
-                f'{str(metrics[10])[:4]}({round(metrics[11], 2)})\\\\'
+    rawi_mcc = f'{str(metrics[0])[:4]}({round(metrics[1], 2)})'
+    rawi_auc = f'{str(metrics[2])[:4]}({round(metrics[3], 2)})'
+    rawi_acc = f'{str(metrics[4])[:4]}({round(metrics[5], 2)})'
+    net_mcc = f'{str(metrics[6])[:4]}({round(metrics[7], 2)})'
+    net_auc = f'{str(metrics[8])[:4]}({round(metrics[9], 2)})'
+    net_acc = f'{str(metrics[10])[:4]}({round(metrics[11], 2)})'
+
+    if metrics[0] > metrics[6]:
+        rawi_mcc = bold(rawi_mcc)
+    else:
+        net_mcc = bold(net_mcc)
+
+    if metrics[2] > metrics[8]:
+        rawi_auc = bold(rawi_auc)
+    else:
+        net_auc = bold(net_auc)
+
+    if metrics[4] > metrics[10]:
+        rawi_acc = bold(rawi_acc)
+    else:
+        net_acc = bold(net_acc)
+
+    table_row = f'{ab} & {rawi_mcc} & {rawi_auc} & {rawi_acc} & {net_mcc} & {net_auc} & {net_acc}\\\\'
     return table_row
 
 totals = np.zeros(12)
