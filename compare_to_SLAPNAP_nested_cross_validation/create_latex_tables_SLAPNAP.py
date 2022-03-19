@@ -68,52 +68,38 @@ def compute_metrics_fc_att_gru(str_header, str_data):
 
     for i, txt in enumerate(header):
         ab = txt.split()[-1]
-        if 'cv mean acc' in txt:
-            results_fc_att_gru[ab][acc_mean] = float(data[i])
-        elif 'cv mean auc' in txt:
-            results_fc_att_gru[ab][auc_mean] = float(data[i])
-        elif 'cv mean mcc' in txt:
-            results_fc_att_gru[ab][mcc_mean] = float(data[i])
-        elif 'cv std acc' in txt:
-            results_fc_att_gru[ab][acc_std] = float(data[i])
-        elif 'cv std auc' in txt:
-            results_fc_att_gru[ab][auc_std] = float(data[i])
-        elif 'cv std mcc' in txt:
-            results_fc_att_gru[ab][mcc_std] = float(data[i])
+        if 'test acc' in txt:
+            results_fc_att_gru[ab]['test acc'] = float(data[i])
+        elif 'test auc' in txt:
+            results_fc_att_gru[ab]['test auc'] = float(data[i])
+        elif 'test mcc' in txt:
+            results_fc_att_gru[ab]['test mcc'] = float(data[i])
 
     return results_fc_att_gru
 
 def display_results(results_slapnap, results_fc_att_gru_cross_valid):
     totals = np.zeros(12)
-
-    del results_slapnap['global_acc']
-    del results_slapnap['global_mcc']
-    del results_slapnap['global_auc']
-
-    # TEMPORARY FIX
-    # del results_slapnap['10-996']
-
     for ab in SLAPNAP_ABS:
+        # TEMPORARY FIX
+        # if ab == '10-996':
+        #     continue
         metrics_slapnap = results_slapnap[ab]
         metrics_slapnap_np = np.array([
             metrics_slapnap[mcc_mean], metrics_slapnap[mcc_std],
             metrics_slapnap[auc_mean], metrics_slapnap[auc_std],
             metrics_slapnap[acc_mean], metrics_slapnap[acc_std]
         ])
-        metrics_us = np.zeros(6)
-        for results_fc_att_gru in results_fc_att_gru_cross_valid:
+        metrics_matrix = np.zeros((5, 3))
+        for i, results_fc_att_gru in enumerate(results_fc_att_gru_cross_valid):
             m = results_fc_att_gru[ab]
-            metrics_us = metrics_us + np.array([
-                m[mcc_mean], m[mcc_std],
-                m[auc_mean], m[auc_std],
-                m[acc_mean], m[acc_std]
-            ])
-        metrics_us = metrics_us / len(results_fc_att_gru_cross_valid)
+            metrics_matrix[i] = np.array([ m['test mcc'], m['test auc'], m['test acc'] ])
+        metrics_mean, metrics_std = metrics_matrix.mean(axis=0), metrics_matrix.std(axis=0)
+        metrics_us = np.array([ metrics_mean[0], metrics_std[0], metrics_mean[1], metrics_std[1], metrics_mean[2], metrics_std[2] ])
         metrics = np.concatenate((metrics_slapnap_np, metrics_us))
         totals = totals + metrics
         print(display_table_row(ab, metrics))
-    totals = totals / len(SLAPNAP_ABS)
-    print(display_table_row('Average', totals))
+    metrics_avg = totals / len(SLAPNAP_ABS)
+    print(display_table_row('Average', metrics_avg))
 
 # TODO Don't forget to check results corectness against script compare_metrics_for_SLAPNAP.py
 display_results(results_slapnap, [
