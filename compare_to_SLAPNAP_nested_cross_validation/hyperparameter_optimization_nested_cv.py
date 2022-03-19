@@ -1,8 +1,9 @@
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import HYPERPARAM_FOLDER_ANTIBODIES
 from deep_hiv_ab_pred.util.tools import read_json_file, dump_json, get_experiment
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, MODELS_FOLDER, \
-    CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, ANTIBODIES_LIST, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
+    CV_FOLDS_TRIM, N_TRIALS, PRUNE_TREHOLD, FREEZE_ANTIBODY_AND_EMBEDDINGS, FREEZE_ALL_BUT_LAST_LAYER
 from deep_hiv_ab_pred.global_constants import DEFAULT_CONF
+from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import SLAPNAP_ABS
 from os.path import join
 import mlflow
 import statistics
@@ -62,7 +63,7 @@ def test_optimized_antibodies(experiment_name, tags = None, model_trial_name = '
     experiment_id = get_experiment(experiment_name)
     with mlflow.start_run(experiment_id = experiment_id, tags = tags):
         acc, mcc, auc = [], [], []
-        for antibody in ANTIBODIES_LIST:
+        for antibody in SLAPNAP_ABS:
             _acc, _mcc, _auc = test_optimized_antibody(antibody, splits_file, model_trial_name, freeze_mode, pretrain_epochs)
             acc.append(_acc)
             mcc.append(_mcc)
