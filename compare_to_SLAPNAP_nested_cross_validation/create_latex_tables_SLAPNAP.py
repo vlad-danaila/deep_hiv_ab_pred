@@ -1,6 +1,7 @@
 from collections import defaultdict
 import numpy as np
 from deep_hiv_ab_pred.compare_to_SLAPNAP.compute_metrics_for_SLAPNAP import compute_metrics_for_SLAPNAP
+from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import SLAPNAP_ABS
 
 acc_mean, acc_std = 'cv_mean_acc', 'cv_std_acc'
 auc_mean, auc_std = 'cv_mean_auc', 'cv_std_auc'
@@ -92,7 +93,8 @@ def display_results(results_slapnap, results_fc_att_gru_cross_valid):
     # TEMPORARY FIX
     # del results_slapnap['10-996']
 
-    for ab, metrics_slapnap in results_slapnap.items():
+    for ab in SLAPNAP_ABS:
+        metrics_slapnap = results_slapnap[ab]
         metrics_slapnap_np = np.array([
             metrics_slapnap[mcc_mean], metrics_slapnap[mcc_std],
             metrics_slapnap[auc_mean], metrics_slapnap[auc_std],
@@ -110,7 +112,7 @@ def display_results(results_slapnap, results_fc_att_gru_cross_valid):
         metrics = np.concatenate((metrics_slapnap_np, metrics_us))
         totals = totals + metrics
         print(display_table_row(ab, metrics))
-    totals = totals / len(results_slapnap)
+    totals = totals / len(SLAPNAP_ABS)
     print(display_table_row('Average', totals))
 
 # TODO Don't forget to check results corectness against script compare_metrics_for_SLAPNAP.py
