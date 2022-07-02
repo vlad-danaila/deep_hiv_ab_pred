@@ -2,6 +2,7 @@ from collections import defaultdict
 import numpy as np
 from deep_hiv_ab_pred.compare_to_SLAPNAP.compute_metrics_for_SLAPNAP import compute_metrics_for_SLAPNAP
 from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import SLAPNAP_ABS
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.create_latex_tables_Rawi import group_antibodies_by_function_highlevel
 
 acc_mean, acc_std = 'cv_mean_acc', 'cv_std_acc'
 auc_mean, auc_std = 'cv_mean_auc', 'cv_std_auc'
@@ -78,30 +79,45 @@ def compute_metrics_fc_att_gru(str_header, str_data):
     return results_fc_att_gru
 
 def display_results(results_slapnap, results_fc_att_gru_cross_valid):
+    antibodies_grouped = group_antibodies_by_function_highlevel(SLAPNAP_ABS)
     totals = np.zeros(12)
-    for ab in SLAPNAP_ABS:
-        metrics_slapnap = results_slapnap[ab]
-        metrics_slapnap_np = np.array([
-            metrics_slapnap[mcc_mean], metrics_slapnap[mcc_std],
-            metrics_slapnap[auc_mean], metrics_slapnap[auc_std],
-            metrics_slapnap[acc_mean], metrics_slapnap[acc_std]
-        ])
-        metrics_matrix = np.zeros((5, 3))
-        for i, results_fc_att_gru in enumerate(results_fc_att_gru_cross_valid):
-            m = results_fc_att_gru[ab]
-            metrics_matrix[i] = np.array([ m['test mcc'], m['test auc'], m['test acc'] ])
-        metrics_mean, metrics_std = metrics_matrix.mean(axis=0), metrics_matrix.std(axis=0)
-        metrics_us = np.array([ metrics_mean[0], metrics_std[0], metrics_mean[1], metrics_std[1], metrics_mean[2], metrics_std[2] ])
-        metrics = np.concatenate((metrics_slapnap_np, metrics_us))
-        totals = totals + metrics
-        print(display_table_row(ab, metrics))
-    metrics_avg = totals / len(SLAPNAP_ABS)
-    print(display_table_row('Average', metrics_avg))
 
-display_results(results_slapnap, [
-    compute_metrics_fc_att_gru(str_header_cv1, str_data_cv1),
-    compute_metrics_fc_att_gru(str_header_cv2, str_data_cv2),
-    compute_metrics_fc_att_gru(str_header_cv3, str_data_cv3),
-    compute_metrics_fc_att_gru(str_header_cv4, str_data_cv4),
-    compute_metrics_fc_att_gru(str_header_cv5, str_data_cv5)
-])
+    for ab_type in ['gp120 CD4BS', 'gp120 other than CD4BS', 'gp41 MPER, gp41-gp120 interface, and fusion peptide']:
+        print('\midrule')
+        print('\multicolumn{7}{c}{' + ab_type + '}\\\\')
+        print('\midrule')
+        totals_per_category = np.zeros(12)
+
+        for ab in antibodies_grouped[ab_type]:
+            metrics_slapnap = results_slapnap[ab]
+            metrics_slapnap_np = np.array([
+                metrics_slapnap[mcc_mean], metrics_slapnap[mcc_std],
+                metrics_slapnap[auc_mean], metrics_slapnap[auc_std],
+                metrics_slapnap[acc_mean], metrics_slapnap[acc_std]
+            ])
+            metrics_matrix = np.zeros((5, 3))
+            for i, results_fc_att_gru in enumerate(results_fc_att_gru_cross_valid):
+                m = results_fc_att_gru[ab]
+                metrics_matrix[i] = np.array([ m['test mcc'], m['test auc'], m['test acc'] ])
+            metrics_mean, metrics_std = metrics_matrix.mean(axis=0), metrics_matrix.std(axis=0)
+            metrics_us = np.array([ metrics_mean[0], metrics_std[0], metrics_mean[1], metrics_std[1], metrics_mean[2], metrics_std[2] ])
+            metrics = np.concatenate((metrics_slapnap_np, metrics_us))
+            totals = totals + metrics
+            totals_per_category = totals_per_category + metrics
+            print(display_table_row(ab, metrics))
+
+        totals_per_category = totals_per_category / len(antibodies_grouped[ab_type])
+        print(display_table_row('Average', totals_per_category))
+
+    metrics_avg = totals / len(SLAPNAP_ABS)
+    print('\midrule')
+    print(display_table_row('Global Average', metrics_avg))
+
+if __name__ == '__main__':
+    display_results(results_slapnap, [
+        compute_metrics_fc_att_gru(str_header_cv1, str_data_cv1),
+        compute_metrics_fc_att_gru(str_header_cv2, str_data_cv2),
+        compute_metrics_fc_att_gru(str_header_cv3, str_data_cv3),
+        compute_metrics_fc_att_gru(str_header_cv4, str_data_cv4),
+        compute_metrics_fc_att_gru(str_header_cv5, str_data_cv5)
+    ])

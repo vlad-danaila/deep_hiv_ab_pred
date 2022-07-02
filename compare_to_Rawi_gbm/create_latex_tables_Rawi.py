@@ -118,32 +118,33 @@ def group_antibodies_by_function_highlevel(abs):
         types_ab[type] = sorted(types_ab[type], key = lambda x: x.lower())
     return types_ab
 
-totals = np.zeros(12)
-antibodies = list(results_fc_att_gru.keys())
+if __name__ == '__main__':
+    totals = np.zeros(12)
+    antibodies = list(results_fc_att_gru.keys())
 
-antibodies_grouped = group_antibodies_by_function_highlevel(antibodies)
+    antibodies_grouped = group_antibodies_by_function_highlevel(antibodies)
 
-for ab_type in ['gp120 CD4BS', 'gp120 other than CD4BS', 'gp41 MPER, gp41-gp120 interface, and fusion peptide']:
+    for ab_type in ['gp120 CD4BS', 'gp120 other than CD4BS', 'gp41 MPER, gp41-gp120 interface, and fusion peptide']:
+        print('\midrule')
+        print('\multicolumn{7}{c}{' + ab_type + '}\\\\')
+        print('\midrule')
+        totals_per_category = np.zeros(12)
+        for ab in antibodies_grouped[ab_type]:
+            metrics_us = results_fc_att_gru[ab]
+            metrics_Rawi = results_rawi[ab]
+            metrics = np.array([
+                metrics_Rawi[mcc_mean], metrics_Rawi[mcc_std],
+                metrics_Rawi[auc_mean], metrics_Rawi[auc_std],
+                metrics_Rawi[acc_mean], metrics_Rawi[acc_std],
+                metrics_us[mcc_mean], metrics_us[mcc_std],
+                metrics_us[auc_mean], metrics_us[auc_std],
+                metrics_us[acc_mean], metrics_us[acc_std]
+            ])
+            totals = totals + metrics
+            totals_per_category = totals_per_category + metrics
+            print(display_table_row(ab, metrics))
+        totals_per_category = totals_per_category / len(antibodies_grouped[ab_type])
+        print(display_table_row('Average', totals_per_category))
+    totals = totals / len(results_fc_att_gru)
     print('\midrule')
-    print('\multicolumn{7}{c}{' + ab_type + '}\\\\')
-    print('\midrule')
-    totals_per_category = np.zeros(12)
-    for ab in antibodies_grouped[ab_type]:
-        metrics_us = results_fc_att_gru[ab]
-        metrics_Rawi = results_rawi[ab]
-        metrics = np.array([
-            metrics_Rawi[mcc_mean], metrics_Rawi[mcc_std],
-            metrics_Rawi[auc_mean], metrics_Rawi[auc_std],
-            metrics_Rawi[acc_mean], metrics_Rawi[acc_std],
-            metrics_us[mcc_mean], metrics_us[mcc_std],
-            metrics_us[auc_mean], metrics_us[auc_std],
-            metrics_us[acc_mean], metrics_us[acc_std]
-        ])
-        totals = totals + metrics
-        totals_per_category = totals_per_category + metrics
-        print(display_table_row(ab, metrics))
-    totals_per_category = totals_per_category / len(antibodies_grouped[ab_type])
-    print(display_table_row('Average', totals_per_category))
-totals = totals / len(results_fc_att_gru)
-print('\midrule')
-print(display_table_row('Global Average', totals))
+    print(display_table_row('Global Average', totals))
