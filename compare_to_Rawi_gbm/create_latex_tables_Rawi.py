@@ -1,5 +1,7 @@
 from collections import defaultdict
 import numpy as np
+from deep_hiv_ab_pred.catnap.dataset import find_ab_types
+
 acc_mean, acc_std = 'acc_mean', 'acc_std'
 auc_mean, auc_std = 'auc_mean', 'auc_std'
 mcc_mean, mcc_std = 'mcc_mean', 'mcc_std'
@@ -83,8 +85,42 @@ def display_table_row(ab, metrics):
     table_row = f'{ab} & {rawi_mcc} & {rawi_auc} & {rawi_acc} & {net_mcc} & {net_auc} & {net_acc}\\\\'
     return table_row
 
+def group_antibodies_by_function_detailed(abs):
+    ab_types = find_ab_types()
+    types_ab = defaultdict(lambda : [])
+    for ab in abs:
+        types = ab_types[ab]
+        types_ab[types].append(ab)
+    for type in types_ab:
+        types_ab[type] = sorted(types_ab[type], key = lambda x: x.lower())
+    return types_ab
+
+def group_antibodies_by_function_highlevel(abs):
+    ab_types = find_ab_types()
+    types_ab = defaultdict(lambda : [])
+    for ab in abs:
+        types = ab_types[ab]
+        if 'gp120 V3 // V3 glycan (V3g)' in types \
+                or 'gp120 V2 // V2 glycan(V2g) // V2 apex' in types \
+                or 'gp120 V1-V2' in types:
+            types_ab['gp120 other than CD4BS'].append(ab)
+        elif 'gp41 MPER (membrane proximal external region)' in types \
+                or 'gp41-gp120 interface' in types\
+                or 'gp41-gp41 interface' in types\
+                or 'fusion peptide // near gp41-gp120 interface' in types:
+            types_ab['gp41 MPER, gp41-gp120 interface, and fusion peptide'].append(ab)
+        elif 'gp120 CD4BS' in types:
+            types_ab['gp120 CD4BS'].append(ab)
+        else:
+            raise 'Must map antibody category.'
+    # Sort the antibodies
+    for type in types_ab:
+        types_ab[type] = sorted(types_ab[type], key = lambda x: x.lower())
+    return types_ab
+
 totals = np.zeros(12)
-for ab, metrics_us in results_fc_att_gru.items():
+for ab in results_fc_att_gru:
+    metrics_us = results_fc_att_gru[ab]
     metrics_Rawi = results_rawi[ab]
     metrics = np.array([
         metrics_Rawi[mcc_mean], metrics_Rawi[mcc_std],

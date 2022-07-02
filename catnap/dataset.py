@@ -7,6 +7,7 @@ from tqdm import tqdm
 from deep_hiv_ab_pred.util.tools import dump_json, read_yaml
 from deep_hiv_ab_pred.preprocessing.sequences_to_embedding import parse_catnap_sequences_to_embeddings
 from deep_hiv_ab_pred.hyperparameters.constants import CONF_ICERI
+from deep_hiv_ab_pred.catnap.constants import ANTIBODIES_DETAILS_FILE
 
 KMER_LEN = 'KMER_LEN'
 KMER_STRIDE = 'KMER_STRIDE'
@@ -68,6 +69,17 @@ def flatten_catnap_data(catnap_data):
             flat.append((id, antibody, virus, catnap_data[antibody][virus]))
             id += 1
     return flat
+
+def find_ab_types():
+    ab_details = pd.read_csv(ANTIBODIES_DETAILS_FILE, delimiter='\t')
+    ab_to_types = {}
+    for i, record in ab_details.iterrows():
+        ab = record['Name']
+        ab_types = record['Type']
+        if type(ab_types) == str:
+            ab_types = tuple(ab_types.split(';'))
+            ab_to_types[ab] = ab_types
+    return ab_to_types
 
 if __name__ == '__main__':
     catnap_by_antibodies = catnap_by_antibodies()
