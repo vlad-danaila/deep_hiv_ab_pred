@@ -1,3 +1,5 @@
+import logging
+
 from deep_hiv_ab_pred.util.logging import setup_simple_logging
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import COMPARE_SPLITS_FOR_RAWI, ANTIBODIES_LIST, MODELS_FOLDER
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.hyperparameter_optimisation import get_data, add_properties_from_base_config
@@ -17,7 +19,8 @@ def evaluate_trained_model():
     setup_simple_logging()
     all_splits, catnap, base_conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq = get_data(COMPARE_SPLITS_FOR_RAWI)
     cv_metrics_dict = {}
-    for antibody in ANTIBODIES_LIST:
+    for i, antibody in enumerate(ANTIBODIES_LIST):
+        logging.info(f'Processing antibody {i} -> {antibody}')
         if not os.path.isfile(os.path.join(MODELS_FOLDER, f'model_{antibody}_pretrain.tar')):
             pretrain_net(antibody, all_splits[antibody]['pretraining'], catnap, base_conf, virus_seq,
                 virus_pngs_mask, antibody_light_seq, antibody_heavy_seq, PRETRAIN_EPOCHS)
