@@ -6,7 +6,8 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.train_evaluate import pretrain_net, cr
 import os
 
 PRETRAIN_EPOCHS = 100
-MLFLOW_ARTIFACTS_FOLDER = 'C:/DOC/Articol HIV Antibodies/Experiments/Experiments/Compare Rawi/Compare Rawi FC ATT GRU 1 layer trial 252 props only - 1000 tpe trials/mlruns/1/708a375930dd4ff1bb2d1b9686a7ddde/artifacts'
+# MLFLOW_ARTIFACTS_FOLDER = 'C:/DOC/Articol HIV Antibodies/Experiments/Experiments/Compare Rawi/Compare Rawi FC ATT GRU 1 layer trial 252 props only - 1000 tpe trials/mlruns/1/708a375930dd4ff1bb2d1b9686a7ddde/artifacts'
+MLFLOW_ARTIFACTS_FOLDER = 'artifacts'
 
 def get_configuration_from_mlflow_artifacts_folder(antibody):
     conf_path = f'{MLFLOW_ARTIFACTS_FOLDER}/{antibody} conf.json/{antibody}.json'
