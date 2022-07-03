@@ -29,7 +29,7 @@ def evaluate_trained_model():
         cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap,
             conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
         cv_metrics_dict[antibody] = cv_metrics
-    dump_json(cv_metrics_dict)
+    dump_json(cv_metrics_dict, 'cv_metrics.json')
 
 if __name__ == '__main__':
     evaluate_trained_model()
