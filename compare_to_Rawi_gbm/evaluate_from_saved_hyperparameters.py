@@ -28,7 +28,7 @@ def evaluate_trained_model():
         conf = add_properties_from_base_config(conf, base_conf)
         cv_metrics = cross_validate_antibody(antibody, all_splits[antibody]['cross_validation'], catnap,
             conf, virus_seq, virus_pngs_mask, antibody_light_seq, antibody_heavy_seq)
-        cv_metrics_dict[antibody] = cv_metrics
+        cv_metrics_dict[antibody] = list(cv_metrics)
     dump_json(cv_metrics_dict, 'cv_metrics.json')
 
 if __name__ == '__main__':
