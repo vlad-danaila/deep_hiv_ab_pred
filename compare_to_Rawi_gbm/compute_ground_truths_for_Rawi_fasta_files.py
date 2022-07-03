@@ -30,11 +30,11 @@ if __name__ == '__main__':
         ab = find_antibody_id_from_file_name(fasta_file)
         if ab in ['VRC13', 'VRC29.03']:
             continue
-        print(ab)
         viruses_ids = read_virus_fasta_file(absolute_fasta_file)
         ground_truths = find_ground_truths(catnap, viruses_ids, ab)
         ground_truths = [('1\n' if g else '0\n') for g in ground_truths]
         assert len(viruses_ids) == len(ground_truths)
+        print(ab, len(ground_truths))
         ground_truths_file_name = fasta_files_dir + '/' + fasta_file.replace('fasta', 'txt').replace('alignment', 'neutralization')
         with open(ground_truths_file_name, 'w') as ground_truths_file:
             ground_truths_file.writelines(ground_truths)
