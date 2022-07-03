@@ -35,6 +35,6 @@ if __name__ == '__main__':
         ground_truths = find_ground_truths(catnap, viruses_ids, ab)
         ground_truths = [('1\n' if g else '0\n') for g in ground_truths]
         assert len(viruses_ids) == len(ground_truths)
-        ground_truths_file_name = fasta_files_dir + '/' + fasta_file.replace('fasta', 'txt')
+        ground_truths_file_name = fasta_files_dir + '/' + fasta_file.replace('fasta', 'txt').replace('alignment', 'neutralization')
         with open(ground_truths_file_name, 'w') as ground_truths_file:
             ground_truths_file.writelines(ground_truths)
