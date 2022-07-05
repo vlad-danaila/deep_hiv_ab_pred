@@ -10,11 +10,11 @@ import statistics
 def compute_cv_metrics(cv_metrics):
     cv_metrics = np.array(cv_metrics)
     cv_mean_acc = cv_metrics[:, ACCURACY].mean()
-    cv_std_acc = cv_metrics[:, ACCURACY].std()
+    cv_std_acc = cv_metrics[:, ACCURACY].std(ddof = 1)
     cv_mean_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].mean()
-    cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std()
+    cv_std_mcc = cv_metrics[:, MATTHEWS_CORRELATION_COEFFICIENT].std(ddof = 1)
     cv_mean_auc = cv_metrics[:, AUC].mean()
-    cv_std_auc = cv_metrics[:, AUC].std()
+    cv_std_auc = cv_metrics[:, AUC].std(ddof = 1)
     return cv_mean_acc, cv_std_acc, cv_mean_mcc, cv_std_mcc, cv_mean_auc, cv_std_auc
 
 def log_metrics_per_cv_antibody(cv_metrics, antibody):

@@ -99,7 +99,7 @@ def display_results(results_slapnap, results_fc_att_gru_cross_valid):
             for i, results_fc_att_gru in enumerate(results_fc_att_gru_cross_valid):
                 m = results_fc_att_gru[ab]
                 metrics_matrix[i] = np.array([ m['test mcc'], m['test auc'], m['test acc'] ])
-            metrics_mean, metrics_std = metrics_matrix.mean(axis=0), metrics_matrix.std(axis=0)
+            metrics_mean, metrics_std = metrics_matrix.mean(axis=0), metrics_matrix.std(axis=0, ddof = 1)
             metrics_us = np.array([ metrics_mean[0], metrics_std[0], metrics_mean[1], metrics_std[1], metrics_mean[2], metrics_std[2] ])
             metrics = np.concatenate((metrics_slapnap_np, metrics_us))
             totals = totals + metrics
