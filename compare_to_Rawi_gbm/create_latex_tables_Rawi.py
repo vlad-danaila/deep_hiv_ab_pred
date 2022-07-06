@@ -6,6 +6,7 @@ from deep_hiv_ab_pred.compare_to_Rawi_gbm.evaluate_from_saved_hyperparameters im
 from deep_hiv_ab_pred.util.metrics import compute_cv_metrics
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.evaluate_gbm import get_GBM_results
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import acc_mean, acc_std, auc_mean, auc_std, mcc_mean, mcc_std
+import math
 
 '''
 Result GBM
@@ -31,13 +32,20 @@ for ab, metrics in all_metrics.items():
 def bold(text):
     return '\\textbf{' + text + '}'
 
+def truncate(x, n):
+    return math.trunc(x * 10 ** n) / 10 ** n
+
+def format_cell(mean_value, std_vale):
+    cell_template = '{:.2f}({:.2f})'
+    return cell_template.format(truncate(mean_value, 2), std_vale)
+
 def display_table_row(ab, metrics):
-    rawi_mcc = f'{str(metrics[0])[:4]}({round(metrics[1], 2)})'
-    rawi_auc = f'{str(metrics[2])[:4]}({round(metrics[3], 2)})'
-    rawi_acc = f'{str(metrics[4])[:4]}({round(metrics[5], 2)})'
-    net_mcc = f'{str(metrics[6])[:4]}({round(metrics[7], 2)})'
-    net_auc = f'{str(metrics[8])[:4]}({round(metrics[9], 2)})'
-    net_acc = f'{str(metrics[10])[:4]}({round(metrics[11], 2)})'
+    rawi_mcc = format_cell(metrics[0], metrics[1])
+    rawi_auc = format_cell(metrics[2], metrics[3])
+    rawi_acc = format_cell(metrics[4], metrics[5])
+    net_mcc = format_cell(metrics[6], metrics[7])
+    net_auc = format_cell(metrics[8], metrics[9])
+    net_acc = format_cell(metrics[10], metrics[11])
 
     if metrics[0] > metrics[6]:
         rawi_mcc = bold(rawi_mcc)
