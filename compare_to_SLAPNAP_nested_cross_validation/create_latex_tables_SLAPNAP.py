@@ -2,7 +2,7 @@ from collections import defaultdict
 import numpy as np
 from deep_hiv_ab_pred.compare_to_SLAPNAP.compute_metrics_for_SLAPNAP import compute_metrics_for_SLAPNAP
 from deep_hiv_ab_pred.compare_to_SLAPNAP.constants import SLAPNAP_ABS
-from deep_hiv_ab_pred.compare_to_Rawi_gbm.create_latex_tables_Rawi import group_antibodies_by_function_highlevel
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.create_latex_tables_Rawi import group_antibodies_by_function_highlevel, format_cell
 
 acc_mean, acc_std = 'cv_mean_acc', 'cv_std_acc'
 auc_mean, auc_std = 'cv_mean_auc', 'cv_std_auc'
@@ -35,12 +35,12 @@ def bold(text):
     return '\\textbf{' + text + '}'
 
 def display_table_row(ab, metrics):
-    rawi_mcc = f'{str(metrics[0])[:4]}({round(metrics[1], 2)})'
-    rawi_auc = f'{str(metrics[2])[:4]}({round(metrics[3], 2)})'
-    rawi_acc = f'{str(metrics[4])[:4]}({round(metrics[5], 2)})'
-    net_mcc = f'{str(metrics[6])[:4]}({round(metrics[7], 2)})'
-    net_auc = f'{str(metrics[8])[:4]}({round(metrics[9], 2)})'
-    net_acc = f'{str(metrics[10])[:4]}({round(metrics[11], 2)})'
+    rawi_mcc = format_cell(metrics[0], metrics[1])
+    rawi_auc = format_cell(metrics[2], metrics[3])
+    rawi_acc = format_cell(metrics[4], metrics[5])
+    net_mcc = format_cell(metrics[6], metrics[7])
+    net_auc = format_cell(metrics[8], metrics[9])
+    net_acc = format_cell(metrics[10], metrics[11])
 
     if metrics[0] > metrics[6]:
         rawi_mcc = bold(rawi_mcc)
