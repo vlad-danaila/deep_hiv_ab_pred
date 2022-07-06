@@ -26,3 +26,7 @@ ANTIBODIES_LIST = ['10-1074', '2F5', '2G12', '35O22', '3BNC117', '4E10', '8ANC19
 FREEZE_ANTIBODY_AND_EMBEDDINGS = 'FREEZE_ANTIBODY_AND_EMBEDDINGS'
 FREEZE_ALL = 'FREEZE_ALL'
 FREEZE_ALL_BUT_LAST_LAYER = 'FREEZE_ALL_BUT_LAST_LAYER'
+
+acc_mean, acc_std = 'acc_mean', 'acc_std'
+auc_mean, auc_std = 'auc_mean', 'auc_std'
+mcc_mean, mcc_std = 'mcc_mean', 'mcc_std'

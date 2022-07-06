@@ -4,34 +4,13 @@ from deep_hiv_ab_pred.catnap.dataset import find_ab_types
 from deep_hiv_ab_pred.util.tools import read_json_file
 from deep_hiv_ab_pred.compare_to_Rawi_gbm.evaluate_from_saved_hyperparameters import JSON_METRICS_FILE
 from deep_hiv_ab_pred.util.metrics import compute_cv_metrics
-
-acc_mean, acc_std = 'acc_mean', 'acc_std'
-auc_mean, auc_std = 'auc_mean', 'auc_std'
-mcc_mean, mcc_std = 'mcc_mean', 'mcc_std'
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.evaluate_gbm import get_GBM_results
+from deep_hiv_ab_pred.compare_to_Rawi_gbm.constants import acc_mean, acc_std, auc_mean, auc_std, mcc_mean, mcc_std
 
 '''
-Results Rawi
+Result GBM
 '''
-str_antibodies_rawi = '	b12	4E10	2F5	2G12	VRC01	PG9	PGT121	PGT128	PGT145	3BNC117	PG16	10-1074	PGDM1400	VRC26.08	VRC26.25	VRC13	VRC03	VRC-PG04	35O22	NIH45-46	VRC-CH31	8ANC195	HJ16	PGT151	VRC38.01	CH01	PGT135	DH270.1	DH270.5	DH270.6	VRC29.03	VRC34.01	VRC07'
-str_acc_rawi = '0.79 (0.01)	0.94 (0)	0.95 (0)	0.91 (0.01)	0.92 (0)	0.86 (0.01)	0.88 (0.01)	0.86 (0.01)	0.86 (0.02)	0.9 (0.01)	0.84 (0.01)	0.94 (0.01)	0.89 (0)	0.85 (0.01)	0.87 (0.01)	0.88 (0.01)	0.81 (0.02)	0.87 (0.01)	0.66 (0.02)	0.89 (0.01)	0.87 (0.01)	0.89 (0.02)	0.66 (0.02)	0.83 (0.01)	0.87 (0.03)	0.77 (0.03)	0.74 (0.02)	0.9 (0.02)	0.91 (0.01)	0.93 (0.01)	0.84 (0.01)	0.79 (0.03)	0.93 (0.01)'
-str_auc_rawi = '0.82 (0.01)	0.82 (0.02)	0.97 (0)	0.93 (0)	0.89 (0.01)	0.85 (0.01)	0.92 (0)	0.89 (0.01)	0.86 (0.02)	0.88 (0.02)	0.79 (0.02)	0.95 (0.01)	0.83 (0.02)	0.89 (0.01)	0.89 (0.01)	0.83 (0.01)	0.83 (0.02)	0.78 (0.05)	0.63 (0.02)	0.8 (0.02)	0.78 (0.03)	0.9 (0.03)	0.67 (0.02)	0.78 (0.02)	0.87 (0.02)	0.77 (0.02)	0.77 (0.02)	0.92 (0.02)	0.93 (0.02)	0.93 (0.01)	0.82 (0.02)	0.78 (0.03)	0.78 (0.05)'
-str_mcc_rawi = '0.56 (0.02)	0.63 (0.02)	0.89 (0.01)	0.75 (0.01)	0.7 (0.02)	0.61 (0.02)	0.75 (0.01)	0.72 (0.01)	0.67 (0.04)	0.69 (0.03)	0.57 (0.04)	0.86 (0.01)	0.66 (0.02)	0.7 (0.02)	0.71 (0.04)	0.63 (0.03)	0.61 (0.03)	0.57 (0.05)	0.38 (0.04)	0.59 (0.05)	0.6 (0.06)	0.77 (0.04)	0.42 (0.03)	0.58 (0.03)	0.7 (0.05)	0.56 (0.04)	0.54 (0.01)	0.82 (0.03)	0.83 (0.02)	0.85 (0.02)	0.64 (0.02)	0.61 (0.05)	0.66 (0.04)'
-
-antibodies_rawi = str_antibodies_rawi.split()
-acc_rawi = str_acc_rawi.split()
-auc_rawi = str_auc_rawi.split()
-mcc_rawi = str_mcc_rawi.split()
-
-results_rawi = defaultdict(dict)
-
-for i in range(len(antibodies_rawi)):
-    ab = antibodies_rawi[i]
-    results_rawi[ab][acc_mean] = float(acc_rawi[i * 2])
-    results_rawi[ab][acc_std] = float(acc_rawi[i * 2 + 1][1:-1])
-    results_rawi[ab][auc_mean] = float(auc_rawi[i * 2])
-    results_rawi[ab][auc_std] = float(auc_rawi[i * 2 + 1][1:-1])
-    results_rawi[ab][mcc_mean] = float(mcc_rawi[i * 2])
-    results_rawi[ab][mcc_std] = float(mcc_rawi[i * 2 + 1][1:-1])
+results_rawi = get_GBM_results()
 
 '''
 Results FC-ATT-GRU
