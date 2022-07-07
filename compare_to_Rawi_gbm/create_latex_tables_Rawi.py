@@ -35,9 +35,24 @@ def bold(text):
 def truncate(x, n):
     return math.trunc(x * 10 ** n) / 10 ** n
 
+# Commented because it had rounding issues!
+# def format_cell(mean_value, std_vale):
+#     cell_template = '{:.2f}({:.2f})'
+#     return cell_template.format(truncate(mean_value, 2), std_vale)
+
 def format_cell(mean_value, std_vale):
-    cell_template = '{:.2f}({:.2f})'
-    return cell_template.format(truncate(mean_value, 2), std_vale)
+    mean_val_str = str(mean_value)
+    if mean_val_str.startswith('-'):
+        mean_val_str = mean_val_str[:5]
+        if mean_val_str == '-0.00':
+            mean_val_str = '0.00'
+    else:
+        mean_val_str = mean_val_str[:4]
+    if len(mean_val_str) == 3:
+        mean_val_str = mean_val_str + '0'
+    if len(mean_val_str) < 3:
+        raise 'Unexpected value'
+    return '{}({:.2f})'.format(mean_val_str, std_vale)
 
 def display_table_row(ab, metrics):
     rawi_mcc = format_cell(metrics[0], metrics[1])
