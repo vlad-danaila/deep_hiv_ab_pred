@@ -21,8 +21,8 @@ ax.tick_params(top=True, bottom=False,
 plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
          rotation_mode="anchor")
 
-for edge, spine in ax.spines.items():
-    spine.set_visible(False)
+# for edge, spine in ax.spines.items():
+#     spine.set_visible(False)
 
 kw = dict(horizontalalignment="center", verticalalignment="center", fontsize = 5)
 valfmt = matplotlib.ticker.StrMethodFormatter("{x:.2f}")
